@@ -1,0 +1,25 @@
+{
+  "id": 4131,
+  "email_address": "aarons88+gbp@gmail.com",
+  "admin": false,
+  "forename": "Aaron",
+  "surname": "Signorelli",
+  "phone_number": "",
+  "phone_number_verified": true,
+  "promo_code": "ASIG01",
+  "country": {
+    "name": "United Kingdom",
+    "code": "GB"
+  },
+  "date_of_birth": "1986-10-08T07:01:24+0100",
+  "gender": "Male",
+  "profile_pic_url": "https://s3-eu-west-1.amazonaws.com/bullorbear-images-profile/157b31e398535275956bf0b001f3f1e14569ffcd20150415111234.jpeg",
+  "account_status": "Active",
+  "bob_points": 0,
+  "leagues_points": 0,
+  "anybet_points": 0,
+  "age_verified": true,
+  "honour_rating": 100,
+  "level": 20,
+  "level_progress": 94
+}

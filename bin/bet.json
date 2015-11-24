@@ -1,0 +1,95 @@
+{
+  "accepted_bet_id": "7655333414-2-0_4131",
+  "bet": {
+    "id": "7655333414-2-0",
+    "description": "Jiwa passes his exams",
+    "bet_initiator": {
+      "initiator": {
+        "id": 1731103,
+        "forename": "James",
+        "surname": "Lockwood ",
+        "country": {
+          "name": "United Kingdom",
+          "code": "GB"
+        },
+        "gender": "Male",
+        "admin": false,
+        "profile_pic_url": "https://s3-eu-west-1.amazonaws.com/bullorbear-images-profile/a41755a6efdd9c99dd839540ea7f921d81e17f8e20150408192854.jpeg",
+        "honour_rating": 100,
+        "level": 1,
+        "level_progress": 6,
+        "avg_time_to_complete": 0
+      },
+      "winner": false,
+      "claiming_win": false,
+      "claiming_loss": false,
+      "seen_by_user": false,
+      "max_exposure": 200,
+      "exposure": 200,
+      "potential_profit": 200,
+      "pot": 400,
+      "settled_profit": 0,
+      "settled_loss": 0,
+      "settled_exposure_returned": 0,
+      "settled_net_amount": 0
+    },
+    "offer_status": "ClosedFull",
+    "bet_status": "Settling",
+    "secret": false,
+    "open_to_public": false,
+    "privacy_type": "Private",
+    "odds": 200,
+    "created_date": "2015-04-09T09:23:39+0100",
+    "expiration_date": "2015-04-10T10:25:16+0100",
+    "closed_date": "2015-04-09T09:37:43+0100",
+    "currency_code": "GBP",
+    "remaining_acceptors_exposure": 0,
+    "acceptors_max_exposure": 200,
+    "current_max_bet": 0,
+    "acceptor_count": 1,
+    "invite_count": 0,
+    "settled_count": 0,
+    "claiming_win_count": 0,
+    "undecided_count": 0,
+    "disputes_count": 1,
+    "void_count": 0
+  },
+  "acceptor": {
+    "acceptor": {
+      "id": 4131,
+      "forename": "Aaron",
+      "surname": "Signorelli",
+      "country": {
+        "name": "United Kingdom",
+        "code": "GB"
+      },
+      "gender": "Male",
+      "admin": false,
+      "profile_pic_url": "https://s3-eu-west-1.amazonaws.com/bullorbear-images-profile/157b31e398535275956bf0b001f3f1e14569ffcd20150415111234.jpeg",
+      "honour_rating": 100,
+      "level": 20,
+      "level_progress": 94,
+      "avg_time_to_complete": 0
+    },
+    "winner": false,
+    "claiming_win": true,
+    "claiming_loss": false,
+    "seen_by_user": true,
+    "exposure": 200,
+    "potential_profit": 200,
+    "taken_odds": 200,
+    "currency_code": "GBP",
+    "accepted_date": "2015-04-09T09:37:38+0100",
+    "dispute_date": "2015-10-20T12:11:24+0100",
+    "bet_status": "InDispute"
+  },
+  "participant_status": "DisputeDeclared",
+  "participant_role": "Acceptor",
+  "currency": {
+    "name": "Sterling",
+    "symbol": "£",
+    "code": "GBP"
+  },
+  "one_on_one": true,
+  "unread_message_count": 0
+}

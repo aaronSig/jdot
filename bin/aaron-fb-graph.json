@@ -1,0 +1,116 @@
+{
+  "id": "843841043988",
+  "education": [
+    {
+      "school": {
+        "id": "110765798951984",
+        "name": "St. John Payne School"
+      },
+      "type": "High School",
+      "year": {
+        "id": "141778012509913",
+        "name": "2008"
+      }
+    },
+    {
+      "school": {
+        "id": "106418139393924",
+        "name": "St John Payne"
+      },
+      "type": "High School",
+      "year": {
+        "id": "138383069535219",
+        "name": "2005"
+      }
+    },
+    {
+      "concentration": [
+        {
+          "id": "105587479474873",
+          "name": "Entrepreneurship"
+        }
+      ],
+      "degree": {
+        "id": "191696720863392",
+        "name": "BSc Entrepreneurship in IT Business and Technology"
+      },
+      "school": {
+        "id": "109270919092916",
+        "name": "University of Surrey"
+      },
+      "type": "College",
+      "year": {
+        "id": "136328419721520",
+        "name": "2009"
+      }
+    }
+  ],
+  "favorite_athletes": [
+    {
+      "id": "20242388857",
+      "name": "Usain Bolt"
+    }
+  ],
+  "first_name": "Aaron",
+  "gender": "male",
+  "hometown": {
+    "id": "111785758841209",
+    "name": "Witham, Essex"
+  },
+  "languages": [
+    {
+      "id": "105699189463486",
+      "name": "British English"
+    }
+  ],
+  "last_name": "Signorelli",
+  "link": "https://www.facebook.com/app_scoped_user_id/843841043988/",
+  "locale": "en_US",
+  "name": "Aaron Signorelli",
+  "relationship_status": "Single",
+  "timezone": 0,
+  "updated_time": "2015-11-19T09:29:22+0000",
+  "verified": true,
+  "work": [
+    {
+      "employer": {
+        "id": "1433448923590420",
+        "name": "Bull or Bear"
+      },
+      "position": {
+        "id": "460195094025622",
+        "name": "Chief Technology Officer"
+      },
+      "start_date": "2013-03-01"
+    },
+    {
+      "description": "www.poraora.com",
+      "end_date": "2013-03-01",
+      "employer": {
+        "id": "145857145470288",
+        "name": "Caped Koala Studios"
+      },
+      "location": {
+        "id": "106078429431815",
+        "name": "London, United Kingdom"
+      },
+      "position": {
+        "id": "131865943550582",
+        "name": "Coding Superhero"
+      },
+      "projects": [
+        {
+          "id": "129171280465936",
+          "name": "Pora Ora",
+          "with": [
+            {
+              "name": "Mohammed Abdeali",
+              "id": "10153091109900539"
+            }
+          ]
+        }
+      ],
+      "start_date": "2009-10-01"
+    }
+  ]
+}

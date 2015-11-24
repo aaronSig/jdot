@@ -1,0 +1,50 @@
+{
+  "data": [
+    {
+      "name": "All",
+      "icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-all.png",
+      "active_icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-all-active.png"
+    },
+    {
+      "name": "Football",
+      "icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-football.png",
+      "active_icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-football-active.png"
+    },
+    {
+      "name": "Horse Racing",
+      "icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-horse-racing.png",
+      "active_icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-horse-racing-active.png"
+    },
+    {
+      "name": "Rugby",
+      "icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-rugby.png",
+      "active_icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-rugby-active.png"
+    },
+    {
+      "name": "GAA",
+      "icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-gaa.png",
+      "active_icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-gaa-active.png"
+    },
+    {
+      "name": "Golf",
+      "icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-golf.png",
+      "active_icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-golf-active.png"
+    },
+    {
+      "name": "Motorsport",
+      "icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-motorsport.png",
+      "active_icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-motorsport-active.png"
+    },
+    {
+      "name": "Entertainment",
+      "icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-entertainment.png",
+      "active_icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-entertainment-active.png"
+    },
+    {
+      "name": "Other",
+      "icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-other.png",
+      "active_icon": "https://s3-eu-west-1.amazonaws.com/bullorbear-static/bet-you-icons/category-other-active.png"
+    }
+  ],
+  "count": 9
+}

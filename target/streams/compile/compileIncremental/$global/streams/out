@@ -1,0 +1,80 @@
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0mInitial source changes: [0m
+[0m[[0mdebug[0m] [0m	removed:Set()[0m
+[0m[[0mdebug[0m] [0m	added: Set(/Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPath.scala, /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPathMap.scala, /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonTransformer.scala)[0m
+[0m[[0mdebug[0m] [0m	modified: Set()[0m
+[0m[[0mdebug[0m] [0mInvalidated products: Set()[0m
+[0m[[0mdebug[0m] [0mExternal API changes: API Changes: Set()[0m
+[0m[[0mdebug[0m] [0mModified binary dependencies: Set()[0m
+[0m[[0mdebug[0m] [0mInitial directly invalidated sources: Set(/Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPath.scala, /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPathMap.scala, /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonTransformer.scala)[0m
+[0m[[0mdebug[0m] [0m[0m
+[0m[[0mdebug[0m] [0mSources indirectly invalidated by:[0m
+[0m[[0mdebug[0m] [0m	product: Set()[0m
+[0m[[0mdebug[0m] [0m	binary dep: Set()[0m
+[0m[[0mdebug[0m] [0m	external source: Set()[0m
+[0m[[0mdebug[0m] [0mAll initially invalidated sources: Set(/Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPath.scala, /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPathMap.scala, /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonTransformer.scala)[0m
+[0m[[0mdebug[0m] [0mRecompiling all 3 sources: invalidated sources (3) exceeded 50.0% of all sources[0m
+[0m[[0minfo[0m] [0mCompiling 3 Scala sources to /Users/montywest/development/content-mapper/target/scala-2.11/classes...[0m
+[0m[[0mdebug[0m] [0mGetting compiler-interface from component compiler for Scala 2.11.4[0m
+[0m[[0mdebug[0m] [0mPlain interface to Scala compiler 2.11.4  with arguments: [0m
+[0m[[0mdebug[0m] [0m	-nowarn[0m
+[0m[[0mdebug[0m] [0m	-d[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_5f9ba5f9[0m
+[0m[[0mdebug[0m] [0m	-bootclasspath[0m
+[0m[[0mdebug[0m] [0m	/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/classes:/Users/montywest/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.11.4.jar[0m
+[0m[[0mdebug[0m] [0m	-classpath[0m
+[0m[[0mdebug[0m] [0m	/Users/montywest/.sbt/boot/scala-2.10.5/org.scala-sbt/sbt/0.13.9/xsbti/interface-0.13.9.jar:/Users/montywest/.sbt/boot/scala-2.10.5/org.scala-sbt/sbt/0.13.9/compiler-interface-src/compiler-interface-src-0.13.9.jar:/Users/montywest/.ivy2/cache/org.scala-lang/scala-compiler/jars/scala-compiler-2.11.4.jar:/Users/montywest/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.11.4.jar:/Users/montywest/.ivy2/cache/org.scala-lang.modules/scala-xml_2.11/bundles/scala-xml_2.11-1.0.2.jar:/Users/montywest/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.11/bundles/scala-parser-combinators_2.11-1.0.2.jar:/Users/montywest/.ivy2/cache/jline/jline/jars/jline-2.12.jar[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/API.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/Analyzer.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/Command.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/Compat.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/CompilerInterface.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/ConsoleInterface.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/DelegatingReporter.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/Dependency.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/ExtractAPI.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/ExtractUsedNames.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/LocateClassFile.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/Log.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/Message.scala[0m
+[0m[[0mdebug[0m] [0m	/var/folders/4b/yygjp5t931n5c_50t4krs7bc0000gn/T/sbt_e57402de/xsbt/ScaladocInterface.scala[0m
+[0m[[0mdebug[0m] [0mGetting compiler-interface from component compiler for Scala 2.11.4[0m
+[0m[[0mdebug[0m] [0mRunning cached compiler 71d86cea, interfacing (CompilerInterface) with Scala compiler version 2.11.4[0m
+[0m[[0mdebug[0m] [0mCalling Scala compiler with arguments  (CompilerInterface):[0m
+[0m[[0mdebug[0m] [0m	-bootclasspath[0m
+[0m[[0mdebug[0m] [0m	/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/classes:/Users/montywest/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.11.4.jar[0m
+[0m[[0mdebug[0m] [0m	-classpath[0m
+[0m[[0mdebug[0m] [0m	/Users/montywest/development/content-mapper/target/scala-2.11/classes:/Users/montywest/.ivy2/cache/net.liftweb/lift-json_2.11/jars/lift-json_2.11-2.6.2.jar:/Users/montywest/.ivy2/cache/org.scala-lang/scalap/jars/scalap-2.11.1.jar:/Users/montywest/.ivy2/cache/org.scala-lang/scala-compiler/jars/scala-compiler-2.11.1.jar:/Users/montywest/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.11.1.jar:/Users/montywest/.ivy2/cache/org.scala-lang.modules/scala-xml_2.11/bundles/scala-xml_2.11-1.0.2.jar:/Users/montywest/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.11/bundles/scala-parser-combinators_2.11-1.0.1.jar:/Users/montywest/.ivy2/cache/com.thoughtworks.paranamer/paranamer/jars/paranamer-2.4.1.jar[0m
+[0m[[33mwarn[0m] [0mthere was one feature warning; re-run with -feature for details[0m
+[0m[[33mwarn[0m] [0mone warning found[0m
+[0m[[0mdebug[0m] [0mScala compilation took 8.966756212 s[0m
+[0m[[0mdebug[0m] [0mInvalidating /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPath.scala...[0m
+[0m[[0mdebug[0m] [0mInvalidating (transitively) by inheritance from /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPath.scala...[0m
+[0m[[0mdebug[0m] [0mInitial set of included nodes: Set(/Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPath.scala)[0m
+[0m[[0mdebug[0m] [0mInvalidated by transitive inheritance dependency: Set(/Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPath.scala)[0m
+[0m[[0mdebug[0m] [0mThe /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPath.scala source file has the following regular definitions changed:[0m
+[0m[[0mdebug[0m] [0m	UNESCAPED_DELIMS, notify, childPath, printStackTrace, getLocalizedMessage, wait, OR_REGEX, copy$default$2, $asInstanceOf, field, productArity, equals, fillInStackTrace, initCause, asInstanceOf, DELIMS, validate, synchronized, syntaxValidatorAndTransformer, $isInstanceOf, getCause, canEqual, productPrefix, notifyAll, readResolve, isInstanceOf, getStackTrace, getStackTraceElement, <init>, getMessage, setStackTrace, apply, getSuppressed, linkedChildPath, IS_DELIMITER_REGEX, ==, WITH_DELIMITER_REGEX, getStackTraceDepth, clone, addSuppressed, copy, toString, !=, getClass, copy$default$1, JsonLink, JsonPath, ne, JsonObjectAccess, JsonTerminus, JsonValueAccess, eq, productIterator, ##, finalize, productElement, hashCode, JsonPathException.[0m
+[0m[[0mdebug[0m] [0mAll member reference dependencies will be considered within this context.[0m
+[0m[[0mdebug[0m] [0mThe following modified names cause invalidation of /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPathMap.scala: Set(<init>, apply, JsonPath, ne)[0m
+[0m[[0mdebug[0m] [0mInvalidating /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPathMap.scala...[0m
+[0m[[0mdebug[0m] [0mInvalidating (transitively) by inheritance from /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPathMap.scala...[0m
+[0m[[0mdebug[0m] [0mInitial set of included nodes: Set(/Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPathMap.scala)[0m
+[0m[[0mdebug[0m] [0mInvalidated by transitive inheritance dependency: Set(/Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPathMap.scala)[0m
+[0m[[0mdebug[0m] [0mThe /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPathMap.scala source file has the following implicit definitions changed:[0m
+[0m[[0mdebug[0m] [0m	strings2Paths.[0m
+[0m[[0mdebug[0m] [0mAll member reference dependencies will be considered within this context.[0m
+[0m[[0mdebug[0m] [0mThe following member ref dependencies of /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonPathMap.scala are invalidated:[0m
+[0m[[0mdebug[0m] [0m	/Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonTransformer.scala[0m
+[0m[[0mdebug[0m] [0mInvalidating /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonTransformer.scala...[0m
+[0m[[0mdebug[0m] [0mInvalidating (transitively) by inheritance from /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonTransformer.scala...[0m
+[0m[[0mdebug[0m] [0mInitial set of included nodes: Set(/Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonTransformer.scala)[0m
+[0m[[0mdebug[0m] [0mInvalidated by transitive inheritance dependency: Set(/Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonTransformer.scala)[0m
+[0m[[0mdebug[0m] [0mThe /Users/montywest/development/content-mapper/src/main/scala/com/superpixel/advokit/JsonTransformer.scala source file has the following regular definitions changed:[0m
+[0m[[0mdebug[0m] [0m	notify, wait, $asInstanceOf, equals, JsonTransformer, asInstanceOf, synchronized, $isInstanceOf, notifyAll, isInstanceOf, <init>, ==, clone, toString, !=, getClass, ne, eq, ##, finalize, hashCode.[0m
+[0m[[0mdebug[0m] [0mAll member reference dependencies will be considered within this context.[0m
+[0m[[0mdebug[0m] [0mNew invalidations:[0m
+[0m[[0mdebug[0m] [0m	Set()[0m
+[0m[[0mdebug[0m] [0mInitial set of included nodes: Set()[0m
+[0m[[0mdebug[0m] [0mPreviously invalidated, but (transitively) depend on new invalidations:[0m
+[0m[[0mdebug[0m] [0m	Set()[0m
+[0m[[0mdebug[0m] [0mAll newly invalidated sources after taking into account (previously) recompiled sources:Set()[0m
