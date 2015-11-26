@@ -1,4 +1,4 @@
-package com.superpixel.advokit.json.building
+package com.superpixel.advokit.json.lift
 
 import com.superpixel.advokit.json.pathing._
 import net.liftweb.json._

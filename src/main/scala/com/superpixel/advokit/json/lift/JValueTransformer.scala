@@ -1,11 +1,9 @@
-package com.superpixel.advokit.json.mapping
+package com.superpixel.advokit.json.lift
 
 import net.liftweb.json._
 import com.superpixel.advokit.json.pathing._
-import com.superpixel.advokit.json.building.JValueBuilder
-import com.superpixel.advokit.json.extracting.JValueExtractor
 
-class JsonTransformer(fieldMap: Set[JPathMap], inclusions: Map[String, JValue]) {
+class JValueTransformer(fieldMap: Set[JPathMap], inclusions: Map[String, JValue]) {
 
   val builder = JValueBuilder(fieldMap.map(_.to))
   def transform(json: JValue, addInclusions: Map[String, JValue] = Map()): JValue = 
@@ -18,8 +16,8 @@ class JsonTransformer(fieldMap: Set[JPathMap], inclusions: Map[String, JValue]) 
   }
 }
 
-object JsonTransformer {
+object JValueTransformer {
   
-  def apply(fieldMap: Set[JPathMap], inclusions: Map[String, JValue]) = new JsonTransformer(fieldMap, inclusions)
+  def apply(fieldMap: Set[JPathMap], inclusions: Map[String, JValue]) = new JValueTransformer(fieldMap, inclusions)
   
 }

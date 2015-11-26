@@ -1,4 +1,4 @@
-package com.superpixel.advokit.json.extracting
+package com.superpixel.advokit.json.lift
 
 import com.superpixel.advokit.json.pathing._
 import net.liftweb.json._
@@ -46,9 +46,7 @@ class JValueExtractor(json: JValue, linkLamb: String=>Option[JValue]) {
   
   private def accessJArrayValue(jVal: JValue, key: Int): Option[JValue] = jVal match {
     case JObject(fieldLs) => fieldLs.find { jFld => jFld.name == key.toString } .map(_.value)
-    case JArray(valueLs) => {
-      if (key >= 0 && key < valueLs.size) Some(valueLs(key)) else None        
-    }
+    case JArray(valueLs) => valueLs.lift(key)
     case _ => throw new JsonTraversalException(s"Path requested access to key [$key], but JSON is not an Object or Array", jVal)
   }
   
