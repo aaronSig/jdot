@@ -14,11 +14,11 @@ object JPathMap {
   }
     
   def apply(from: String, to: String): JPathMap = {
-    new JPathMap(JPath(from), JPath(to));
+    new JPathMap(JPath.fromString(from), JPath.fromString(to));
   }
   
   implicit def strings2Paths(pathStringMap: JPathStringMap): JPathMap = {
-    new JPathMap(JPath(pathStringMap.from), JPath(pathStringMap.to))
+    new JPathMap(JPath.fromString(pathStringMap.from), JPath.fromString(pathStringMap.to))
   }
   
 }

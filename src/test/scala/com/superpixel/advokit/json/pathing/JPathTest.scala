@@ -8,30 +8,43 @@ import org.scalatest.FlatSpec
 
 class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterAll {
 
-  "JPath apply" should "be able to interpret dot syntax" in {
+  "JPath fromString" should "be able to interpret dot syntax" in {
 
     assertResult(
-      JPathAccess("one", JPathAccess("zwei", JPathAccess("trois", JPathTerminus)))) {
-        JPath("one.zwei.trois")
+      JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"))) {
+        JPath.fromString("one.zwei.trois")
       }
   }
   
   it should "be able to interpret square bracket syntax" in {
     assertResult(
-      JPathAccess("one", JPathAccess("zwei", JPathAccess("trois", JPathTerminus)))) {
-        JPath("one[zwei][trois]")
+      JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"))) {
+        JPath.fromString("one[zwei][trois]")
+      }
+  }
+  
+  it should "be able to interpret square bracket array syntax" in {
+    assertResult(
+      JPath(JObjectPath("one"), JArrayPath(2), JArrayPath(3))) {
+        JPath.fromString("one[2][3]")
       }
   }
   
   it should "be able to interpret a mixture syntax" in {
     assertResult(
-      JPathAccess("one", JPathAccess("zwei", JPathAccess("trois", JPathAccess("quatro", JPathTerminus))))) {
-        JPath("one.zwei[trois][quatro]")
+      JPath(JObjectPath("one"), JArrayPath(3), JObjectPath("trois"), JObjectPath("quatro"))) {
+        JPath.fromString("one.zwei[3][quatro]")
       }
     assertResult(
-      JPathAccess("one", JPathAccess("zwei", JPathAccess("trois", JPathAccess("quatro", JPathLink(JObjectPath("cinque", JTerminus))))))) {
-        JPath("one[zwei].trois[quatro]>.cinque")
+      JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"), JArrayPath(4), JPathLink, JObjectPath("cinque"))) {
+        JPath.fromString("one[zwei].trois[4]>.cinque")
       }
+  }
+  
+  it should "be able to read blank string as blank path" in {
+    assertResult(JPath()) {
+      JPath.fromString("")
+    }
   }
 
   "JPath validate" should "validate dot syntax" in {
