@@ -30,14 +30,29 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       }
   }
   
+  it should "be able to interpret default values" in {
+    assertResult(
+        JPath(JObjectPath("one"), JObjectPath("zwei"), JDefaultValue("abc"))) {
+      JPath.fromString("one.zwei(abc)")
+    }
+    assertResult(
+        JPath(JObjectPath("one"), JDefaultValue("abc"), JObjectPath("zwei"))) {
+      JPath.fromString("one(abc).zwei")
+    }
+  }
+  
   it should "be able to interpret a mixture syntax" in {
     assertResult(
-      JPath(JObjectPath("one"), JArrayPath(3), JObjectPath("trois"), JObjectPath("quatro"))) {
+      JPath(JObjectPath("one"), JObjectPath("zwei"), JArrayPath(3), JObjectPath("quatro"))) {
         JPath.fromString("one.zwei[3][quatro]")
       }
     assertResult(
       JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"), JArrayPath(4), JPathLink, JObjectPath("cinque"))) {
         JPath.fromString("one[zwei].trois[4]>.cinque")
+      }
+    assertResult(
+      JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"), JDefaultValue("abc"), JArrayPath(4), JPathLink, JObjectPath("cinque"))) {
+        JPath.fromString("one[zwei].trois(abc)[4]>.cinque")
       }
   }
   

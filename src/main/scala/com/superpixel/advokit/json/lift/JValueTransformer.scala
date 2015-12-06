@@ -1,6 +1,7 @@
 package com.superpixel.advokit.json.lift
 
-import net.liftweb.json._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 import com.superpixel.advokit.json.pathing._
 
 class JValueTransformer(fieldMap: Set[JPathPair], inclusions: Map[String, JValue]) {
@@ -18,6 +19,6 @@ class JValueTransformer(fieldMap: Set[JPathPair], inclusions: Map[String, JValue
 
 object JValueTransformer {
   
-  def apply(fieldMap: Set[JPathPair], inclusions: Map[String, JValue]) = new JValueTransformer(fieldMap, inclusions)
+  def apply(fieldMap: Set[JPathPair], inclusions: Map[String, JValue] = Map()) = new JValueTransformer(fieldMap, inclusions)
   
 }

@@ -1,7 +1,8 @@
 package com.superpixel.advokit.json.lift
 
 import com.superpixel.advokit.json.pathing._
-import net.liftweb.json._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 
 class JValueBuilder(paths: Set[JPath]) {
 
@@ -16,12 +17,14 @@ class JValueBuilder(paths: Set[JPath]) {
         }))
       case JPathLink +: tl =>
         throw new JsonBuildingException("Json build paths cannot include JLinks.")
+      case JDefaultValue(_) +: tl =>
+        throw new JsonBuildingException("Json build paths cannot include JDefaultValues.")
     }
     
-    
+    import JValueMerger.mergeFlats
     pathVals.map {
       case (jp, jv) => buildLinearPath(jp reverse, jv)
-    } reduceLeft(_ merge _)
+    } reduceLeft(mergeFlats)
   }
   
 }

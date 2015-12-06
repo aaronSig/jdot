@@ -2,8 +2,27 @@ package com.superpixel.advokit.json.pathing
 
 import scala.util.matching.Regex
 import java.util.regex.Pattern
+import scala.language.implicitConversions
 
-class JPath(val seq: Seq[JPathElement])
+class JPath(val seq: Seq[JPathElement]) {
+  
+  def canEqual(a: Any) = (a.isInstanceOf[JPath] || a.isInstanceOf[Seq[_]])
+
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: JPath => that.canEqual(this) && this.hashCode == that.hashCode && that.seq == this.seq
+      case that: Seq[Any] => that.canEqual(this) && this.hashCode == that.hashCode && that == this.seq
+      case _ => false
+   }
+
+  override def hashCode:Int = {
+    return seq.hashCode()
+  }
+  
+  override def toString: String = {
+    return seq.toString
+  }
+}
 
 class JPathException(message: String, pathString: String, cause: Throwable = null) 
   extends RuntimeException(s"$message IN: '$pathString'", cause)
@@ -15,7 +34,7 @@ object JPath {
   implicit def seq2JPath(seq: Seq[JPathElement]): JPath = new JPath(seq)
   implicit def path2Seq(path: JPath): Seq[JPathElement] = path.seq
   
-  val DELIMS = Seq(""".""", """[""", """]""", """>""")
+  val DELIMS = Seq(""".""", """[""", """]""", """>""", """(""", """)""")
   
   abstract sealed trait ExpressionType {
     final val keyStr = "key";
@@ -23,7 +42,8 @@ object JPath {
   }
   case object StartAccessExpression extends ExpressionType {
     override val patterns = Seq(
-      keyStr.r
+      keyStr.r,
+      "".r
     )
   }
   case object AccessExpression extends ExpressionType {
@@ -31,10 +51,15 @@ object JPath {
       ("""\.""" + keyStr).r,
       ("""\[""" + keyStr + """\]""").r
     )
-  };
+  }
   case object LinkExpression extends ExpressionType {
     override val patterns = Seq(
       """\>""".r
+    )
+  }
+  case object DefaultValueExpression extends ExpressionType {
+    override val patterns = Seq(
+      ("""\(""" + keyStr + """\)""").r    
     )
   }
   
@@ -58,6 +83,7 @@ object JPath {
     def jsonPathConstructor(ls: Seq[(ExpressionType, Seq[String])], acc: Seq[JPathElement]): Seq[JPathElement] = {
       ls match { 
         case Nil => acc
+        case (StartAccessExpression, Nil) +: Nil => acc
         case (StartAccessExpression, exprSeq) +: Nil => 
           jsonPathConstructor(Nil, JObjectPath(extractFirstFieldKey(exprSeq)) +: acc)
         case (_, exprSeq) +: Nil => 
@@ -72,8 +98,11 @@ object JPath {
         
         case (LinkExpression, exprSeq) +: tl => 
           jsonPathConstructor(tl, JPathLink +: acc)
+          
+        case (DefaultValueExpression, exprSeq) +: tl =>
+          jsonPathConstructor(tl, JDefaultValue(extractFirstFieldKey(exprSeq)) +: acc)
         
-        case _ => throw new JPathException("J path semantic error.", pathString)
+        case _ => throw new JPathException("JPath semantic error.", pathString)
       }
     }
     
@@ -163,7 +192,7 @@ object JPath {
     def transformToExpressions(exprSeq: Seq[String], acc: Seq[(ExpressionType, Seq[String])]): Seq[(ExpressionType, Seq[String])] = exprSeq match {
       case Nil => acc
       case seq => {
-        val retTup = extractNextExpression(seq, testForExpressionType(AccessExpression, LinkExpression))
+        val retTup = extractNextExpression(seq, testForExpressionType(AccessExpression, LinkExpression, DefaultValueExpression))
         transformToExpressions(retTup._2, retTup._1 +: acc)
       }
     }
@@ -176,16 +205,22 @@ object JPath {
      * If no sub-sequence passes the expression test an exception is thrown.
      */
     @throws(classOf[JPathException])
-    def extractNextExpression(exprSeq: Seq[String], expressionTest: (Seq[String])=>Option[ExpressionType]): ((ExpressionType, Seq[String]), Seq[String]) = {
-      for (i <- 1 to exprSeq.size) {
-        exprSeq.splitAt(i) match {
-          case (expr, remainder) => expressionTest(expr) match {
-            case Some(exprType) => return ((exprType, expr), remainder)
-            case None => 
+    def extractNextExpression(exprSeq: Seq[String], expressionTest: (Seq[String])=>Option[ExpressionType]): ((ExpressionType, Seq[String]), Seq[String]) = exprSeq match {
+      case Nil => expressionTest(Nil) match {
+        case Some(exprType) => return ((exprType, Nil), Nil)
+        case None => throw new JPathException("Empty expression sequence does not match to any allowed expression type.", pathString)
+      }
+      case _ => {
+        for (i <- 1 to exprSeq.size) {
+          exprSeq.splitAt(i) match {
+            case (expr, remainder) => expressionTest(expr) match {
+              case Some(exprType) => return ((exprType, expr), remainder)
+              case None => 
+            }
           }
         }
+        throw new JPathException("String path of invalid format at " + exprSeq.mkString, pathString)
       }
-      throw new JPathException("String path of invalid format at " + exprSeq.mkString, pathString)
     }
     
     /***
@@ -212,14 +247,14 @@ object JPath {
     // Splits the pathString, separating delimiters from keys.
     // For example "one.two[three].four>.five" is split into
     // Seq("one", ".", "two", "[", "three", "]" , ".", "four", ">", ".", "five")
-    val exprSeq = pathString.split(WITH_DELIMITER_REGEX_STR).toSeq
+    val exprSeq = pathString.split(WITH_DELIMITER_REGEX_STR).toSeq.filter { _ != "" }
     
     //Pulls out the starting expression, usually just a key name ("one"), throws a JPathException
     //if the expression doesn't start properly.
     // In our example This tuple looks like:
     // ((StartAccessExpression, Seq("one")), Seq(".", "two", "[", "three", "]" , ".", "four", ">", ".", "five"))
     val startingTuple = extractNextExpression(exprSeq, testForExpressionType(StartAccessExpression))
-
+    
     //Pulls out the remaining expressions tail recursively and returns them
     return transformToExpressions(startingTuple._2, Seq(startingTuple._1));
   }

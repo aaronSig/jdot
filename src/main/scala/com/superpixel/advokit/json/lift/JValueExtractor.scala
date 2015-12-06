@@ -1,20 +1,26 @@
 package com.superpixel.advokit.json.lift
 
 import com.superpixel.advokit.json.pathing._
-import net.liftweb.json._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 
 class JValueExtractor(json: JValue, linkLamb: String=>Option[JValue]) {
   
-	private val notFoundLamb = (jVal: JValue, jPath: JPathElement) => throw new JsonTraversalException(s"Could not find path: $jPath", jVal)
+	private val notFoundLamb = (jVal: JValue, jPath: JPathElement) => (JNothing, Continue)
 	private val endLamb = (jVal: JValue, jPathOpt: Option[JPathElement]) => jVal
 
 	private val traverseForValue = traverse(linkLamb, notFoundLamb, endLamb)_
 
   def getValue(jPath: JPath): JValue = traverseForValue(json, jPath)
   
+  
+  
+  private sealed trait RouteChoice;
+  private case object Stop extends RouteChoice;
+  private case object Continue extends RouteChoice;
   //TODO move to own object
   private def traverse[T](linkLamb: String=>Option[JValue],  
-                       notFoundLamb: (JValue, JPathElement)=>JValue,
+                       notFoundLamb: (JValue, JPathElement)=>(JValue, RouteChoice),
                        endLamb: (JValue, Option[JPathElement])=>T)
                       (jVal: JValue, jPath: JPath): T = {
     
@@ -22,10 +28,14 @@ class JValueExtractor(json: JValue, linkLamb: String=>Option[JValue]) {
     def traverseRecu(value: JValue, pathSeq: Seq[JPathElement], prev: Option[JPathElement] = None): T = {
       def routeValueOption(valOpt: Option[JValue], hd: JPathElement, tl: JPath):T = {
           valOpt match {
-          case None => traverseRecu(notFoundLamb(value, hd), tl, Some(hd))
+          case None => notFoundLamb(value, hd) match {
+            case (jV, Stop) => return endLamb(jV, Some(hd))
+            case (jV, Continue) => traverseRecu(jV, tl, Some(hd))
+          } 
           case Some(jV) => traverseRecu(jV, tl, Some(hd))
           } 
       }
+      
       pathSeq match {
         case Nil => endLamb(value, prev)
         
@@ -33,11 +43,18 @@ class JValueExtractor(json: JValue, linkLamb: String=>Option[JValue]) {
         
         case JArrayPath(key) +: tl => routeValueOption(accessJArrayValue(value, key), pathSeq.head, tl)
         
-        case JPathLink +: tl => value match {
-          case JString(s) => routeValueOption(linkLamb(s), pathSeq.head, tl)
-          case jV => throw new JsonTraversalException(s"Expected string JSON value in order to following inclusions link, instead found the following", jV)
-        }
+        case JPathLink +: tl => 
+          routeValueOption(
+            value match {
+              case JString(s) => linkLamb(s)
+              case JInt(d) =>  linkLamb(d.toString)
+              case _ => None
+            }, pathSeq.head, tl)
         
+        case JDefaultValue(dVal) +: tl => value match {
+          case JNothing => endLamb(JString(dVal), Some(pathSeq.head))
+          case jV => routeValueOption(Some(jV), pathSeq.head, tl)
+        }
       }
     }
     
@@ -45,14 +62,14 @@ class JValueExtractor(json: JValue, linkLamb: String=>Option[JValue]) {
   }
   
   private def accessJArrayValue(jVal: JValue, key: Int): Option[JValue] = jVal match {
-    case JObject(fieldLs) => fieldLs.find { jFld => jFld.name == key.toString } .map(_.value)
+    case JObject(fieldLs) => fieldLs.find { jFld => jFld._1 == key.toString } .map(_._2)
     case JArray(valueLs) => valueLs.lift(key)
-    case _ => throw new JsonTraversalException(s"Path requested access to key [$key], but JSON is not an Object or Array", jVal)
+    case _ => None
   }
   
   private def accessJObjectValue(jVal: JValue, key: String): Option[JValue] = jVal match {
-    case JObject(fieldLs) => fieldLs.find { jFld => jFld.name == key } .map(_.value)
-    case _ => throw new JsonTraversalException(s"Path requested access to key ('$key'), but JSON is not an Object", jVal)
+    case JObject(fieldLs) => fieldLs.find { jFld => jFld._1 == key } .map(_._2)
+    case _ => None
   }
   
 }

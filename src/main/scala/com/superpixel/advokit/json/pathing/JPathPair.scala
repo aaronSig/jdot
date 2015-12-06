@@ -1,20 +1,19 @@
 package com.superpixel.advokit.json.pathing
 
-import scala.collection.mutable.Map
+import collection.mutable.Map
+import scala.language.implicitConversions
 
+class JPathPair(val to: JPath, val from: JPath);
+class JPathStringPair(val to: String, val from: String);
 
-class JPathPair(val from: JPath, val to: JPath);
-class JPathStringPair(val from: String, val to: String);
-
-object JPathMap {
-  
-  def fromMap(pathMap: Map[String, String]): Set[JPathPair] = {
-    val entrySet = pathMap.toSet
-    entrySet.map { case (to:String , from:String) => JPathMap(from, to) }
-  }
+object JPathPair {
     
-  def apply(from: String, to: String): JPathPair = {
-    new JPathPair(JPath.fromString(from), JPath.fromString(to));
+  def fromStrings(to: String, from: String): JPathPair = {
+    new JPathPair(JPath.fromString(to), JPath.fromString(from));
+  }
+  
+  def apply(to: JPath, from: JPath): JPathPair = {
+    new JPathPair(to , from)
   }
   
   implicit def strings2Paths(pathStringMap: JPathStringPair): JPathPair = {

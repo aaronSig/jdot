@@ -8,6 +8,7 @@ abstract sealed trait JPathElement;
 case object JPathLink extends JPathElement
 case class JObjectPath(val key: String) extends JPathElement
 case class JArrayPath(val idx: Int) extends JPathElement
+case class JDefaultValue(val value: String) extends JPathElement
 
 
 

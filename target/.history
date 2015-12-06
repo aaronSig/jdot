@@ -7,3 +7,12 @@ compile
 exit
 quit
 exit
+set scalacOptions += "-feature"
+compile
+update
+eclipse
+update
+eclipse
+exit
+update
+exit
