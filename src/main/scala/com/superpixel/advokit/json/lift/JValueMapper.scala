@@ -32,8 +32,6 @@ class JValueMapper[T](m: Manifest[T], transformer: JValueTransformer) extends Js
 object JValueMapper {
 
   def forTargetClass[T](targetClass: Class[T], pathMapping: Set[JPathPair], jsonInclusions: Map[String, String] = Map()): JValueMapper[T] = {
-    
-    implicit val c: Consumer[T] = null
     implicit val m: Manifest[T] = Manifest.classType(targetClass)
     apply[T](pathMapping, jsonInclusions)
   }

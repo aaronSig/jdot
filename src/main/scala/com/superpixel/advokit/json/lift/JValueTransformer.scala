@@ -11,9 +11,9 @@ class JValueTransformer(fieldMap: Set[JPathPair], inclusions: Map[String, JValue
     builder.build((getValues(json, addInclusions)))
   
   private def getValues(json: JValue, addInclusions: Map[String, JValue]): Set[(JPath, JValue)] = {
-	  val extractor = JValueExtractor(json, (s: String) => addInclusions.get(s).orElse(inclusions.get(s)))
+	  val accessor = JValueAccessor(json, (s: String) => addInclusions.get(s).orElse(inclusions.get(s)))
 
-    fieldMap.map { jpm: JPathPair => (jpm.to, extractor.getValue(jpm.from)) }
+    fieldMap.map { jpm: JPathPair => (jpm.to, accessor.getValue(jpm.from)) }
   }
 }
 
