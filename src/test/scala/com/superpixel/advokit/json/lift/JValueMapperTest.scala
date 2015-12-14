@@ -65,6 +65,10 @@ class JValueMapperTest extends FlatSpec with Matchers with MockFactory with Befo
   )
   
   "JValueMapper map" should "map to a simple class based on fieldMap" in {
+    
+      val ttt = scala.collection.mutable.Map()
+      ttt.toMap
+    
       val fieldMap = Set(
         JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
         JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),

@@ -1,0 +1,693 @@
+[
+	{
+        "id": 1164,
+        "name": "Dynamo Kiev vs. M'bi Tel-Aviv",
+        "sport": {
+            "code": "football",
+            "name": "Football"
+        },
+        "category": {
+            "code": "uefa-football",
+            "name": "UEFA Football"
+        },
+        "competition": {
+            "id": 1100,
+            "code": "champions-league",
+            "name": "UEFA Champions League",
+            "startDate": null,
+            "endDate": null
+        },
+        "competitionRound": {
+            "id": 1101,
+            "code": "group-stage",
+            "name": "Group Stage",
+            "startDate": "2015-09-14T23:00:00Z",
+            "endDate": "2015-12-13T23:59:59Z"
+        },
+        "participants": [
+            {
+                "id": 1131,
+                "code": "dynamo-kiev",
+                "name": "Dynamo Kiev",
+                "metadata": {
+                    "bbcParticipantId": "dynamo-kiev",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/dynamo-kiev.png",
+                    "boyleName": "Dynamo Kiev",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/dynamo-kiev.png",
+                    "bbcName": "Dynamo Kiev"
+                }
+            },
+            {
+                "id": 1123,
+                "code": "mbi-tel-aviv",
+                "name": "Maccabi Tel Aviv",
+                "metadata": {
+                    "bbcParticipantId": "mbi-tel-aviv",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/mbi-tel-aviv.png",
+                    "boyleName": "Maccabi Tel Aviv",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/mbi-tel-aviv.png",
+                    "bbcName": "M'bi Tel-Aviv"
+                }
+            }
+        ],
+        "metadata": {
+            "boyleIdfoselectionHome": "404714132.1",
+            "awayTeamCode": "mbi-tel-aviv",
+            "bbcEventId": "champions-league-group-stage-dynamo-kiev-v-mbi-tel-aviv",
+            "kickOff": "19:45",
+            "boyleIdfoselectionDraw": "404714133.1",
+            "awayTeamName": "M'bi Tel-Aviv",
+            "boyleIdfoevent": "5726692.1",
+            "homeTeamName": "Dynamo Kiev",
+            "boyleIdfomarket": "35074207.1",
+            "boyleIdfoselectionAway": "404714134.1",
+            "homeTeamCode": "dynamo-kiev"
+        },
+        "eventType": "team-match",
+        "localtimeZoneOffset": "+00:00",
+        "startDate": "2015-12-09T19:45:00Z",
+        "endDate": "2015-12-09T21:35:00Z"
+    },
+    {
+        "id": 1163,
+        "name": "Chelsea vs. FC Porto",
+        "sport": {
+            "code": "football",
+            "name": "Football"
+        },
+        "category": {
+            "code": "uefa-football",
+            "name": "UEFA Football"
+        },
+        "competition": {
+            "id": 1100,
+            "code": "champions-league",
+            "name": "UEFA Champions League",
+            "startDate": null,
+            "endDate": null
+        },
+        "competitionRound": {
+            "id": 1101,
+            "code": "group-stage",
+            "name": "Group Stage",
+            "startDate": "2015-09-14T23:00:00Z",
+            "endDate": "2015-12-13T23:59:59Z"
+        },
+        "participants": [
+            {
+                "id": 1124,
+                "code": "fc-porto",
+                "name": "Porto",
+                "metadata": {
+                    "bbcParticipantId": "fc-porto",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/fc-porto.png",
+                    "boyleName": "Porto",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/fc-porto.png",
+                    "bbcName": "FC Porto",
+                    "boyleScoreboardName": "FC Porto"
+                }
+            },
+            {
+                "id": 56,
+                "code": "chelsea",
+                "name": "Chelsea",
+                "metadata": {
+                    "boyleIdfoparticipant": "288633.1",
+                    "bbcParticipantId": "chelsea",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/chelsea.png",
+                    "boyleName": "Chelsea",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/chelsea.png",
+                    "bbcName": "Chelsea",
+                    "plSiteParticipantId": "chelsea",
+                    "shortName": "CHE",
+                    "boyleScoreboardName": "Chelsea"
+                }
+            }
+        ],
+        "metadata": {
+            "boyleIdfoselectionHome": "404714112.1",
+            "awayTeamCode": "fc-porto",
+            "bbcEventId": "champions-league-group-stage-chelsea-v-fc-porto",
+            "kickOff": "19:45",
+            "boyleIdfoselectionDraw": "404714113.1",
+            "awayTeamName": "FC Porto",
+            "boyleIdfoevent": "5726690.1",
+            "homeTeamName": "Chelsea",
+            "boyleIdfomarket": "35074199.1",
+            "boyleIdfoselectionAway": "404714114.1",
+            "homeTeamCode": "chelsea",
+            "venue": "Stamford Bridge"
+        },
+        "eventResult": {
+            "id": 1289,
+            "resultDate": "2015-12-09T22:35:00Z",
+            "eventVoid": false,
+            "finalResult": true,
+            "metadata": {
+                "delayedScore": false,
+                "half": "FT",
+                "loserCode": "fc-porto",
+                "matchMinute": 90,
+                "draw": false,
+                "homeGoals": 2,
+                "winnerCode": "chelsea",
+                "score": "2 - 0",
+                "awayWin": false,
+                "mmliveid": "5786887.1",
+                "fulltime": true,
+                "homeWin": true,
+                "awayGoals": 0
+            }
+        },
+        "eventType": "team-match",
+        "localtimeZoneOffset": "+00:00",
+        "startDate": "2015-12-09T19:45:00Z",
+        "endDate": "2015-12-09T21:35:00Z"
+    },
+    {
+        "id": 1162,
+        "name": "Olympiakos vs. Arsenal",
+        "sport": {
+            "code": "football",
+            "name": "Football"
+        },
+        "category": {
+            "code": "uefa-football",
+            "name": "UEFA Football"
+        },
+        "competition": {
+            "id": 1100,
+            "code": "champions-league",
+            "name": "UEFA Champions League",
+            "startDate": null,
+            "endDate": null
+        },
+        "competitionRound": {
+            "id": 1101,
+            "code": "group-stage",
+            "name": "Group Stage",
+            "startDate": "2015-09-14T23:00:00Z",
+            "endDate": "2015-12-13T23:59:59Z"
+        },
+        "participants": [
+            {
+                "id": 1130,
+                "code": "olympiakos",
+                "name": "Olympiakos",
+                "metadata": {
+                    "bbcParticipantId": "olympiakos",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/olympiakos.png",
+                    "boyleName": "Olympiakos",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/olympiakos.png",
+                    "bbcName": "Olympiakos"
+                }
+            },
+            {
+                "id": 59,
+                "code": "arsenal",
+                "name": "Arsenal",
+                "metadata": {
+                    "boyleIdfoparticipant": "288632.1",
+                    "bbcParticipantId": "arsenal",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/arsenal.png",
+                    "boyleName": "Arsenal",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/arsenal.png",
+                    "bbcName": "Arsenal",
+                    "plSiteParticipantId": "arsenal",
+                    "shortName": "ARS",
+                    "boyleScoreboardName": "Arsenal"
+                }
+            }
+        ],
+        "metadata": {
+            "boyleIdfoselectionHome": "404714140.1",
+            "awayTeamCode": "arsenal",
+            "bbcEventId": "champions-league-group-stage-olympiakos-v-arsenal",
+            "kickOff": "19:45",
+            "boyleIdfoselectionDraw": "404714141.1",
+            "awayTeamName": "Arsenal",
+            "boyleIdfoevent": "5726694.1",
+            "homeTeamName": "Olympiakos",
+            "boyleIdfomarket": "35074210.1",
+            "boyleIdfoselectionAway": "404714142.1",
+            "homeTeamCode": "olympiakos"
+        },
+        "eventResult": {
+            "id": 1290,
+            "resultDate": "2015-12-09T22:35:00Z",
+            "eventVoid": false,
+            "finalResult": true,
+            "metadata": {
+                "delayedScore": false,
+                "half": "FT",
+                "loserCode": "olympiakos",
+                "matchMinute": 90,
+                "draw": false,
+                "homeGoals": 0,
+                "winnerCode": "arsenal",
+                "score": "0 - 3",
+                "awayWin": true,
+                "mmliveid": "5786890.1",
+                "fulltime": true,
+                "homeWin": false,
+                "awayGoals": 3
+            }
+        },
+        "eventType": "team-match",
+        "localtimeZoneOffset": "+00:00",
+        "startDate": "2015-12-09T19:45:00Z",
+        "endDate": "2015-12-09T21:35:00Z"
+    },
+    {
+        "id": 1161,
+        "name": "Dinamo Zagreb vs. Bayern Mun",
+        "sport": {
+            "code": "football",
+            "name": "Football"
+        },
+        "category": {
+            "code": "uefa-football",
+            "name": "UEFA Football"
+        },
+        "competition": {
+            "id": 1100,
+            "code": "champions-league",
+            "name": "UEFA Champions League",
+            "startDate": null,
+            "endDate": null
+        },
+        "competitionRound": {
+            "id": 1101,
+            "code": "group-stage",
+            "name": "Group Stage",
+            "startDate": "2015-09-14T23:00:00Z",
+            "endDate": "2015-12-13T23:59:59Z"
+        },
+        "participants": [
+            {
+                "id": 1122,
+                "code": "bayern-mun",
+                "name": "Bayern Munich",
+                "metadata": {
+                    "bbcParticipantId": "bayern-mun",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/bayern-mun.png",
+                    "boyleName": "Bayern Munich",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/bayern-mun.png",
+                    "bbcName": "Bayern Mun"
+                }
+            },
+            {
+                "id": 1129,
+                "code": "dinamo-zagreb",
+                "name": "Dinamo Zagreb",
+                "metadata": {
+                    "bbcParticipantId": "dinamo-zagreb",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/dinamo-zagreb.png",
+                    "boyleName": "Dinamo Zagreb",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/dinamo-zagreb.png",
+                    "bbcName": "Dinamo Zagreb"
+                }
+            }
+        ],
+        "metadata": {
+            "boyleIdfoselectionHome": "404714123.1",
+            "awayTeamCode": "bayern-mun",
+            "bbcEventId": "champions-league-group-stage-dinamo-zagreb-v-bayern-mun",
+            "kickOff": "19:45",
+            "boyleIdfoselectionDraw": "404714124.1",
+            "awayTeamName": "Bayern Mun",
+            "boyleIdfoevent": "5726691.1",
+            "homeTeamName": "Dinamo Zagreb",
+            "boyleIdfomarket": "35074203.1",
+            "boyleIdfoselectionAway": "404714125.1",
+            "homeTeamCode": "dinamo-zagreb"
+        },
+        "eventResult": {
+            "id": 1291,
+            "resultDate": "2015-12-09T22:35:00Z",
+            "eventVoid": false,
+            "finalResult": true,
+            "metadata": {
+                "delayedScore": false,
+                "half": "FT",
+                "loserCode": "dinamo-zagreb",
+                "matchMinute": 90,
+                "draw": false,
+                "homeGoals": 0,
+                "winnerCode": "bayern-mun",
+                "score": "0 - 2",
+                "awayWin": true,
+                "mmliveid": "5786889.1",
+                "fulltime": true,
+                "homeWin": false,
+                "awayGoals": 2
+            }
+        },
+        "eventType": "team-match",
+        "localtimeZoneOffset": "+00:00",
+        "startDate": "2015-12-09T19:45:00Z",
+        "endDate": "2015-12-09T21:35:00Z"
+    },
+    {
+        "id": 1160,
+        "name": "Roma vs. BATE Bor",
+        "sport": {
+            "code": "football",
+            "name": "Football"
+        },
+        "category": {
+            "code": "uefa-football",
+            "name": "UEFA Football"
+        },
+        "competition": {
+            "id": 1100,
+            "code": "champions-league",
+            "name": "UEFA Champions League",
+            "startDate": null,
+            "endDate": null
+        },
+        "competitionRound": {
+            "id": 1101,
+            "code": "group-stage",
+            "name": "Group Stage",
+            "startDate": "2015-09-14T23:00:00Z",
+            "endDate": "2015-12-13T23:59:59Z"
+        },
+        "participants": [
+            {
+                "id": 1120,
+                "code": "roma",
+                "name": "Roma",
+                "metadata": {
+                    "bbcParticipantId": "roma",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/roma.png",
+                    "boyleName": "Roma",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/roma.png",
+                    "bbcName": "Roma"
+                }
+            },
+            {
+                "id": 1127,
+                "code": "bate-bor",
+                "name": "Bate Borisov",
+                "metadata": {
+                    "bbcParticipantId": "bate-bor",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/bate-bor.png",
+                    "boyleName": "Bate Borisov",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/bate-bor.png",
+                    "bbcName": "BATE Bor"
+                }
+            }
+        ],
+        "metadata": {
+            "boyleIdfoselectionHome": "404714147.1",
+            "awayTeamCode": "bate-bor",
+            "bbcEventId": "champions-league-group-stage-roma-v-bate-bor",
+            "kickOff": "19:45",
+            "boyleIdfoselectionDraw": "404714148.1",
+            "awayTeamName": "BATE Bor",
+            "boyleIdfoevent": "5726695.1",
+            "homeTeamName": "Roma",
+            "boyleIdfomarket": "35074213.1",
+            "boyleIdfoselectionAway": "404714149.1",
+            "homeTeamCode": "roma",
+            "venue": "Stadio Olimpico"
+        },
+        "eventType": "team-match",
+        "localtimeZoneOffset": "+00:00",
+        "startDate": "2015-12-09T19:45:00Z",
+        "endDate": "2015-12-09T21:35:00Z"
+    },
+    {
+        "id": 1159,
+        "name": "Bayer Levkn vs. Barcelona",
+        "sport": {
+            "code": "football",
+            "name": "Football"
+        },
+        "category": {
+            "code": "uefa-football",
+            "name": "UEFA Football"
+        },
+        "competition": {
+            "id": 1100,
+            "code": "champions-league",
+            "name": "UEFA Champions League",
+            "startDate": null,
+            "endDate": null
+        },
+        "competitionRound": {
+            "id": 1101,
+            "code": "group-stage",
+            "name": "Group Stage",
+            "startDate": "2015-09-14T23:00:00Z",
+            "endDate": "2015-12-13T23:59:59Z"
+        },
+        "participants": [
+            {
+                "id": 1126,
+                "code": "barcelona",
+                "name": "Barcelona",
+                "metadata": {
+                    "bbcParticipantId": "barcelona",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/barcelona.png",
+                    "boyleName": "Barcelona",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/barcelona.png",
+                    "bbcName": "Barcelona"
+                }
+            },
+            {
+                "id": 1121,
+                "code": "bayer-levkn",
+                "name": "Bayer Leverkusen",
+                "metadata": {
+                    "bbcParticipantId": "bayer-levkn",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/bayer-levkn.png",
+                    "boyleName": "Bayer Leverkusen",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/bayer-levkn.png",
+                    "bbcName": "Bayer Levkn"
+                }
+            }
+        ],
+        "metadata": {
+            "boyleIdfoselectionHome": "404714109.1",
+            "awayTeamCode": "barcelona",
+            "bbcEventId": "champions-league-group-stage-bayer-levkn-v-barcelona",
+            "kickOff": "19:45",
+            "boyleIdfoselectionDraw": "404714110.1",
+            "awayTeamName": "Barcelona",
+            "boyleIdfoevent": "5726689.1",
+            "homeTeamName": "Bayer Levkn",
+            "boyleIdfomarket": "35074198.1",
+            "boyleIdfoselectionAway": "404714111.1",
+            "homeTeamCode": "bayer-levkn",
+            "venue": "BayArena"
+        },
+        "eventResult": {
+            "id": 1293,
+            "resultDate": "2015-12-09T22:35:00Z",
+            "eventVoid": false,
+            "finalResult": true,
+            "metadata": {
+                "delayedScore": false,
+                "half": "FT",
+                "loserCode": "draw",
+                "matchMinute": 90,
+                "draw": true,
+                "homeGoals": 1,
+                "winnerCode": "draw",
+                "score": "1 - 1",
+                "awayWin": false,
+                "mmliveid": "5786883.1",
+                "fulltime": true,
+                "homeWin": false,
+                "awayGoals": 1
+            }
+        },
+        "eventType": "team-match",
+        "localtimeZoneOffset": "+00:00",
+        "startDate": "2015-12-09T19:45:00Z",
+        "endDate": "2015-12-09T21:35:00Z"
+    },
+    {
+        "id": 1166,
+        "name": "Valencia vs. Lyon",
+        "sport": {
+            "code": "football",
+            "name": "Football"
+        },
+        "category": {
+            "code": "uefa-football",
+            "name": "UEFA Football"
+        },
+        "competition": {
+            "id": 1100,
+            "code": "champions-league",
+            "name": "UEFA Champions League",
+            "startDate": null,
+            "endDate": null
+        },
+        "competitionRound": {
+            "id": 1101,
+            "code": "group-stage",
+            "name": "Group Stage",
+            "startDate": "2015-09-14T23:00:00Z",
+            "endDate": "2015-12-13T23:59:59Z"
+        },
+        "participants": [
+            {
+                "id": 1128,
+                "code": "lyon",
+                "name": "Lyon",
+                "metadata": {
+                    "bbcParticipantId": "lyon",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/lyon.png",
+                    "boyleName": "Lyon",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/lyon.png",
+                    "bbcName": "Lyon"
+                }
+            },
+            {
+                "id": 1133,
+                "code": "valencia",
+                "name": "Valencia",
+                "metadata": {
+                    "bbcParticipantId": "valencia",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/valencia.png",
+                    "boyleName": "Valencia",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/valencia.png",
+                    "bbcName": "Valencia"
+                }
+            }
+        ],
+        "metadata": {
+            "boyleIdfoselectionHome": "404714150.1",
+            "awayTeamCode": "lyon",
+            "bbcEventId": "champions-league-group-stage-valencia-v-lyon",
+            "kickOff": "19:45",
+            "boyleIdfoselectionDraw": "404714151.1",
+            "awayTeamName": "Lyon",
+            "boyleIdfoevent": "5726696.1",
+            "homeTeamName": "Valencia",
+            "boyleIdfomarket": "35074214.1",
+            "boyleIdfoselectionAway": "404714152.1",
+            "homeTeamCode": "valencia"
+        },
+        "eventResult": {
+            "id": 1286,
+            "resultDate": "2015-12-09T22:35:00Z",
+            "eventVoid": false,
+            "finalResult": true,
+            "metadata": {
+                "delayedScore": false,
+                "half": "FT",
+                "loserCode": "valencia",
+                "matchMinute": 90,
+                "draw": false,
+                "homeGoals": 0,
+                "winnerCode": "lyon",
+                "score": "0 - 2",
+                "awayWin": true,
+                "mmliveid": "5786928.1",
+                "fulltime": true,
+                "homeWin": false,
+                "awayGoals": 2
+            }
+        },
+        "eventType": "team-match",
+        "localtimeZoneOffset": "+00:00",
+        "startDate": "2015-12-09T19:45:00Z",
+        "endDate": "2015-12-09T21:35:00Z"
+    },
+    {
+        "id": 1165,
+        "name": "KAA Gent vs. Zenit St P",
+        "sport": {
+            "code": "football",
+            "name": "Football"
+        },
+        "category": {
+            "code": "uefa-football",
+            "name": "UEFA Football"
+        },
+        "competition": {
+            "id": 1100,
+            "code": "champions-league",
+            "name": "UEFA Champions League",
+            "startDate": null,
+            "endDate": null
+        },
+        "competitionRound": {
+            "id": 1101,
+            "code": "group-stage",
+            "name": "Group Stage",
+            "startDate": "2015-09-14T23:00:00Z",
+            "endDate": "2015-12-13T23:59:59Z"
+        },
+        "participants": [
+            {
+                "id": 1125,
+                "code": "zenit-st-p",
+                "name": "Zenit St Petersburg",
+                "metadata": {
+                    "bbcParticipantId": "zenit-st-p",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/zenit-st-p.png",
+                    "boyleName": "Zenit St Petersburg",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/zenit-st-p.png",
+                    "bbcName": "Zenit St P"
+                }
+            },
+            {
+                "id": 1132,
+                "code": "kaa-gent",
+                "name": "KAA Gent",
+                "metadata": {
+                    "bbcParticipantId": "kaa-gent",
+                    "crestUrl": "https://s3-eu-west-1.amazonaws.com/events-static/crests/football/kaa-gent.png",
+                    "boyleName": "KAA Gent",
+                    "jerseyUrl": "https://s3-eu-west-1.amazonaws.com/events-static/jerseys/football/kaa-gent.png",
+                    "bbcName": "KAA Gent",
+                    "boyleScoreboardName": "Gent"
+                }
+            }
+        ],
+        "metadata": {
+            "boyleIdfoselectionHome": "404714137.1",
+            "awayTeamCode": "zenit-st-p",
+            "bbcEventId": "champions-league-group-stage-kaa-gent-v-zenit-st-p",
+            "kickOff": "19:45",
+            "boyleIdfoselectionDraw": "404714138.1",
+            "awayTeamName": "Zenit St P",
+            "boyleIdfoevent": "5726693.1",
+            "homeTeamName": "KAA Gent",
+            "boyleIdfomarket": "35074209.1",
+            "boyleIdfoselectionAway": "404714139.1",
+            "homeTeamCode": "kaa-gent"
+        },
+        "eventResult": {
+            "id": 1287,
+            "resultDate": "2015-12-09T22:35:00Z",
+            "eventVoid": false,
+            "finalResult": true,
+            "metadata": {
+                "delayedScore": false,
+                "half": "FT",
+                "loserCode": "zenit-st-p",
+                "matchMinute": 90,
+                "draw": false,
+                "homeGoals": 2,
+                "winnerCode": "kaa-gent",
+                "score": "2 - 1",
+                "awayWin": false,
+                "mmliveid": "5786927.1",
+                "fulltime": true,
+                "homeWin": true,
+                "awayGoals": 1
+            }
+        },
+        "eventType": "team-match",
+        "localtimeZoneOffset": "+00:00",
+        "startDate": "2015-12-09T19:45:00Z",
+        "endDate": "2015-12-09T21:35:00Z"
+    }
+]

@@ -28,7 +28,7 @@ public class JsonContentMapperBuilderTest {
 		try (Scanner scanner = new Scanner(file)) {
 			if (scanner.hasNextLine()) scanner.nextLine();
 			
-			int[] breakArray = {129, 260, 393, 526, 658, 787, 912, 1041, 1170, 1297};
+			int[] breakArray = {128, 259, 392, 525, 657, 786, 910, 1039, 1168, 1294};
 			int breakIndex = 0;
 			int lineIndex = 1;
 			StringBuilder result = new StringBuilder("");
@@ -64,20 +64,30 @@ public class JsonContentMapperBuilderTest {
 		pathMap.put("score", "eventResult.metadata.score");
 		pathMap.put("winningTeam", "eventResult.metadata.winnerCode");
 		
-		JsonContentMapperBuilder builder = new JsonContentMapperBuilder().withPathMappings(pathMap);
+		JvContentMapperBuilder builder = new JvContentMapperBuilder().withPathMapping(pathMap);
 		
-		JsonContentMapper<SimpleMatchJava> mapper = builder.build(SimpleMatchJava.class);
+		JvContentMapper<SimpleMatchJava> mapper = builder.build(SimpleMatchJava.class);
 		
-		assertEquals(new SimpleMatchJava("Sunderland vs. Stoke", "Stadium of Light", "2 - 0", "sunderland"), mapper.map(jsonList.get(0)));
-		assertEquals(new SimpleMatchJava("Man City vs. Southampton", "Etihad Stadium", "3 - 1", "man-city"), mapper.map(jsonList.get(1)));
-		assertEquals(new SimpleMatchJava("Crystal Palace vs. Newcastle", "Selhurst Park", "5 - 1", "crystal-palace"), mapper.map(jsonList.get(2)));
-		assertEquals(new SimpleMatchJava("Bournemouth vs. Everton", "Vitality Stadium", "3 - 3", "draw"), mapper.map(jsonList.get(3)));
-		assertEquals(new SimpleMatchJava("Aston Villa vs. Watford", "Villa Park", "2 - 3", "watford"), mapper.map(jsonList.get(4)));
-		assertEquals(new SimpleMatchJava("Leicester vs. Man Utd", "King Power Stadium", "1 - 1", "draw"), mapper.map(jsonList.get(5)));
-		assertEquals(new SimpleMatchJava("Tottenham vs. Chelsea", "White Hart Lane", "0 - 0", "draw"), mapper.map(jsonList.get(6)));
-		assertEquals(new SimpleMatchJava("West Ham vs. West Brom", "Boleyn Ground", "1 - 1", "draw"), mapper.map(jsonList.get(7)));
-		assertEquals(new SimpleMatchJava("Norwich vs. Arsenal", "Carrow Road", "1 - 1", "draw"), mapper.map(jsonList.get(8)));
-		assertEquals(new SimpleMatchJava("Liverpool vs. Swansea", "Anfield", "1 - 0", "liverpool"), mapper.map(jsonList.get(9)));
+		assertEquals(new SimpleMatchJava("Sunderland vs. Stoke", "Stadium of Light", "2 - 0", "sunderland"), 
+					mapper.map(jsonList.get(0)));
+		assertEquals(new SimpleMatchJava("Man City vs. Southampton", "Etihad Stadium", "3 - 1", "man-city"), 
+					mapper.map(jsonList.get(1)));
+		assertEquals(new SimpleMatchJava("Crystal Palace vs. Newcastle", "Selhurst Park", "5 - 1", "crystal-palace"), 
+					mapper.map(jsonList.get(2)));
+		assertEquals(new SimpleMatchJava("Bournemouth vs. Everton", "Vitality Stadium", "3 - 3", "draw"), 
+					mapper.map(jsonList.get(3)));
+		assertEquals(new SimpleMatchJava("Aston Villa vs. Watford", "Villa Park", "2 - 3", "watford"), 
+					mapper.map(jsonList.get(4)));
+		assertEquals(new SimpleMatchJava("Leicester vs. Man Utd", "King Power Stadium", "1 - 1", "draw"), 
+					mapper.map(jsonList.get(5)));
+		assertEquals(new SimpleMatchJava("Tottenham vs. Chelsea", "White Hart Lane", "0 - 0", "draw"), 
+					mapper.map(jsonList.get(6)));
+		assertEquals(new SimpleMatchJava("West Ham vs. West Brom", "Boleyn Ground", "1 - 1", "draw"), 
+					mapper.map(jsonList.get(7)));
+		assertEquals(new SimpleMatchJava("Norwich vs. Arsenal", "Carrow Road", "1 - 1", "draw"), 
+					mapper.map(jsonList.get(8)));
+		assertEquals(new SimpleMatchJava("Liverpool vs. Swansea", "Anfield", "1 - 0", "liverpool"), 
+					mapper.map(jsonList.get(9)));
 		
 		System.out.println(jsonList.get(0));
 		System.out.println(mapper.map(jsonList.get(0)));
@@ -96,15 +106,15 @@ public class JsonContentMapperBuilderTest {
 		pathMap.put("awayGoals", "eventResult.metadata.awayGoalMinutes");
 		
 		//FirstHomeGoal
-		pathMap.put("firstHomeGoal", "eventResult.metadata.homeGoalMinutes[0]");
+		pathMap.put("firstHomeGoal", "eventResult.metadata.homeGoalMinutes[0](N/A)");
 		
 		//ScoreNames
 		pathMap.put("scoreNames[0]", "eventResult.metadata.homeScorers");
 		pathMap.put("scoreNames[1]", "eventResult.metadata.awayScorers");
 		
 		
-		JsonContentMapperBuilder builder = new JsonContentMapperBuilder().withPathMappings(pathMap);
-		JsonContentMapper<GoalsHolder> mapper = builder.build(GoalsHolder.class);
+		JvContentMapperBuilder builder = new JvContentMapperBuilder().withPathMapping(pathMap);
+		JvContentMapper<GoalsHolder> mapper = builder.build(GoalsHolder.class);
 		
 		List<String> ghag = new ArrayList<>();
 		ghag.add("25");

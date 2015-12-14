@@ -79,7 +79,6 @@
             "finalResult": true,
             "metadata": {
                 "homeRedCards": 0,
-				"awayGoalMinutes": [],
                 "awayAssists": 0,
                 "half": "FT",
                 "homeThrowIns": 12,
@@ -865,7 +864,6 @@
             "finalResult": true,
             "metadata": {
                 "homeRedCards": 0,
-                "awayGoalMinutes": [],
                 "half": "FT",
                 "awayAssists": 0,
                 "homeThrowIns": 38,
@@ -1248,7 +1246,6 @@
             "finalResult": true,
             "metadata": {
                 "homeRedCards": 0,
-                "awayGoalMinutes": [],
                 "half": "FT",
                 "awayAssists": 0,
                 "homeThrowIns": 33,

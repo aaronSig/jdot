@@ -5,17 +5,19 @@ import org.scalatest.Matchers
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 import scala.io.Source
-
 import org.json4s._
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import com.superpixel.advokit.json.pathing._
+import com.superpixel.advokit.mapping._
+import com.superpixel.advokit.mapper.FixedInclusions
+import com.superpixel.advokit.mapper._
 
 
 class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterAll {
 
 
-  val jValsList: List[JValue] = {
+  val jValsPremList: List[JValue] = {
       val buffSource = Source.fromURL(getClass.getResource("/pl-league-week-14.json"))
       val jsonLines = buffSource.getLines
       val temp = parse(jsonLines.mkString)
@@ -26,30 +28,41 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       }
   }
   
-  val inclusionsMap: Map[String, JValue] = Map(
-      "man-city" ->       ("leaguePosition" -> 1),
-      "leicester" ->      ("leaguePosition" -> 2),
-      "man-utd" ->        ("leaguePosition" -> 3),
-      "arsenal" ->        ("leaguePosition" -> 4),
-      "tottenham" ->      ("leaguePosition" -> 5),
-      "liverpool" ->      ("leaguePosition" -> 6),
-      "crystal-palace" -> ("leaguePosition" -> 7),
-      "west-ham" ->       ("leaguePosition" -> 8),
-      "everton" ->        ("leaguePosition" -> 9),
-      "southampton" ->    ("leaguePosition" -> 10),
-      "watford" ->        ("leaguePosition" -> 11),
-      "stoke" ->          ("leaguePosition" -> 12),
-      "west-brom" ->      ("leaguePosition" -> 13),
-      "chelsea" ->        ("leaguePosition" -> 14),
-      "swansea" ->        ("leaguePosition" -> 15),
-      "norwich" ->        ("leaguePosition" -> 16),
-      "sunderland" ->     ("leaguePosition" -> 17),
-      "bournemouth" ->    ("leaguePosition" -> 18),
-      "newcastle" ->      ("leaguePosition" -> 19),
-      "aston-villa" ->    ("leaguePosition" -> 20)
-  )
+  val jValsChampLeagueList: List[JValue] = {
+      val buffSource = Source.fromURL(getClass.getResource("/champ-league-dec9.json"))
+      val jsonLines = buffSource.getLines
+      val temp = parse(jsonLines.mkString)
+      buffSource.close()
+      temp match {
+        case JArray(ls) => ls
+        case _ => List()
+      }
+  }
   
-  "JValueTransformer transform" should "transform to simple object based on fieldMap" in {
+  val inclusionsMap: Inclusions = FixedInclusions(Map(
+      "man-city" ->       """{"leaguePosition": 1}""",
+      "leicester" ->      """{"leaguePosition": 2}""",
+      "man-utd" ->        """{"leaguePosition": 3}""",
+      "arsenal" ->        """{"leaguePosition": 4}""",
+      "tottenham" ->      """{"leaguePosition": 5}""",
+      "liverpool" ->      """{"leaguePosition": 6}""",
+      "crystal-palace" -> """{"leaguePosition": 7}""",
+      "west-ham" ->       """{"leaguePosition": 8}""",
+      "everton" ->        """{"leaguePosition": 9}""",
+      "southampton" ->    """{"leaguePosition": 10}""",
+      "watford" ->        """{"leaguePosition": 11}""",
+      "stoke" ->          """{"leaguePosition": 12}""",
+      "west-brom" ->      """{"leaguePosition": 13}""",
+      "chelsea" ->        """{"leaguePosition": 14}""",
+      "swansea" ->        """{"leaguePosition": 15}""",
+      "norwich" ->        """{"leaguePosition": 16}""",
+      "sunderland" ->     """{"leaguePosition": 17}""",
+      "bournemouth" ->    """{"leaguePosition": 18}""",
+      "newcastle" ->      """{"leaguePosition": 19}""",
+      "aston-villa" ->    """{"leaguePosition": 20}"""
+  ))
+  
+  "JValueTransformer transformJValue" should "transform to simple object based on fieldMap" in {
     val fieldMap = Set(
       JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
       JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
@@ -72,7 +85,7 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
     
     val transfromer = JValueTransformer(fieldMap)
     
-    val returned = jValsList.map { jv => transfromer.transform(jv) }
+    val returned = jValsPremList.map { jv => transfromer.transformJValue(jv) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {
@@ -92,6 +105,44 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
     )
     
     val expected: List[JValue] = List(
+      ("firstHomeGoal" -> "82") ~ ("awayGoals" -> JNothing) ~ ("teams" -> List("Sunderland", "Stoke")),
+      ("firstHomeGoal" -> "9") ~ ("awayGoals" -> List("49")) ~ ("teams" -> List("Man City", "Southampton")),
+      ("firstHomeGoal" -> "14") ~ ("awayGoals" -> List("10")) ~ ("teams" -> List("Crystal Palace", "Newcastle")),
+      ("firstHomeGoal" -> "80") ~ ("awayGoals" -> List("25", "36", "90+5")) ~ ("teams" -> List("Bournemouth", "Everton")),
+      ("firstHomeGoal" -> "41") ~ ("awayGoals" -> List("17", "69", "85")) ~ ("teams" -> List("Aston Villa", "Watford")),
+      ("firstHomeGoal" -> "24") ~ ("awayGoals" -> List("45+1")) ~ ("teams" -> List("Leicester", "Man Utd")),
+      ("firstHomeGoal" -> "N/A") ~ ("awayGoals" -> JNothing) ~ ("teams" -> List("Tottenham", "Chelsea")),
+      ("firstHomeGoal" -> "17") ~ ("awayGoals" -> List("50")) ~ ("teams" -> List("West Ham", "West Brom")),
+      ("firstHomeGoal" -> "43") ~ ("awayGoals" -> List("30")) ~ ("teams" -> List("Norwich", "Arsenal")),
+      ("firstHomeGoal" -> "62") ~ ("awayGoals" -> JNothing) ~ ("teams" -> List("Liverpool", "Swansea"))
+    )
+    
+    val transfromer = JValueTransformer(fieldMap)
+
+    
+    val returned = jValsPremList.map { jv => transfromer.transformJValue(jv) }
+    
+    returned.zipWithIndex.foreach { 
+      case (retJv, index) => {
+        assert(retJv == expected(index))
+        println(pretty(render(retJv)))
+      }
+    }
+
+  }
+  
+  it should "be able to process arrays, with defaults" in {
+    val defaultInJson = """{"eventResult": {"metadata": {"awayGoalMinutes":[]}}}"""
+    val defaultOutJson = """{"firstHomeGoal":"N/A"}"""
+    
+    val fieldMap = Set(
+      JPathPair(JPath(JObjectPath("firstHomeGoal")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("homeGoalMinutes"), JArrayPath(0))),
+      JPathPair(JPath(JObjectPath("awayGoals")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("awayGoalMinutes"))),
+      JPathPair(JPath(JObjectPath("teams"), JArrayPath(0)), JPath(JObjectPath("metadata"), JObjectPath("homeTeamName"))),
+      JPathPair(JPath(JObjectPath("teams"), JArrayPath(1)), JPath(JObjectPath("metadata"), JObjectPath("awayTeamName")))
+    )
+    
+    val expected: List[JValue] = List(
       ("firstHomeGoal" -> "82") ~ ("awayGoals" -> JArray(List())) ~ ("teams" -> List("Sunderland", "Stoke")),
       ("firstHomeGoal" -> "9") ~ ("awayGoals" -> List("49")) ~ ("teams" -> List("Man City", "Southampton")),
       ("firstHomeGoal" -> "14") ~ ("awayGoals" -> List("10")) ~ ("teams" -> List("Crystal Palace", "Newcastle")),
@@ -104,25 +155,10 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("firstHomeGoal" -> "62") ~ ("awayGoals" -> JArray(List())) ~ ("teams" -> List("Liverpool", "Swansea"))
     )
     
-    val transfromer = JValueTransformer(fieldMap)
+    val transfromer = JValueTransformer(fieldMap, DefaultJsonInOut(defaultInJson, defaultOutJson))
+
     
-//    val ret1 = transfromer.transform(jValsList(1))
-//    assert(expected(0) == ret1)
-//    println(pretty(render(ret1)))
-//    
-//    val ret2 = transfromer.transform(jValsList(2))
-//    assert(expected(1) == ret2)
-//    println(pretty(render(ret2)))
-//    
-//    val ret3 = transfromer.transform(jValsList(3))
-//    assert(expected(2) == ret3)
-//    println(pretty(render(ret3)))
-//
-//    val ret4 = transfromer.transform(jValsList(4))
-//    assert(expected(3) == ret4)
-//    println(pretty(render(ret4)))
-    
-    val returned = jValsList.map { jv => transfromer.transform(jv) }
+    val returned = jValsPremList.map { jv => transfromer.transformJValue(jv) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {
@@ -155,9 +191,9 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("game" -> "Liverpool vs. Swansea") ~ ("venue" -> "Anfield") ~ ("score" -> "1 - 0") ~ ("winningTeam" -> "liverpool") ~ ("awayPositionAfter" -> 15)
     )
     
-    val transfromer = JValueTransformer(fieldMap, inclusionsMap)
+    val transfromer = JValueTransformer(fieldMap, inclusions=inclusionsMap)
     
-    val returned = jValsList.map { jv => transfromer.transform(jv) }
+    val returned = jValsPremList.map { jv => transfromer.transformJValue(jv) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {
@@ -190,14 +226,14 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("game" -> "Liverpool vs. Swansea") ~ ("venue" -> "Anfield") ~ ("score" -> "1 - 0") ~ ("winningTeam" -> "liverpool") ~ ("awayPositionAfter" -> 15)
     )
     
-    val inclusionsMapLocal: Map[String, JValue] = Map(
-      "west-brom" ->      ("leaguePosition" -> -1),
-      "chelsea" ->        ("leaguePosition" -> 100)
-    )
+    val inclusionsMapLocal: Inclusions = FixedInclusions(Map(
+      "west-brom" ->      """{"leaguePosition": -1}""",
+      "chelsea" ->        """{"leaguePosition": 100}"""
+    ))
     
-    val transfromer = JValueTransformer(fieldMap, inclusionsMap)
+    val transfromer = JValueTransformer(fieldMap, inclusions=inclusionsMap)
     
-    val returned = jValsList.map { jv => transfromer.transform(jv, inclusionsMapLocal) }
+    val returned = jValsPremList.map { jv => transfromer.transformJValue(jv, additionalInclusions=inclusionsMapLocal) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {
@@ -206,6 +242,142 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       }
     }
     
+  }
+  
+  it should "merge in defaults" in {
+    val jsonInDefault = 
+      """{   
+          "eventResult": {
+              "resultDate": "2015-12-09T22:35:00Z",
+              "eventVoid": false,
+              "finalResult": false,
+              "metadata": {
+                  "delayedScore": true,
+                  "half": "FT",
+                  "loserCode": "unknown",
+                  "matchMinute": 90,
+                  "draw": false,
+                  "homeGoals": -1,
+                  "winnerCode": "unknown",
+                  "score": "unknown",
+                  "awayWin": false,
+                  "mmliveid": "unknown",
+                  "fulltime": true,
+                  "homeWin": false,
+                  "awayGoals": -1
+              }
+            }
+      }"""
+    
+    val jsonOutDefault = """{"venue": "unknown"}"""
+    
+     val fieldMap = Set(
+      JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
+      JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
+      JPathPair(JPath(JObjectPath("score")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("score"))),
+      JPathPair(JPath(JObjectPath("winningTeam")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("winnerCode")))
+    )
+    
+    val expected: List[JValue] = List(
+      ("game" -> "Dynamo Kiev vs. M'bi Tel-Aviv") ~ ("venue" -> "unknown") ~ ("score" -> "unknown") ~ ("winningTeam" -> "unknown"),
+      ("game" -> "Chelsea vs. FC Porto") ~ ("venue" -> "Stamford Bridge") ~ ("score" -> "2 - 0") ~ ("winningTeam" -> "chelsea"),
+      ("game" -> "Olympiakos vs. Arsenal") ~ ("venue" -> "unknown") ~ ("score" -> "0 - 3") ~ ("winningTeam" -> "arsenal"),
+      ("game" -> "Dinamo Zagreb vs. Bayern Mun") ~ ("venue" -> "unknown") ~ ("score" -> "0 - 2") ~ ("winningTeam" -> "bayern-mun"),
+      ("game" -> "Roma vs. BATE Bor") ~ ("venue" -> "Stadio Olimpico") ~ ("score" -> "unknown") ~ ("winningTeam" -> "unknown"),
+      ("game" -> "Bayer Levkn vs. Barcelona") ~ ("venue" -> "BayArena") ~ ("score" -> "1 - 1") ~ ("winningTeam" -> "draw"),
+      ("game" -> "Valencia vs. Lyon") ~ ("venue" -> "unknown") ~ ("score" -> "0 - 2") ~ ("winningTeam" -> "lyon"),
+      ("game" -> "KAA Gent vs. Zenit St P") ~ ("venue" -> "unknown") ~ ("score" -> "2 - 1") ~ ("winningTeam" -> "kaa-gent")
+    )
+    
+    val transfromer = JValueTransformer(fieldMap, DefaultJsonInOut(jsonInDefault, jsonOutDefault))
+    
+    val returned = jValsChampLeagueList.map { jv => transfromer.transformJValue(jv) }
+    
+    returned.zipWithIndex.foreach { 
+      case (retJv, index) => {
+        assert(retJv == expected(index))
+        println(pretty(render(retJv)))
+      }
+    }
+  }
+  
+  it should "merge in local defaults before global defaults" in {
+    val jsonInDefault = 
+      """{   
+          "eventResult": {
+              "resultDate": "2015-12-09T22:35:00Z",
+              "eventVoid": false,
+              "finalResult": false,
+              "metadata": {
+                  "delayedScore": true,
+                  "half": "FT",
+                  "matchMinute": 90,
+                  "draw": false,
+                  "homeGoals": -1,
+                  "score": "unknown",
+                  "awayWin": false,
+                  "mmliveid": "unknown",
+                  "fulltime": true,
+                  "homeWin": false,
+                  "awayGoals": -1
+              }
+            }
+      }"""
+    
+    val jsonOutDefault = """{"venue": "unknown", "winningTeam":"unknown"}"""
+    
+    val localJsonInDefault = List(
+      """{"eventResult":{"metadata":{"score":"1 - 0"}}}""",
+      """{"eventResult":{"metadata":{"score":"thisiswrong"}}}""",
+      """{"eventResult":{"metadata":{"score":"thisiswrong"}}}""",
+      """{"eventResult":{"metadata":{"score":"thisiswrong"}}}""",
+      """{"eventResult":{"metadata":{"score":"0 - 0"}}}""",
+      """{"eventResult":{"metadata":{"score":"thisiswrong"}}}""",
+      """{"eventResult":{"metadata":{"score":"thisiswrong"}}}""",
+      """{"eventResult":{"metadata":{"score":"thisiswrong"}}}"""
+    )
+    
+    
+    val localJsonOutDefault = List(
+      """{"winningTeam":"dynamo-kiev"}""",
+      """{"winningTeam":"thisiswrong"}""",
+      """{"winningTeam":"thisiswrong"}""",
+      """{"winningTeam":"thisiswrong"}""",
+      """{"winningTeam":"draw"}""",
+      """{"winningTeam":"thisiswrong"}""",
+      """{"winningTeam":"thisiswrong"}""",
+      """{"winningTeam":"thisiswrong"}"""
+    )
+    
+    val fieldMap = Set(
+      JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
+      JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
+      JPathPair(JPath(JObjectPath("score")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("score"))),
+      JPathPair(JPath(JObjectPath("winningTeam")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("winnerCode")))
+    )
+    
+    val expected: List[JValue] = List(
+      ("game" -> "Dynamo Kiev vs. M'bi Tel-Aviv") ~ ("venue" -> "unknown") ~ ("score" -> "1 - 0") ~ ("winningTeam" -> "dynamo-kiev"),
+      ("game" -> "Chelsea vs. FC Porto") ~ ("venue" -> "Stamford Bridge") ~ ("score" -> "2 - 0") ~ ("winningTeam" -> "chelsea"),
+      ("game" -> "Olympiakos vs. Arsenal") ~ ("venue" -> "unknown") ~ ("score" -> "0 - 3") ~ ("winningTeam" -> "arsenal"),
+      ("game" -> "Dinamo Zagreb vs. Bayern Mun") ~ ("venue" -> "unknown") ~ ("score" -> "0 - 2") ~ ("winningTeam" -> "bayern-mun"),
+      ("game" -> "Roma vs. BATE Bor") ~ ("venue" -> "Stadio Olimpico") ~ ("score" -> "0 - 0") ~ ("winningTeam" -> "draw"),
+      ("game" -> "Bayer Levkn vs. Barcelona") ~ ("venue" -> "BayArena") ~ ("score" -> "1 - 1") ~ ("winningTeam" -> "draw"),
+      ("game" -> "Valencia vs. Lyon") ~ ("venue" -> "unknown") ~ ("score" -> "0 - 2") ~ ("winningTeam" -> "lyon"),
+      ("game" -> "KAA Gent vs. Zenit St P") ~ ("venue" -> "unknown") ~ ("score" -> "2 - 1") ~ ("winningTeam" -> "kaa-gent")
+    )
+    
+    val transfromer = JValueTransformer(fieldMap, DefaultJsonInOut(jsonInDefault, jsonOutDefault))
+    
+    val returned = jValsChampLeagueList.zipWithIndex.map { case (jv, i) => 
+      transfromer.transformJValue(jv, DefaultJsonInOut(localJsonInDefault(i), localJsonOutDefault(i))) }
+    
+    returned.zipWithIndex.foreach { 
+      case (retJv, index) => {
+        assert(retJv == expected(index))
+        println(pretty(render(retJv)))
+      }
+    }
   }
   
 }
