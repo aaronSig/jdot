@@ -1,8 +1,9 @@
 package com.superpixel.advokit.mapper;
 
+import java.util.List;
 import java.util.Map;
 
-import com.superpixel.advokit.ScalaConverters;
+import static com.superpixel.advokit.ScalaConverters.*;
 
 public class JvContentMapper<T> {
 
@@ -17,22 +18,22 @@ public class JvContentMapper<T> {
 	}
 	
 	
-	public T map(String json, String defaultInJson, String defaultOutJson, Map<String, String> additionalInclusions) {
+	public T map(String json, List<String> preMergingJson, List<String> postMergingJson, Map<String, String> additionalInclusions) {
 		Inclusions scIncMap;
 		if (additionalInclusions != null) {
-			scIncMap = new FixedInclusions(ScalaConverters.jvToScMap(additionalInclusions));
+			scIncMap = new FixedInclusions(jvToScMap(additionalInclusions));
 		} else {
 			scIncMap = scMapper.map$default$3();
 		}
-		DefaultJson scDefJson;
-		if (defaultInJson == null && defaultOutJson == null) {
+		MergingJson scDefJson;
+		if (preMergingJson == null && postMergingJson == null) {
 			scDefJson = scMapper.map$default$2();
-		} else if (defaultInJson == null) {
-			scDefJson = new DefaultJsonOut(defaultOutJson);
-		} else if (defaultOutJson == null) {
-			scDefJson = new DefaultJsonIn(defaultInJson);
+		} else if (preMergingJson == null) {
+			scDefJson = new MergingJsonPost(jvListToScSeq(postMergingJson));
+		} else if (postMergingJson == null) {
+			scDefJson = new MergingJsonPre(jvListToScSeq(preMergingJson));
 		} else {
-			scDefJson = new DefaultJsonInOut(defaultInJson, defaultOutJson);
+			scDefJson = new MergingJsonPrePost(jvListToScSeq(preMergingJson), jvListToScSeq(postMergingJson));
 		}
 
 		return scMapper.map(json, scDefJson, scIncMap);
@@ -42,15 +43,15 @@ public class JvContentMapper<T> {
 		return this.map(json, null, null, additionalInclusions);
 	}
 	
-	public T mapWithDefaultInJson(String json, String defaultInJson) {
-		return this.map(json, defaultInJson, null, null);
+	public T mapWithPreJsonMerging(String json, List<String> preMergingJson) {
+		return this.map(json, preMergingJson, null, null);
 	}
 	
-	public T mapWithDefaultOutJson(String json, String defaultOutJson) {
-		return this.map(json, null, defaultOutJson, null);
+	public T mapWithPostJsonMerging(String json, List<String> postMergingJson) {
+		return this.map(json, null, postMergingJson, null);
 	}
 	
-	public T mapWithDefaultInAndOutJson(String json, String defaultInJson, String defaultOutJson) {
-		return this.map(json, defaultInJson, defaultOutJson, null);
+	public T mapWithPrePostJsonMerging(String json, List<String> preMergingJson, List<String> postMergingJson) {
+		return this.map(json, preMergingJson, postMergingJson, null);
 	}
 }

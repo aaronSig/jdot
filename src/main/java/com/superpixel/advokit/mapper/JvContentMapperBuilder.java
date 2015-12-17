@@ -3,7 +3,7 @@ package com.superpixel.advokit.mapper;
 import java.util.Map;
 import java.util.Optional;
 
-import com.superpixel.advokit.ScalaConverters;
+import static com.superpixel.advokit.ScalaConverters.*;
 import com.superpixel.advokit.json.lift.JValueMapper;
 import com.superpixel.advokit.json.pathing.JPathPair;
 
@@ -11,8 +11,8 @@ public class JvContentMapperBuilder {
 
 	private Optional<Map<String, String>> inclusionsMap = Optional.empty();
 	
-	private Optional<String> defaultInJson = Optional.empty();
-	private Optional<String> defaultOutJson = Optional.empty();
+	private Optional<String[]> preMergingJson = Optional.empty();
+	private Optional<String[]> postMergingJson = Optional.empty();
 	
 	/***
 	 * Format Destination -> Source.
@@ -58,8 +58,8 @@ public class JvContentMapperBuilder {
 	 * @param defaultInJson
 	 * @return
 	 */
-	public JvContentMapperBuilder withDefaultInJson(String defaultInJson) {
-		this.defaultInJson = Optional.of(defaultInJson);
+	public JvContentMapperBuilder withPreJsonMerging(String... preMergingJson) {
+		this.preMergingJson = Optional.of(preMergingJson);
 		return this;
 	}
 	
@@ -70,33 +70,33 @@ public class JvContentMapperBuilder {
 	 * @param defaultOutJson
 	 * @return
 	 */
-	public JvContentMapperBuilder withDefaultOutJson(String defaultOutJson) {
-		this.defaultOutJson = Optional.of(defaultOutJson);
+	public JvContentMapperBuilder withPostJsonMerging(String... postMergingJson) {
+		this.postMergingJson = Optional.of(postMergingJson);
 		return this;
 	}
 	
 	public <T> JvContentMapper<T> build(Class<T> targetClass) {
 
-		scala.collection.immutable.Set<JPathPair> scPathMapping = ScalaConverters.jvStringMapToJPathPairSet(pathMapping);
+		scala.collection.immutable.Set<JPathPair> scPathMapping = jvStringMapToJPathPairSet(pathMapping);
  		
 		Inclusions scIncMap;
 		if (inclusionsMap.isPresent()) {
-			scIncMap = new FixedInclusions(ScalaConverters.jvToScMap(inclusionsMap.get()));
+			scIncMap = new FixedInclusions(jvToScMap(inclusionsMap.get()));
 		} else {
 			scIncMap = JValueMapper.forTargetClass$default$4();
 		}
-		DefaultJson scDefJson;
-		if (defaultInJson.isPresent() && defaultOutJson.isPresent()) {
-			scDefJson = new DefaultJsonInOut(defaultInJson.get(), defaultOutJson.get());
-		} else if (defaultInJson.isPresent()) {
-			scDefJson = new DefaultJsonIn(defaultInJson.get());
-		} else if (defaultOutJson.isPresent()) {
-			scDefJson = new DefaultJsonOut(defaultOutJson.get());
+		MergingJson scMergJson;
+		if (preMergingJson.isPresent() && postMergingJson.isPresent()) {
+			scMergJson = new MergingJsonPrePost(jvArrayToScSeq(preMergingJson.get()), jvArrayToScSeq(postMergingJson.get()));
+		} else if (preMergingJson.isPresent()) {
+			scMergJson = new MergingJsonPre(jvArrayToScSeq(preMergingJson.get()));
+		} else if (postMergingJson.isPresent()) {
+			scMergJson = new MergingJsonPost(jvArrayToScSeq(postMergingJson.get()));
 		} else {
-			scDefJson = JValueMapper.forTargetClass$default$3();
+			scMergJson = JValueMapper.forTargetClass$default$3();
 		}
 		
-		JsonContentMapper<T> scMapper = JValueMapper.forTargetClass(targetClass, scPathMapping, scDefJson, scIncMap);
+		JsonContentMapper<T> scMapper = JValueMapper.forTargetClass(targetClass, scPathMapping, scMergJson, scIncMap);
 		return new JvContentMapper<T>(scMapper);
 	}
 }

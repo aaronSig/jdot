@@ -3,34 +3,38 @@ package com.superpixel.advokit.json.lift
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import com.superpixel.advokit.json.pathing._
-import com.superpixel.advokit.mapper.JsonContentTransformer
-import com.superpixel.advokit.mapper.NoInclusions
-import com.superpixel.advokit.mapper.NoDefaultJson
-import com.superpixel.advokit.mapper.DefaultJson
-import com.superpixel.advokit.mapper.Inclusions
-import com.superpixel.advokit.mapper.DefaultJsonIn
-import com.superpixel.advokit.mapper.DefaultJsonOut
-import com.superpixel.advokit.mapper.DefaultJsonInOut
-import com.superpixel.advokit.mapper.FixedInclusions
+import com.superpixel.advokit.mapper._
 
-class JValueTransformer(fieldMap: Set[JPathPair], defaults: DefaultJson, inclusions: Inclusions) extends JsonContentTransformer {
+class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusions: Inclusions) extends JsonContentTransformer {
 
   val builder = JValueBuilder(fieldMap.map(_.to))
-  val defaultJValues: (JValue, JValue) = transformDefaults(defaults)
+  val mergingJValues: (Seq[JValue], Seq[JValue]) = transformDefaults(merges)
   val inclusionsMap: Map[String, JValue] = parseInclusions(inclusions)
   
-  override def transform(json: String, localDefaults: DefaultJson = NoDefaultJson, additionalInclusions: Inclusions = NoInclusions): String = {
-    pretty(render(transformJValue(parse(json), localDefaults, additionalInclusions)))
+  override def transform(json: String, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): String = {
+    pretty(render(transformJValue(parse(json), localMerges, additionalInclusions)))
   }
   
-  def transformJValue(json: JValue, localDefaults: DefaultJson = NoDefaultJson, additionalInclusions: Inclusions = NoInclusions): JValue = {
-    val localDefaultJValues = transformDefaults(localDefaults)
+  def transformJValue(json: JValue, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): JValue = {
+    val localMergingJValues = transformDefaults(localMerges)
     
     import JValueMerger.{leftMergeWithArraysAsValues => leftMerge}
     
-    val postInJV = Seq(json, localDefaultJValues._1, defaultJValues._1) reduceLeft(leftMerge)
+    val postInJV = (localMergingJValues._1, mergingJValues._1) match {
+      case (Nil, Nil) => json
+      case (sq, Nil) => json +: sq reduceLeft(leftMerge)
+      case (Nil, sq) => json +: sq reduceLeft(leftMerge)
+      case (sq1, sq2) => (json +: sq1 reduceLeft(leftMerge)) +: sq2 reduceLeft(leftMerge)
+    } 
+      
     val preOutJV = builder.build((getValues(postInJV, additionalInclusions)))
-    Seq(preOutJV, localDefaultJValues._2, defaultJValues._2) reduceLeft(leftMerge)
+    
+    (localMergingJValues._2, mergingJValues._2) match {
+      case (Nil, Nil) => preOutJV
+      case (sq, Nil) => preOutJV +: sq reduceLeft(leftMerge)
+      case (Nil, sq) => preOutJV +: sq reduceLeft(leftMerge)
+      case (sq1, sq2) => (preOutJV +: sq1 reduceLeft(leftMerge)) +: sq2 reduceLeft(leftMerge)
+    } 
   }
   
   private def getValues(json: JValue, addInclusions: Inclusions): Set[(JPath, JValue)] = {
@@ -42,11 +46,11 @@ class JValueTransformer(fieldMap: Set[JPathPair], defaults: DefaultJson, inclusi
   
   
   
-  private def transformDefaults(stringDefaults: DefaultJson): (JValue, JValue) = stringDefaults match {
-    case NoDefaultJson => (JNothing, JNothing)
-    case DefaultJsonIn(in) => (parse(in), JNothing)
-    case DefaultJsonOut(out) => (JNothing, parse(out))
-    case DefaultJsonInOut(in, out) => (parse(in), parse(out))
+  private def transformDefaults(stringMerges: MergingJson): (Seq[JValue], Seq[JValue]) = stringMerges match {
+    case NoMerging => (Nil, Nil)
+    case MergingJsonPre(pre) => (pre.map{(s: String) => parse(s)} , Nil)
+    case MergingJsonPost(post) => (Nil, post.map{(s: String) => parse(s)})
+    case MergingJsonPrePost(pre, post) => (pre.map{(s: String) => parse(s)}, post.map{(s: String) => parse(s)})
   }
   
   private def parseInclusions(inc: Inclusions): Map[String, JValue] = inc match {
@@ -59,6 +63,6 @@ class JValueTransformer(fieldMap: Set[JPathPair], defaults: DefaultJson, inclusi
 
 object JValueTransformer {
   
-  def apply(fieldMap: Set[JPathPair], defaults: DefaultJson = NoDefaultJson, inclusions: Inclusions = NoInclusions) = new JValueTransformer(fieldMap, defaults, inclusions)
+  def apply(fieldMap: Set[JPathPair], merges: MergingJson = NoMerging, inclusions: Inclusions = NoInclusions) = new JValueTransformer(fieldMap, merges, inclusions)
   
 }

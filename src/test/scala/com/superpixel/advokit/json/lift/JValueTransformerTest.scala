@@ -155,7 +155,7 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("firstHomeGoal" -> "62") ~ ("awayGoals" -> JArray(List())) ~ ("teams" -> List("Liverpool", "Swansea"))
     )
     
-    val transfromer = JValueTransformer(fieldMap, DefaultJsonInOut(defaultInJson, defaultOutJson))
+    val transfromer = JValueTransformer(fieldMap, MergingJsonPrePost(Seq(defaultInJson), Seq(defaultOutJson)))
 
     
     val returned = jValsPremList.map { jv => transfromer.transformJValue(jv) }
@@ -289,7 +289,7 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("game" -> "KAA Gent vs. Zenit St P") ~ ("venue" -> "unknown") ~ ("score" -> "2 - 1") ~ ("winningTeam" -> "kaa-gent")
     )
     
-    val transfromer = JValueTransformer(fieldMap, DefaultJsonInOut(jsonInDefault, jsonOutDefault))
+    val transfromer = JValueTransformer(fieldMap, MergingJsonPrePost(Seq(jsonInDefault), Seq(jsonOutDefault)))
     
     val returned = jValsChampLeagueList.map { jv => transfromer.transformJValue(jv) }
     
@@ -367,10 +367,10 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("game" -> "KAA Gent vs. Zenit St P") ~ ("venue" -> "unknown") ~ ("score" -> "2 - 1") ~ ("winningTeam" -> "kaa-gent")
     )
     
-    val transfromer = JValueTransformer(fieldMap, DefaultJsonInOut(jsonInDefault, jsonOutDefault))
+    val transfromer = JValueTransformer(fieldMap, MergingJsonPrePost(Seq(jsonInDefault), Seq(jsonOutDefault)))
     
     val returned = jValsChampLeagueList.zipWithIndex.map { case (jv, i) => 
-      transfromer.transformJValue(jv, DefaultJsonInOut(localJsonInDefault(i), localJsonOutDefault(i))) }
+      transfromer.transformJValue(jv, MergingJsonPrePost(Seq(localJsonInDefault(i)), Seq(localJsonOutDefault(i)))) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {

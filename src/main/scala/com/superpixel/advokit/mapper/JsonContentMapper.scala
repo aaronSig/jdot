@@ -4,6 +4,6 @@ import com.superpixel.advokit.json.pathing._
 
 trait JsonContentMapper[T] {
   
-  def map(jsonContent: String, localDefaults: DefaultJson = NoDefaultJson, additionalInclusions: Inclusions = NoInclusions): T
+  def map(jsonContent: String, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): T
   
 }

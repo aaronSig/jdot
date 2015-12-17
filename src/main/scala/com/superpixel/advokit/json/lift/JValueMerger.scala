@@ -5,12 +5,22 @@ import org.json4s.native.JsonMethods._
 
 object JValueMerger {
   
+  
+  def leftMergeWithArraysOnIndex(leftJson: String, rightJson: String): String = {
+    pretty(render(leftMergeWithArraysOnIndex(parse(leftJson), parse(rightJson))))
+  }
+  
+  def leftMergeWithArraysAsValues(leftJson: String, rightJson: String): String = {
+    pretty(render(leftMergeWithArraysAsValues(parse(leftJson), parse(rightJson))))
+  }
+  
+  
   type JMerge =  (JValue, JValue) => JValue
 	type JArrayMerge = (List[JValue], List[JValue], JMerge) => List[JValue]
   type JObjectMerge = (List[JField], List[JField], JMerge) => List[JField]
 
-  def leftMergeWithArraysOnIndex = leftMerge(mergeFields, mergeArraysOnIndex)
-  def leftMergeWithArraysAsValues = leftMerge(mergeFields, leftMergeArraysAsValues)
+  def leftMergeWithArraysOnIndex: (JValue, JValue) => JValue = leftMerge(mergeFields, mergeArraysOnIndex)
+  def leftMergeWithArraysAsValues: (JValue, JValue) => JValue = leftMerge(mergeFields, leftMergeArraysAsValues)
   
   private def leftMerge(objectStrat: JObjectMerge, arrayStrat: JArrayMerge): JMerge = {
     def inner(val1: JValue, val2: JValue): JValue = (val1, val2) match {
@@ -22,8 +32,7 @@ object JValueMerger {
     inner
   }
   
-  
-
+ 
   private def mergeFields(vs1: List[JField], vs2: List[JField], outerMerge: JMerge): List[JField] = {
     def mergeRec(xleft: List[JField], yleft: List[JField]): List[JField] = xleft match {
       case Nil => yleft

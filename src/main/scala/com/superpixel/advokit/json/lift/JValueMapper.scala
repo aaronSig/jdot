@@ -11,27 +11,27 @@ import muster._
 
 class JValueMapper[T](transformer: JValueTransformer, extractor: JValueExtractor[T]) extends JsonContentMapper[T] {
   
-  override def map(jsonContent: String, localDefaults: DefaultJson = NoDefaultJson, additionalInclusions: Inclusions = NoInclusions): T = {
+  override def map(jsonContent: String, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): T = {
     val jValContent = parse(jsonContent)
-    mapJValue(jValContent, localDefaults, additionalInclusions)
+    mapJValue(jValContent, localMerges, additionalInclusions)
   }
   
-  def mapJValue(json: JValue, localDefaults: DefaultJson = NoDefaultJson, additionalInclusions: Inclusions = NoInclusions): T = {
-    val transformed = transformer.transformJValue(json, localDefaults, additionalInclusions)
+  def mapJValue(json: JValue, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): T = {
+    val transformed = transformer.transformJValue(json, localMerges, additionalInclusions)
     extractor.extractFromJValue(transformed)
   }
 }
 
 object JValueMapper {
 
-  def forTargetClass[T](targetClass: Class[T], pathMapping: Set[JPathPair], defaults: DefaultJson = NoDefaultJson, inclusions: Inclusions = NoInclusions): JValueMapper[T] = {
+  def forTargetClass[T](targetClass: Class[T], pathMapping: Set[JPathPair], merges: MergingJson = NoMerging, inclusions: Inclusions = NoInclusions): JValueMapper[T] = {
     implicit val m: Manifest[T] = Manifest.classType(targetClass)
-    apply[T](pathMapping, defaults, inclusions)
+    apply[T](pathMapping, merges, inclusions)
   }
   
   
-  def apply[T](pathMapping: Set[JPathPair], defaults: DefaultJson = NoDefaultJson, inclusions: Inclusions = NoInclusions)(implicit m: Manifest[T]): JValueMapper[T] = {
-    val transformer = JValueTransformer(pathMapping, defaults, inclusions)
+  def apply[T](pathMapping: Set[JPathPair], merges: MergingJson = NoMerging, inclusions: Inclusions = NoInclusions)(implicit m: Manifest[T]): JValueMapper[T] = {
+    val transformer = JValueTransformer(pathMapping, merges, inclusions)
     val extractor = JValueExtractor(m)
     new JValueMapper[T](transformer, extractor)
   } 
