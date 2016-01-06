@@ -21,10 +21,11 @@ class JValueBuilder(paths: Set[JPath]) {
         throw new JsonBuildingException("Json build paths cannot include JDefaultValues.")
     }
     
-    import JValueMerger.leftMergeWithArraysOnIndex
+    import JValueMerger.{MergeArraysOnIndex, leftMerge}
+    
     pathVals.map {
       case (jp, jv) => buildLinearPath(jp reverse, jv)
-    } reduceLeft(leftMergeWithArraysOnIndex)
+    } reduceLeft(leftMerge(MergeArraysOnIndex)_)
   }
   
 }

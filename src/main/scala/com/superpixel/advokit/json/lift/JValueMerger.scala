@@ -3,24 +3,35 @@ package com.superpixel.advokit.json.lift
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
+
+
+
 object JValueMerger {
   
-  
-  def leftMergeWithArraysOnIndex(leftJson: String, rightJson: String): String = {
-    pretty(render(leftMergeWithArraysOnIndex(parse(leftJson), parse(rightJson))))
-  }
-  
-  def leftMergeWithArraysAsValues(leftJson: String, rightJson: String): String = {
-    pretty(render(leftMergeWithArraysAsValues(parse(leftJson), parse(rightJson))))
-  }
-  
-  
   type JMerge =  (JValue, JValue) => JValue
-	type JArrayMerge = (List[JValue], List[JValue], JMerge) => List[JValue]
+  type JArrayMerge = (List[JValue], List[JValue], JMerge) => List[JValue]
   type JObjectMerge = (List[JField], List[JField], JMerge) => List[JField]
-
-  def leftMergeWithArraysOnIndex: (JValue, JValue) => JValue = leftMerge(mergeFields, mergeArraysOnIndex)
-  def leftMergeWithArraysAsValues: (JValue, JValue) => JValue = leftMerge(mergeFields, leftMergeArraysAsValues)
+  
+  sealed trait ArrayMergeStrategy {
+    def leftMerge: JArrayMerge
+  }
+  case object MergeArraysOnIndex extends ArrayMergeStrategy {
+    def leftMerge = mergeArraysOnIndex;
+  }
+  def mergeArraysOnIndex(): ArrayMergeStrategy = MergeArraysOnIndex
+  case object MergeArraysAsValues extends ArrayMergeStrategy {
+    def leftMerge = leftMergeArraysAsValues
+  };
+  def mergeArraysAsValues(): ArrayMergeStrategy = MergeArraysAsValues
+  
+  def leftMergeStrings(arrayStrat: ArrayMergeStrategy)(leftJson: String, rightJson: String): String = {
+    pretty(render(leftMerge(mergeFields, arrayStrat.leftMerge)(parse(leftJson), parse(rightJson))))
+  }
+  
+  def leftMerge(arrayStrat: ArrayMergeStrategy)(leftJson: JValue, rightJson: JValue): JValue = {
+    leftMerge(mergeFields, arrayStrat.leftMerge)(leftJson, rightJson)
+  }
+  
   
   private def leftMerge(objectStrat: JObjectMerge, arrayStrat: JArrayMerge): JMerge = {
     def inner(val1: JValue, val2: JValue): JValue = (val1, val2) match {

@@ -18,7 +18,9 @@ class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusion
   def transformJValue(json: JValue, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): JValue = {
     val localMergingJValues = transformDefaults(localMerges)
     
-    import JValueMerger.{leftMergeWithArraysAsValues => leftMerge}
+    import JValueMerger.MergeArraysAsValues
+    
+    val leftMerge = JValueMerger.leftMerge(MergeArraysAsValues)_
     
     val postInJV = (localMergingJValues._1, mergingJValues._1) match {
       case (Nil, Nil) => json
