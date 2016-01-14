@@ -1,6 +1,6 @@
 package com.superpixel.advokit.mapper;
 
-public class SimpleMatchJava {
+public class SimpleMatchJava implements MatchJava {
 	private String game;
 	private String venue;
 	private String score;

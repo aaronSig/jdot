@@ -9,8 +9,6 @@ import org.json4s._
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import com.superpixel.advokit.json.pathing._
-import com.superpixel.advokit.mapping._
-import com.superpixel.advokit.mapper.FixedInclusions
 import com.superpixel.advokit.mapper._
 
 

@@ -5,14 +5,14 @@ import org.scalatest.Matchers
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 import scala.io.Source
-
-
-
 import com.superpixel.advokit.json.pathing._
+import com.superpixel.advokit.mapper.JsonContentMapperWithAttacher
 
-class SimpleMatch(val game: String, val venue: String, val score: String, val winningTeam: String) {
+trait Match
+
+class MatchWithResult(val game: String, val venue: String, val score: String, val winningTeam: String) extends Match {
   override def equals(that: Any): Boolean = that match {
-    case that: SimpleMatch => 
+    case that: MatchWithResult => 
       this.game == that.game &&
       this.venue == that.venue &&
       this.score == that.score &&
@@ -21,9 +21,37 @@ class SimpleMatch(val game: String, val venue: String, val score: String, val wi
   override def toString: String = s"Game: $game, Venue: $venue, Score: $score, Winning Team: $winningTeam."
 }
 
-class JValueMapperTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterAll {
+class MatchFixture(val game: String, val venue: String, val startDate: String) extends Match {
+  override def equals(that: Any): Boolean = that match {
+    case that: MatchFixture => 
+      this.game == that.game &&
+      this.venue == that.venue &&
+      this.startDate == that.startDate
+  }
+  override def toString: String = s"Game: $game, Venue: $venue, Start Date: $startDate."
+}
 
-  
+class Weekend(val weekName: String, val matchList: List[Match]) {
+  override def equals(that: Any): Boolean = that match {
+    case that: Weekend => 
+      this.matchList == that.matchList &&
+      this.weekName == that.weekName
+  }
+  override def toString: String = s"Week Name: $weekName, Match List: " + matchList.mkString("\n");
+}
+
+class MatchPair(val matchOne: Match, val matchTwo: Match) {
+  override def equals(that: Any): Boolean = that match {
+    case that: MatchPair => 
+      this.matchOne == that.matchOne &&
+      this.matchTwo == that.matchTwo    
+  }
+  override def toString: String = s"Match One: $matchOne, Match Two: $matchTwo."
+}
+
+
+
+class JValueMapperTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterAll {
   
   val jsonList: List[String] = {
 	    val buffSource = Source.fromURL(getClass.getResource("/pl-league-week-14.json"))
@@ -40,6 +68,14 @@ class JValueMapperTest extends FlatSpec with Matchers with MockFactory with Befo
         case _ => List()
       }
   }
+  
+  val compRoundJson = """ {
+            "id": 34,
+            "code": "week-14",
+            "name": "Week 14",
+            "startDate": "2015-11-27T00:00:00Z",
+            "endDate": "2015-12-03T23:59:59Z"
+        } """
   
   val inclusionsMap: Map[String, String] = Map(
       "man-city" ->       """{"leaguePosition": 1}""",
@@ -66,9 +102,6 @@ class JValueMapperTest extends FlatSpec with Matchers with MockFactory with Befo
   
   "JValueMapper map" should "map to a simple class based on fieldMap" in {
     
-      val ttt = scala.collection.mutable.Map()
-      ttt.toMap
-    
       val fieldMap = Set(
         JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
         JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
@@ -77,20 +110,20 @@ class JValueMapperTest extends FlatSpec with Matchers with MockFactory with Befo
       )
       
       val expected = List(
-        new SimpleMatch("Sunderland vs. Stoke", "Stadium of Light", "2 - 0", "sunderland"),
-        new SimpleMatch("Man City vs. Southampton", "Etihad Stadium", "3 - 1", "man-city"),
-        new SimpleMatch("Crystal Palace vs. Newcastle", "Selhurst Park", "5 - 1", "crystal-palace"),
-        new SimpleMatch("Bournemouth vs. Everton", "Vitality Stadium", "3 - 3", "draw"),
-        new SimpleMatch("Aston Villa vs. Watford", "Villa Park", "2 - 3", "watford"),
-        new SimpleMatch("Leicester vs. Man Utd", "King Power Stadium", "1 - 1", "draw"),
-        new SimpleMatch("Tottenham vs. Chelsea", "White Hart Lane", "0 - 0", "draw"),
-        new SimpleMatch("West Ham vs. West Brom", "Boleyn Ground", "1 - 1", "draw"),
-        new SimpleMatch("Norwich vs. Arsenal", "Carrow Road", "1 - 1", "draw"),
-        new SimpleMatch("Liverpool vs. Swansea", "Anfield", "1 - 0", "liverpool")    
+        new MatchWithResult("Sunderland vs. Stoke", "Stadium of Light", "2 - 0", "sunderland"),
+        new MatchWithResult("Man City vs. Southampton", "Etihad Stadium", "3 - 1", "man-city"),
+        new MatchWithResult("Crystal Palace vs. Newcastle", "Selhurst Park", "5 - 1", "crystal-palace"),
+        new MatchWithResult("Bournemouth vs. Everton", "Vitality Stadium", "3 - 3", "draw"),
+        new MatchWithResult("Aston Villa vs. Watford", "Villa Park", "2 - 3", "watford"),
+        new MatchWithResult("Leicester vs. Man Utd", "King Power Stadium", "1 - 1", "draw"),
+        new MatchWithResult("Tottenham vs. Chelsea", "White Hart Lane", "0 - 0", "draw"),
+        new MatchWithResult("West Ham vs. West Brom", "Boleyn Ground", "1 - 1", "draw"),
+        new MatchWithResult("Norwich vs. Arsenal", "Carrow Road", "1 - 1", "draw"),
+        new MatchWithResult("Liverpool vs. Swansea", "Anfield", "1 - 0", "liverpool")    
       )
       
 
-      val mapper = JValueMapper[SimpleMatch](fieldMap)
+      val mapper = JValueMapper[MatchWithResult](fieldMap)
       
       val returned = jsonList.map { json => mapper.map(json) }
       
@@ -101,6 +134,48 @@ class JValueMapperTest extends FlatSpec with Matchers with MockFactory with Befo
           println(expected(index))
         }
       }
+  }
+  
+  "JValueMapper mapWithAttachment" should "return an interface with will attach and extract" in {
+    
+    val compRoundMapping = Set(
+      JPathPair(JPath(JObjectPath("weekName")), JPath(JObjectPath("name")))
+    )
+    
+    val matchResultMapping = Set(
+      JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
+      JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
+      JPathPair(JPath(JObjectPath("score")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("score"))),
+      JPathPair(JPath(JObjectPath("winningTeam")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("winnerCode")))
+    )
+    
+    val attacherPairs = Set(
+      JPathPair(JPath(JObjectPath("matchList")), JPath())
+    )
+      
+    val expected = new Weekend("Week 14", List(
+      new MatchWithResult("Sunderland vs. Stoke", "Stadium of Light", "2 - 0", "sunderland"),
+      new MatchWithResult("Man City vs. Southampton", "Etihad Stadium", "3 - 1", "man-city"),
+      new MatchWithResult("Crystal Palace vs. Newcastle", "Selhurst Park", "5 - 1", "crystal-palace"),
+      new MatchWithResult("Bournemouth vs. Everton", "Vitality Stadium", "3 - 3", "draw"),
+      new MatchWithResult("Aston Villa vs. Watford", "Villa Park", "2 - 3", "watford"),
+      new MatchWithResult("Leicester vs. Man Utd", "King Power Stadium", "1 - 1", "draw"),
+      new MatchWithResult("Tottenham vs. Chelsea", "White Hart Lane", "0 - 0", "draw"),
+      new MatchWithResult("West Ham vs. West Brom", "Boleyn Ground", "1 - 1", "draw"),
+      new MatchWithResult("Norwich vs. Arsenal", "Carrow Road", "1 - 1", "draw"),
+      new MatchWithResult("Liverpool vs. Swansea", "Anfield", "1 - 0", "liverpool")    
+    ))
+    
+    val mapper = JValueMapper[Weekend](compRoundMapping)
+    val smAttacher = JValueAttacher(JValueTransformer(matchResultMapping), attacherPairs)
+    
+    val mapperWithAttachment: JsonContentMapperWithAttacher[Weekend] = mapper.withAttacher(classOf[MatchWithResult], smAttacher)
+    
+    val returned = mapperWithAttachment.mapWithListAttachment(jsonList, compRoundJson)
+    
+    println(returned)
+    assert(returned == expected)
+    
   }
   
   

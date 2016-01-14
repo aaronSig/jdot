@@ -91,9 +91,12 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       JPath.validate("one[zwei][trois]")
     }
   }
-
-  it should "validate and flag bad bracket syntax (leading bracket)" in {
-    assertResult(false) {
+  
+  it should "allow expressions starting with array access via brackets" in {
+    assertResult(true) {
+      JPath.validate("[1].zwei.trois")
+    }
+    assertResult(true) {
       JPath.validate("[one][zwei][trois]")
     }
   }

@@ -21,6 +21,14 @@ object ScalaConverters {
     }
   }
   
+  def jvToScList[T](jvList: java.util.List[T]): scala.collection.immutable.List[T] = {
+    if (jvList == null) {
+      Nil
+    } else {
+      jvList.asScala.toList
+    }
+  }
+  
   def jvArrayToScSeq[T](jvArray: Array[T]): scala.collection.Seq[T] = {
     jvArray
   }

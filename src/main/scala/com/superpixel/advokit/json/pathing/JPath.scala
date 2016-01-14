@@ -43,7 +43,8 @@ object JPath {
   case object StartAccessExpression extends ExpressionType {
     override val patterns = Seq(
       keyStr.r,
-      "".r
+      "".r,
+      ("""\[""" + keyStr + """\]""").r
     )
   }
   case object AccessExpression extends ExpressionType {

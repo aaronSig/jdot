@@ -12,9 +12,18 @@ class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusion
   val inclusionsMap: Map[String, JValue] = parseInclusions(inclusions)
   
   override def transform(json: String, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): String = {
-    pretty(render(transformJValue(parse(json), localMerges, additionalInclusions)))
+    compact(render(transformJValue(parse(json), localMerges, additionalInclusions)))
   }
   
+  override def transformList(jsonList: List[String], localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): String = {
+    compact(render(
+          JArray(jsonList.map { jsonStr: String => transformJValue(parse(jsonStr), localMerges, additionalInclusions)})
+          ))
+  }
+  
+  def transformJValueList(jsonList: List[JValue], localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): JValue = {
+    JArray(jsonList.map {json: JValue => transformJValue(json, localMerges, additionalInclusions)})
+  }
   def transformJValue(json: JValue, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): JValue = {
     val localMergingJValues = transformDefaults(localMerges)
     

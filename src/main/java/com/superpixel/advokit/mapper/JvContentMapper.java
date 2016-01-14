@@ -38,6 +38,12 @@ public class JvContentMapper<T> {
 
 		return scMapper.map(json, scDefJson, scIncMap);
 	}
+	
+	public JvContentMapperWithAttacher<T> withAttacher(Class<?> attachmentClass, JvContentAttacher attacher) {
+		return new JvContentMapperWithAttacher<T>(scMapper.withAttacher(attachmentClass, attacher.getScAttacher()));
+	}
+	
+	
 
 	public T mapWithInclusions(String json, Map<String, String> additionalInclusions) {
 		return this.map(json, null, null, additionalInclusions);
