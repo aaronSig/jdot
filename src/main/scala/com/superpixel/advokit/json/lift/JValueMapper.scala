@@ -7,7 +7,6 @@ import com.superpixel.advokit.mapper._
 
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import muster._
 
 class JValueMapper[T](transformer: JValueTransformer, extractor: JValueExtractor[T]) extends JsonContentMapper[T] {
   

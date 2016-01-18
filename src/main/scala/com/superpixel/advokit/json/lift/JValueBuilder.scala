@@ -23,9 +23,12 @@ class JValueBuilder(paths: Set[JPath]) {
     
     import JValueMerger.{MergeArraysOnIndex, leftMerge}
     
-    pathVals.map {
-      case (jp, jv) => buildLinearPath(jp reverse, jv)
-    } reduceLeft(leftMerge(MergeArraysOnIndex)_)
+    pathVals match {
+      case empty if empty.isEmpty => JNothing
+      case notEmpty => notEmpty.map {
+                         case (jp, jv) => buildLinearPath(jp reverse, jv)
+                       } reduceLeft(leftMerge(MergeArraysOnIndex)_)
+    }
   }
   
 }

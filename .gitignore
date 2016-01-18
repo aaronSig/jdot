@@ -2,7 +2,9 @@ target/
 .classpath
 .project
 .settings/
+.cache
 bin/
+project/
 
 *.class
 

@@ -19,6 +19,7 @@ class JValueExtractor[T](m: Manifest[T], typeHintList: List[Class[_]]) extends J
   
   def extractFromJValue(json: JValue): T = {
     implicit val localFormats = formats;
+    println(pretty(render(json)))
     json.extract[T]
   }
   
@@ -37,6 +38,7 @@ class JValueExtractor[T](m: Manifest[T], typeHintList: List[Class[_]]) extends J
       } + new JavaListSerializer
     }
     (json: JValue) => {
+      println(pretty(render(json)))
       json.extract[T]
     }
   }
