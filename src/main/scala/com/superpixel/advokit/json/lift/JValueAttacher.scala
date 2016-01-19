@@ -33,8 +33,15 @@ class JValueAttacher(transformer: JValueTransformer, attachmentPairs: Set[JPathP
     val accessor = JValueAccessor(attachJson)
     val attachee = attachBuilder.build(attachmentPairs.map{ jpm: JPathPair => (jpm.to, accessor.getValue(jpm.from))});
     
-    import JValueMerger.{MergeArraysAsValues, leftMerge}
-    leftMerge(MergeArraysAsValues)(attachToJson, attachee)
+//    println("Attachee:\n " + compact(render(attachee)))
+//    println("AttachTo:\n " + compact(render(attachToJson)))
+    
+    
+    import JValueMerger.{MergeArraysOnIndex, leftMerge}
+//    val a = leftMerge(MergeArraysOnIndex)(attachee, attachToJson)
+//    println("Attached:\n " + compact(render(a)))
+//    a
+    leftMerge(MergeArraysOnIndex)(attachee, attachToJson)
   }
 
 }

@@ -50,7 +50,8 @@ object JValueMerger {
       case (xn, xv) :: xs => yleft find (_._1 == xn) match {
         case Some(y @ (yn, yv)) =>
           JField(xn, outerMerge(xv, yv)) :: mergeRec(xs, yleft filterNot (_ == y))
-        case None => JField(xn, xv) :: mergeRec(xs, yleft)
+        case None => 
+          JField(xn, xv) :: mergeRec(xs, yleft)
       }
     }
 
@@ -61,7 +62,17 @@ object JValueMerger {
     def mergeRec(xleft: List[JValue], yleft: List[JValue]): List[JValue] = (xleft, yleft) match {
       case (Nil, ys) => ys
       case (xs, Nil) => xs
-      case (x :: xs, y :: ys) => outerMerge(x, y) :: mergeRec(xs, ys)
+      case (x :: xs, y :: ys) => {
+        
+//        println("Left:\n " + compact(render(x)))
+//        println("Right:\n " + compact(render(y)))
+//        val j = outerMerge(x, y)
+        
+//        println("Merged:\n " + compact(render(j)))
+//        j :: mergeRec(xs, ys)
+        
+        outerMerge(x, y) :: mergeRec(xs, ys)
+      }
     }
 
     mergeRec(vs1, vs2)

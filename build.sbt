@@ -7,6 +7,8 @@ version := "0.0.1-SHAPSHOT"
 
 scalaVersion := "2.11.4"
 
+EclipseKeys.withSource := true
+
 libraryDependencies += "org.json4s" %% "json4s-native" % "3.3.0"
 libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.3.0"
 libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.2" % "test"

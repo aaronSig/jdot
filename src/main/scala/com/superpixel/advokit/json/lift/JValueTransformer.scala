@@ -42,9 +42,15 @@ class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusion
     
     (localMergingJValues._2, mergingJValues._2) match {
       case (Nil, Nil) => preOutJV
-      case (sq, Nil) => preOutJV +: sq reduceLeft(leftMerge)
-      case (Nil, sq) => preOutJV +: sq reduceLeft(leftMerge)
-      case (sq1, sq2) => (preOutJV +: sq1 reduceLeft(leftMerge)) +: sq2 reduceLeft(leftMerge)
+      case (sq, Nil) => {
+        (preOutJV +: sq) reduceLeft(leftMerge)
+      }
+      case (Nil, sq) => {
+        (preOutJV +: sq) reduceLeft(leftMerge)
+      }
+      case (sq1, sq2) => {
+        (preOutJV +: sq1 reduceLeft(leftMerge)) +: sq2 reduceLeft(leftMerge)
+      }
     } 
   }
   

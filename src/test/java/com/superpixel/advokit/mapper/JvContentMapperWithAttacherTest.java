@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 
 import org.junit.BeforeClass;
@@ -88,16 +89,16 @@ public class JvContentMapperWithAttacherTest {
 		
 		List<MatchJava> matchList = new ArrayList<>();
 
-		matchList.add(new SimpleMatchJava("Sunderland vs. Stoke", "Stadium of Light", "2 - 0", "sunderland"));
-		matchList.add(new SimpleMatchJava("Man City vs. Southampton", "Etihad Stadium", "3 - 1", "man-city"));
-		matchList.add(new SimpleMatchJava("Crystal Palace vs. Newcastle", "Selhurst Park", "5 - 1", "crystal-palace"));
-		matchList.add(new SimpleMatchJava("Bournemouth vs. Everton", "Vitality Stadium", "3 - 3", "draw"));
-		matchList.add(new SimpleMatchJava("Aston Villa vs. Watford", "Villa Park", "2 - 3", "watford"));
-		matchList.add(new SimpleMatchJava("Leicester vs. Man Utd", "King Power Stadium", "1 - 1", "draw"));
-		matchList.add(new SimpleMatchJava("Tottenham vs. Chelsea", "White Hart Lane", "0 - 0", "draw"));
-		matchList.add(new SimpleMatchJava("West Ham vs. West Brom", "Boleyn Ground", "1 - 1", "draw"));
-		matchList.add(new SimpleMatchJava("Norwich vs. Arsenal", "Carrow Road", "1 - 1", "draw"));
-		matchList.add(new SimpleMatchJava("Liverpool vs. Swansea", "Anfield", "1 - 0", "liverpool"));
+		matchList.add(new SimpleMatchJava("Sunderland vs. Stoke", Optional.of("Stadium of Light"), "2 - 0", "sunderland"));
+		matchList.add(new SimpleMatchJava("Man City vs. Southampton", Optional.of("Etihad Stadium"), "3 - 1", "man-city"));
+		matchList.add(new SimpleMatchJava("Crystal Palace vs. Newcastle", Optional.of("Selhurst Park"), "5 - 1", "crystal-palace"));
+		matchList.add(new SimpleMatchJava("Bournemouth vs. Everton", Optional.of("Vitality Stadium"), "3 - 3", "draw"));
+		matchList.add(new SimpleMatchJava("Aston Villa vs. Watford", Optional.of("Villa Park"), "2 - 3", "watford"));
+		matchList.add(new SimpleMatchJava("Leicester vs. Man Utd", Optional.of("King Power Stadium"), "1 - 1", "draw"));
+		matchList.add(new SimpleMatchJava("Tottenham vs. Chelsea", Optional.of("White Hart Lane"), "0 - 0", "draw"));
+		matchList.add(new SimpleMatchJava("West Ham vs. West Brom", Optional.of("Boleyn Ground"), "1 - 1", "draw"));
+		matchList.add(new SimpleMatchJava("Norwich vs. Arsenal", Optional.of("Carrow Road"), "1 - 1", "draw"));
+		matchList.add(new SimpleMatchJava("Liverpool vs. Swansea", Optional.of("Anfield"), "1 - 0", "liverpool"));
 
 		WeekendJava expected = new WeekendJava("Week 14", matchList);
 		

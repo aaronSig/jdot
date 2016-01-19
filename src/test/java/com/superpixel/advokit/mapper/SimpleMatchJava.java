@@ -1,18 +1,29 @@
 package com.superpixel.advokit.mapper;
 
+import java.util.Optional;
+
+
 public class SimpleMatchJava implements MatchJava {
 	private String game;
 	private String venue;
 	private String score;
 	private String winningTeam;
-	public SimpleMatchJava(String game, String venue, String score,
+	public SimpleMatchJava(String game, Optional<String> venue, String score,
 			String winningTeam) {
 		super();
 		this.game = game;
-		this.venue = venue;
+		this.venue = venue.orElse(null);
 		this.score = score;
 		this.winningTeam = winningTeam;
 	}
+//	public SimpleMatchJava(String game, String venue, String score,
+//			String winningTeam) {
+//		super();
+//		this.game = game;
+//		this.venue = venue;
+//		this.score = score;
+//		this.winningTeam = winningTeam;
+//	}
 	public String getGame() {
 		return game;
 	}
