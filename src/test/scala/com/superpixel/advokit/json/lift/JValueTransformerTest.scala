@@ -368,7 +368,7 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
     val transfromer = JValueTransformer(fieldMap, MergingJsonPrePost(Seq(jsonInDefault), Seq(jsonOutDefault)))
     
     val returned = jValsChampLeagueList.zipWithIndex.map { case (jv, i) => 
-      transfromer.transformJValue(jv, MergingJsonPrePost(Seq(localJsonInDefault(i)), Seq(localJsonOutDefault(i)))) }
+      transfromer.transformJValue(jv, localMerges=MergingJsonPrePost(Seq(localJsonInDefault(i)), Seq(localJsonOutDefault(i)))) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {

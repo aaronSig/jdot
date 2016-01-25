@@ -4,6 +4,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
+import com.superpixel.advokit.json.pathing.JPath.StringFormatExpression
 
 
 class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterAll {
@@ -53,6 +54,18 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     assertResult(
       JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"), JDefaultValue("abc"), JArrayPath(4), JPathLink, JObjectPath("cinque"))) {
         JPath.fromString("one[zwei].trois(abc)[4]>.cinque")
+      }
+  }
+  
+  it should "be able to interpret string format syntax" in {
+    assertResult(
+      JPath(JObjectPath("one"), JArrayPath(2), JObjectPath("trois"), 
+          JStringFormat(
+              Seq(FormatLiteral("qu"), ReplaceHolder, FormatLiteral("arto"), ReplaceHolder, ReplaceHolder, FormatLiteral("five")),
+              Seq(JPath(JObjectPath("vier"), JObjectPath("funf"), JPathLink, JObjectPath("id")),
+                  JPath(JObjectPath("quatro")),
+                  JPath(JObjectPath("four"), JArrayPath(4)))))) {
+        JPath.fromString("one[2].trois|qu${vier.funf>.id}arto${quatro}${four[4]}five")
       }
   }
   
@@ -146,6 +159,12 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     }
   }
   
+  it should "validate string format expressions" in {
+    assert(
+     JPath.validate("one[zwei].trois|qu${vier.funf>.id}arto${quatro}${four[4]}five")   
+    )
+  }
+  
   "JPath unescapeJKey" should "remove escaping from dots" in {
     assertResult("on.e") {
       JPath.unescapeJKey("""on\.e""")
@@ -199,6 +218,27 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     assertResult(tricky) {
       JPath.unescapeJKey(JPath.escapeJKey(tricky))
     }
+  }
+  
+  "JPath StringFormatExpression patterns" should "match with corresponding string expressions" in {
+    val strMatches = Seq(
+        """|key${key.key}key${key}key""",
+        """|${key.key}key${key}key""",
+        """|${key[key](key)}${key}key""",
+        """|${key.key}""",
+        """|key${key[key]>.key}""",
+        """|key${key.key}key${key}""",
+        """|key${key.key>.key}key${key}${key[key]}key""")
+        
+    val p = StringFormatExpression.patterns(0)
+        
+    assert(
+      strMatches.forall { (str: String) => str match {
+        case p(_*) => true
+        case _ => {println(str);false}
+      }}
+    )
+    
   }
 
 }

@@ -6,7 +6,6 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 import scala.io.Source
 import com.superpixel.advokit.json.pathing._
-import com.superpixel.advokit.mapper.JsonContentMapperWithAttacher
 
 trait Match
 
@@ -136,47 +135,47 @@ class JValueMapperTest extends FlatSpec with Matchers with MockFactory with Befo
       }
   }
   
-  "JValueMapper mapWithAttachment" should "return an interface with will attach and extract" in {
-    
-    val compRoundMapping = Set(
-      JPathPair(JPath(JObjectPath("weekName")), JPath(JObjectPath("name")))
-    )
-    
-    val matchResultMapping = Set(
-      JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
-      JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
-      JPathPair(JPath(JObjectPath("score")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("score"))),
-      JPathPair(JPath(JObjectPath("winningTeam")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("winnerCode")))
-    )
-    
-    val attacherPairs = Set(
-      JPathPair(JPath(JObjectPath("matchList")), JPath())
-    )
-      
-    val expected = new Weekend("Week 14", List(
-      new MatchWithResult("Sunderland vs. Stoke", "Stadium of Light", "2 - 0", "sunderland"),
-      new MatchWithResult("Man City vs. Southampton", "Etihad Stadium", "3 - 1", "man-city"),
-      new MatchWithResult("Crystal Palace vs. Newcastle", "Selhurst Park", "5 - 1", "crystal-palace"),
-      new MatchWithResult("Bournemouth vs. Everton", "Vitality Stadium", "3 - 3", "draw"),
-      new MatchWithResult("Aston Villa vs. Watford", "Villa Park", "2 - 3", "watford"),
-      new MatchWithResult("Leicester vs. Man Utd", "King Power Stadium", "1 - 1", "draw"),
-      new MatchWithResult("Tottenham vs. Chelsea", "White Hart Lane", "0 - 0", "draw"),
-      new MatchWithResult("West Ham vs. West Brom", "Boleyn Ground", "1 - 1", "draw"),
-      new MatchWithResult("Norwich vs. Arsenal", "Carrow Road", "1 - 1", "draw"),
-      new MatchWithResult("Liverpool vs. Swansea", "Anfield", "1 - 0", "liverpool")    
-    ))
-    
-    val mapper = JValueMapper[Weekend](compRoundMapping)
-    val smAttacher = JValueAttacher(JValueTransformer(matchResultMapping), attacherPairs)
-    
-    val mapperWithAttachment: JsonContentMapperWithAttacher[Weekend] = mapper.withAttacher(classOf[MatchWithResult], smAttacher)
-    
-    val returned = mapperWithAttachment.mapWithListAttachment(jsonList, compRoundJson)
-    
-    println(returned)
-    assert(returned == expected)
-    
-  }
+//  "JValueMapper mapWithAttachment" should "return an interface with will attach and extract" in {
+//    
+//    val compRoundMapping = Set(
+//      JPathPair(JPath(JObjectPath("weekName")), JPath(JObjectPath("name")))
+//    )
+//    
+//    val matchResultMapping = Set(
+//      JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
+//      JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
+//      JPathPair(JPath(JObjectPath("score")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("score"))),
+//      JPathPair(JPath(JObjectPath("winningTeam")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("winnerCode")))
+//    )
+//    
+//    val attacherPairs = Set(
+//      JPathPair(JPath(JObjectPath("matchList")), JPath())
+//    )
+//      
+//    val expected = new Weekend("Week 14", List(
+//      new MatchWithResult("Sunderland vs. Stoke", "Stadium of Light", "2 - 0", "sunderland"),
+//      new MatchWithResult("Man City vs. Southampton", "Etihad Stadium", "3 - 1", "man-city"),
+//      new MatchWithResult("Crystal Palace vs. Newcastle", "Selhurst Park", "5 - 1", "crystal-palace"),
+//      new MatchWithResult("Bournemouth vs. Everton", "Vitality Stadium", "3 - 3", "draw"),
+//      new MatchWithResult("Aston Villa vs. Watford", "Villa Park", "2 - 3", "watford"),
+//      new MatchWithResult("Leicester vs. Man Utd", "King Power Stadium", "1 - 1", "draw"),
+//      new MatchWithResult("Tottenham vs. Chelsea", "White Hart Lane", "0 - 0", "draw"),
+//      new MatchWithResult("West Ham vs. West Brom", "Boleyn Ground", "1 - 1", "draw"),
+//      new MatchWithResult("Norwich vs. Arsenal", "Carrow Road", "1 - 1", "draw"),
+//      new MatchWithResult("Liverpool vs. Swansea", "Anfield", "1 - 0", "liverpool")    
+//    ))
+//    
+//    val mapper = JValueMapper[Weekend](compRoundMapping)
+//    val smAttacher = JValueAttacher(JValueTransformer(matchResultMapping), attacherPairs)
+//    
+//    val mapperWithAttachment: JsonContentMapperWithAttacher[Weekend] = mapper.withAttacher(classOf[MatchWithResult], smAttacher)
+//    
+//    val returned = mapperWithAttachment.mapWithListAttachment(jsonList, compRoundJson)
+//    
+//    println(returned)
+//    assert(returned == expected)
+//    
+//  }
   
   
   

@@ -34,10 +34,11 @@ object JPath {
   implicit def seq2JPath(seq: Seq[JPathElement]): JPath = new JPath(seq)
   implicit def path2Seq(path: JPath): Seq[JPathElement] = path.seq
   
-  val DELIMS = Seq(""".""", """[""", """]""", """>""", """(""", """)""")
+  val DELIMS = Seq(""".""", """[""", """]""", """>""", """(""", """)""", """|""", """$""", """{""", """}""")
   
   abstract sealed trait ExpressionType {
     final val keyStr = "key";
+    def mustBeFinal: Boolean = false;
     def patterns: Seq[Regex];
   }
   case object StartAccessExpression extends ExpressionType {
@@ -63,12 +64,17 @@ object JPath {
       ("""\(""" + keyStr + """\)""").r    
     )
   }
-  
+  case object StringFormatExpression extends ExpressionType {
+    override val mustBeFinal = true;
+    override val patterns = Seq(
+      ("""\|("""+keyStr+""")?(\$\{[^}]+\}("""+keyStr+""")?)*""").r
+    )
+  }
   
   /***
    * Takes path string, validates and converts in to JPathElement tree.
    * 
-   * apply method cann be called from an object as follows
+   * apply method can be called from an object as follows
    *  JParser.fromString(pathString)
    */
   @throws(classOf[JPathException])
@@ -102,6 +108,9 @@ object JPath {
           
         case (DefaultValueExpression, exprSeq) +: tl =>
           jsonPathConstructor(tl, JDefaultValue(extractFirstFieldKey(exprSeq)) +: acc)
+          
+        case (StringFormatExpression, exprSeq) +: tl =>
+          jsonPathConstructor(tl, parseStringFromatExpression(exprSeq) +: acc)
         
         case _ => throw new JPathException("JPath semantic error.", pathString)
       }
@@ -114,12 +123,40 @@ object JPath {
       }
     }
     
-    new JPath(jsonPathConstructor(syntaxValidatorAndTransformer(pathString), Nil))
+    def parseStringFromatExpression(exprSeq: Seq[String]) : JStringFormat = {
+      def inner(expr: Seq[String], accFormatString: Seq[StringFormat], accValuePaths: Seq[JPath]): JStringFormat = expr match {
+        case Nil => JStringFormat(accFormatString.reverse, accValuePaths.reverse)
+        case (hd +: Nil) => JStringFormat((FormatLiteral(hd) +:accFormatString).reverse, accValuePaths.reverse)
+        case (hd +: (tl @ (hd2 +: tl2))) => (hd, hd2) match {
+          case ("$", "{") => tl2.span { (s: String) => s != "}" } match {
+            case (innerExprSeq, brackEnd +: remainder) => {
+              if (brackEnd != "}") throw new JPathException("Unterminated '${' in String Format expression: " + exprSeq.mkString, pathString)
+              else inner(remainder, 
+                         ReplaceHolder +: accFormatString, 
+                         //TRANSFORM innerExprSeq to JPATH +: accValuePaths)
+                         new JPath(jsonPathConstructor(transformToExpressions(innerExprSeq), Nil)) +: accValuePaths
+                         )
+            }
+          }
+          //ESCAPE '|' in hd
+          case _ => inner(tl, FormatLiteral(hd) +: accFormatString, accValuePaths)
+        }
+      }
+      exprSeq.head match {
+        case "|" => inner(exprSeq.tail, Nil, Nil)
+        case _ => throw new JPathException("String format expression does not start with '|': " + exprSeq.mkString, pathString)
+      }
+    }
+    
+    new JPath(
+        jsonPathConstructor(
+            transformToExpressions(
+                splitToDelimeterSequence(pathString)), Nil))
   }
   
   def validate(pathString: String): Boolean = {
     try {
-      syntaxValidatorAndTransformer(pathString) match {
+      transformToExpressions(splitToDelimeterSequence(pathString)) match {
         case Nil => false;
         case _ => true;
       }
@@ -152,10 +189,31 @@ object JPath {
   
   
   /***
-   * Returns a sequence of tuples, which contain the expression type and the corresponding sequence of strings in REVERSE ORDER.
+   * Returns a sequence of strings, which splits the string (and includes) by delimiters
    * 
    * For example:
    * "one.two[three].four>.five"   
+   * 
+   *   transforms into -
+   *
+   *  Seq("one", ".", "two", "[", "three", "]", ".", "four", ">", ".", "five")
+   *  
+   */
+ 
+  private def splitToDelimeterSequence(pathString: String): Seq[String] = {
+    
+    // Splits the pathString, separating delimiters from keys.
+    // For example "one.two[three].four>.five" is split into
+    // Seq("one", ".", "two", "[", "three", "]" , ".", "four", ">", ".", "five")
+    pathString.split(WITH_DELIMITER_REGEX_STR).toSeq.filter { _ != "" }
+
+  }
+  
+  /***
+   * Returns a sequence of tuples, which contain the expression type and the corresponding sequence of strings in REVERSE ORDER.
+   * 
+   * For example:
+   * Seq("one", ".", "two", "[", "three", "]", ".", "four", ">", ".", "five")   
    * 
    *   transforms into -
    *
@@ -169,9 +227,8 @@ object JPath {
    *  )
    */
   @throws(classOf[JPathException])
-  private def syntaxValidatorAndTransformer(pathString: String): Seq[(ExpressionType, Seq[String])] = {
+  private def transformToExpressions(exprSeq: Seq[String]): Seq[(ExpressionType, Seq[String])] = {
     
-
     /***
      * Tail recurses through the full expression sequence extracting expressions.
      * Returns a sequence of tuples, which contain the expression type and the corresponding sequence of strings.
@@ -190,11 +247,11 @@ object JPath {
      *    (StartAccessExpression, Seq("one")),
      *  )
      */
-    def transformToExpressions(exprSeq: Seq[String], acc: Seq[(ExpressionType, Seq[String])]): Seq[(ExpressionType, Seq[String])] = exprSeq match {
+    def inner(exprSeq: Seq[String], acc: Seq[(ExpressionType, Seq[String])]): Seq[(ExpressionType, Seq[String])] = exprSeq match {
       case Nil => acc
       case seq => {
-        val retTup = extractNextExpression(seq, testForExpressionType(AccessExpression, LinkExpression, DefaultValueExpression))
-        transformToExpressions(retTup._2, retTup._1 +: acc)
+        val retTup = extractNextExpression(seq, testForExpressionType(AccessExpression, LinkExpression, DefaultValueExpression, StringFormatExpression))
+        inner(retTup._2, retTup._1 +: acc)
       }
     }
     
@@ -206,57 +263,53 @@ object JPath {
      * If no sub-sequence passes the expression test an exception is thrown.
      */
     @throws(classOf[JPathException])
-    def extractNextExpression(exprSeq: Seq[String], expressionTest: (Seq[String])=>Option[ExpressionType]): ((ExpressionType, Seq[String]), Seq[String]) = exprSeq match {
-      case Nil => expressionTest(Nil) match {
+    def extractNextExpression(exprSeq: Seq[String], expressionTest: (Seq[String], Boolean)=>Option[ExpressionType]): ((ExpressionType, Seq[String]), Seq[String]) = exprSeq match {
+      case Nil => expressionTest(Nil, true) match {
         case Some(exprType) => return ((exprType, Nil), Nil)
-        case None => throw new JPathException("Empty expression sequence does not match to any allowed expression type.", pathString)
+        case None => throw new JPathException("Empty expression sequence does not match to any allowed expression type.", exprSeq.mkString)
       }
       case _ => {
         for (i <- 1 to exprSeq.size) {
           exprSeq.splitAt(i) match {
-            case (expr, remainder) => expressionTest(expr) match {
+            case (expr, remainder) => expressionTest(expr, remainder.isEmpty) match {
               case Some(exprType) => return ((exprType, expr), remainder)
               case None => 
             }
           }
         }
-        throw new JPathException("String path of invalid format at " + exprSeq.mkString, pathString)
+        throw new JPathException("String path of invalid format at " + exprSeq.mkString, exprSeq.mkString)
       }
     }
     
     /***
      * Takes the expression types that should be tested for and constructs a lambda
      * that returns the expression type if a sequence of strings matches it.
+     * Lambda also takes a boolean to denote whether the sequence ends at the string/line end.
      * 
      * Any none delimiters in the sequence of strings is replaces by a 'key' placeholder and then
      * concatenated to a single string.
      * This allows for easy matching and simple declaration of the expression patterns.
      */
-    def testForExpressionType(exprTypes: ExpressionType*): Seq[String]=>Option[ExpressionType] = {
-      (strSeq: Seq[String]) => {
+    def testForExpressionType(exprTypes: ExpressionType*): (Seq[String], Boolean)=>Option[ExpressionType] = {
+      (strSeq: Seq[String], end: Boolean) => {
         val exprStr = strSeq.map { s => s match {
           case IS_DELIMITER_REGEX(_*) => s
           case _ => exprTypes.head.keyStr
         }}.mkString
         exprTypes.find { x => x.patterns.exists { (p: Regex) => exprStr match {
-          case p(_*) => true
+          case p(_*) => true && !(x.mustBeFinal && !end)
           case _ => false
         }}}
       }
     }
     
-    // Splits the pathString, separating delimiters from keys.
-    // For example "one.two[three].four>.five" is split into
-    // Seq("one", ".", "two", "[", "three", "]" , ".", "four", ">", ".", "five")
-    val exprSeq = pathString.split(WITH_DELIMITER_REGEX_STR).toSeq.filter { _ != "" }
-    
     //Pulls out the starting expression, usually just a key name ("one"), throws a JPathException
     //if the expression doesn't start properly.
     // In our example This tuple looks like:
     // ((StartAccessExpression, Seq("one")), Seq(".", "two", "[", "three", "]" , ".", "four", ">", ".", "five"))
-    val startingTuple = extractNextExpression(exprSeq, testForExpressionType(StartAccessExpression))
+    val startingTuple = extractNextExpression(exprSeq, testForExpressionType(StartAccessExpression, DefaultValueExpression))
     
     //Pulls out the remaining expressions tail recursively and returns them
-    return transformToExpressions(startingTuple._2, Seq(startingTuple._1));
+    return inner(startingTuple._2, Seq(startingTuple._1));
   }
 }

@@ -8,7 +8,6 @@ public class GoalsHolder {
 	private List<String> awayGoals;
 	private String firstHomeGoal;
 	private List<String> scoreNames;
-	public GoalsHolder(){}
 	public GoalsHolder(SimpleMatchJava match, List<String> awayGoals,
 			String firstHomeGoal, List<String> scoreNames) {
 		super();

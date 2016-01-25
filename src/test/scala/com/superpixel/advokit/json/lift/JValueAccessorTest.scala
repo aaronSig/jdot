@@ -178,4 +178,22 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
       accessor.getValue(jPath)
     }
   }
+  
+  it should "format to String Format path spec" in {
+    val accessor = JValueAccessor(jsonVal)
+    assertResult(JString("Is female? false. First Misc the Small: a2. Defaulted? defaulted")) {
+      val jPath = 
+        JPath(JObjectPath("jsonObj"),
+            JStringFormat(
+                Seq(FormatLiteral("Is female? "), ReplaceHolder, FormatLiteral(". First Misc the Small: "), ReplaceHolder, ReplaceHolder, FormatLiteral(". Defaulted? "), ReplaceHolder),
+                Seq(
+                    JPath(JObjectPath("gender"), JObjectPath("female")),
+                    JPath(JObjectPath("misc"), JArrayPath(0)),
+                    JPath(JObjectPath("small")),
+                    JPath(JObjectPath("misc"), JArrayPath(5), JDefaultValue("defaulted")))))
+      accessor.getValue(jPath)
+    }
+  }
+  
+  
 }

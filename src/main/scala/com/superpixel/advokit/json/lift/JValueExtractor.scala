@@ -33,10 +33,10 @@ class JValueExtractor[T](m: Manifest[T], typeHintList: List[Class[_]]) extends J
       case _ => JValueExtractor.formats(localTypeHints ++ typeHintList)
     }
     (json: JValue) => {
-      println("To extract: ")
-      println(m.erasure.getName)
-      println(localFormats.typeHints.hints)
-      println(pretty(render(json)))
+//      println("To extract: ")
+//      println(m.erasure.getName)
+//      println(localFormats.typeHints.hints)
+//      println(pretty(render(json)))
       json.extract[T]
     }
   }

@@ -15,7 +15,7 @@ import java.util.Optional;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class JsonContentMapperBuilderTest {
+public class JvContentMapperBuilderTest {
 	
 	static private List<String> jsonList = new LinkedList<>();
 	
@@ -23,7 +23,7 @@ public class JsonContentMapperBuilderTest {
 	public static void beforeAll() {
 
 		//Get file from resources folder
-		ClassLoader classLoader = JsonContentMapperBuilderTest.class.getClassLoader();
+		ClassLoader classLoader = JvContentMapperBuilderTest.class.getClassLoader();
 		File file = new File(classLoader.getResource("pl-league-week-14.json").getFile());
 
 		try (Scanner scanner = new Scanner(file)) {
@@ -69,6 +69,7 @@ public class JsonContentMapperBuilderTest {
 		
 		JvContentMapper<SimpleMatchJava> mapper = builder.build(SimpleMatchJava.class);
 		
+		System.out.println("WOOOO:" + mapper.map(jsonList.get(0)));
 		assertEquals(new SimpleMatchJava("Sunderland vs. Stoke", Optional.of("Stadium of Light"), "2 - 0", "sunderland"), 
 					mapper.map(jsonList.get(0)));
 		assertEquals(new SimpleMatchJava("Man City vs. Southampton", Optional.of("Etihad Stadium"), "3 - 1", "man-city"), 
