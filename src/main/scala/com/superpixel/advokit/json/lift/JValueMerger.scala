@@ -2,11 +2,17 @@ package com.superpixel.advokit.json.lift
 
 import org.json4s._
 import org.json4s.native.JsonMethods._
-
-
-
+import com.superpixel.advokit.mapper._
 
 object JValueMerger {
+  
+  def transfromMergingJson(stringMerges: MergingJson): (Seq[JValue], Seq[JValue]) = stringMerges match {
+    case NoMerging => (Nil, Nil)
+    case MergingJsonPre(pre) => (pre.map{(s: String) => parse(s)} , Nil)
+    case MergingJsonPost(post) => (Nil, post.map{(s: String) => parse(s)})
+    case MergingJsonPrePost(pre, post) => (pre.map{(s: String) => parse(s)}, post.map{(s: String) => parse(s)})
+  }
+  
   
   type JMerge =  (JValue, JValue) => JValue
   type JArrayMerge = (List[JValue], List[JValue], JMerge) => List[JValue]
