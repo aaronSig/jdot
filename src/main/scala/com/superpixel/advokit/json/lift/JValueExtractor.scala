@@ -15,10 +15,10 @@ class JValueExtractor[T](m: Manifest[T], typeHintList: List[Class[_]]) extends J
   
   def extractFromJValue(json: JValue): T = {
     implicit val localFormats = formats;
-    println("To extract: ")
-    println(m.erasure.getName)
-    println(localFormats.typeHints.hints)
-    println(pretty(render(json)))
+//    println("To extract: ")
+//    println(m.erasure.getName)
+//    println(localFormats.typeHints.hints)
+//    println(pretty(render(json)))
     json.extract[T]
   }
   
