@@ -93,8 +93,10 @@ object JPath {
         case (StartAccessExpression, Nil) +: Nil => acc
         case (StartAccessExpression, exprSeq) +: Nil => 
           jsonPathConstructor(Nil, JObjectPath(extractFirstFieldKey(exprSeq)) +: acc)
+        case (DefaultValueExpression, exprSeq) +: tl =>
+          jsonPathConstructor(tl, JDefaultValue(extractFirstFieldKey(exprSeq)) +: acc)
         case (_, exprSeq) +: Nil => 
-          throw new JPathException("J stringPath does not start correctly, the first expression must be a json key", pathString)
+          throw new JPathException("JPath String does not start correctly, the first expression must be a json key or a string literal in brackets.", pathString)
         
         case (AccessExpression, exprSeq) +: tl => exprSeq match {
           case Seq("[", IS_NUMERIC_REGEX(idx), "]") => 
@@ -106,8 +108,6 @@ object JPath {
         case (LinkExpression, exprSeq) +: tl => 
           jsonPathConstructor(tl, JPathLink +: acc)
           
-        case (DefaultValueExpression, exprSeq) +: tl =>
-          jsonPathConstructor(tl, JDefaultValue(extractFirstFieldKey(exprSeq)) +: acc)
           
         case (StringFormatExpression, exprSeq) +: tl =>
           jsonPathConstructor(tl, parseStringFromatExpression(exprSeq) +: acc)
