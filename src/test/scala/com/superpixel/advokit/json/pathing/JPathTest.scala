@@ -17,6 +17,13 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       }
   }
   
+  it should "be able to interpred escaped json keys" in {
+    assertResult(
+      JPath(JObjectPath("on.e"), JObjectPath("zw>ei"), JObjectPath("tr[ois"))) {
+        JPath.fromString("""on\.e.zw\>ei.tr\[ois""")
+      }
+  }
+  
   it should "be able to interpret square bracket syntax" in {
     assertResult(
       JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"))) {
@@ -69,6 +76,28 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       }
   }
   
+  
+  it should "be able to interpret string format syntax, treating select parts as literals" in {
+    assertResult(
+      JPath(JObjectPath("one"), JObjectPath("two"), 
+          JStringFormat(
+              Seq(FormatLiteral("web.start?id="), ReplaceHolder),
+              Seq(JPath(JObjectPath("three"), JDefaultValue("1.234")))))) {
+        JPath.fromString("one.two|web.start?id=${three(1.234)}")
+      }
+  }
+  
+  it should "be able to interpret triky string format syntax, where literal is a delim" in {
+    assertResult(
+      JPath(JObjectPath("one"), JObjectPath("two"), 
+          JStringFormat(
+              Seq(FormatLiteral("comp="), ReplaceHolder, FormatLiteral("."), ReplaceHolder),
+              Seq(JPath(JObjectPath("three")),
+                  JPath(JObjectPath("four")))))) {
+        JPath.fromString("one.two|comp=${three}.${four}")
+      }
+  }
+  
   it should "be able to read blank string as blank path" in {
     assertResult(JPath()) {
       JPath.fromString("")
@@ -77,166 +106,170 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
 
   "JPath validate" should "validate dot syntax" in {
     assertResult(true) {
-      JPath.validate("one.zwei.trois")
+      JPath.validate("one.zwei.trois")._1
     }
   }
 
   it should "validate and flag bad dot syntax (double dot)" in {
     assertResult(false) {
-      JPath.validate("one..zwei.trois")
+      JPath.validate("one..zwei.trois")._1
     }
   }
 
   it should "validate and flag bad dot syntax (leading dot)" in {
     assertResult(false) {
-      JPath.validate(".one.zwei.trois")
+      JPath.validate(".one.zwei.trois")._1
     }
   }
 
   it should "validate and flag bad dot syntax (trailing dot)" in {
     assertResult(false) {
-      JPath.validate("one.zwei.trois.")
+      JPath.validate("one.zwei.trois.")._1
     }
   }
 
   it should "validate bracket syntax" in {
     assertResult(true) {
-      JPath.validate("one[zwei][trois]")
+      JPath.validate("one[zwei][trois]")._1
     }
   }
   
   it should "allow expressions starting with array access via brackets" in {
     assertResult(true) {
-      JPath.validate("[1].zwei.trois")
+      JPath.validate("[1].zwei.trois")._1
     }
     assertResult(true) {
-      JPath.validate("[one][zwei][trois]")
+      JPath.validate("[one][zwei][trois]")._1
     }
   }
 
   it should "validate and flag bad bracket syntax (unopened brackets)" in {
     assertResult(false) {
-      JPath.validate("one][zwei][trois]")
+      JPath.validate("one][zwei][trois]")._1
     }
   }
 
   it should "validate and flag bad bracket syntax (unclosed brackets)" in {
     assertResult(false) {
-      JPath.validate("one[zwei][[trois]")
+      JPath.validate("one[zwei][[trois]")._1
     }
   }
 
   it should "validate and flag bad bracket syntax (nested brackets)" in {
     assertResult(false) {
-      JPath.validate("one[zwei][trois[quatro]]")
+      JPath.validate("one[zwei][trois[quatro]]")._1
     }
   }
 
   it should "validate and flag bad bracket syntax (trailing brackets)" in {
     assertResult(false) {
-      JPath.validate("one[zwei][trois][quatro][")
+      JPath.validate("one[zwei][trois][quatro][")._1
     }
   }
 
   it should "validate mixed syntax" in {
     assertResult(true) {
-      JPath.validate("one.zwei[trois][quatro]")
+      JPath.validate("one.zwei[trois][quatro]")._1
     }
     assertResult(true) {
-      JPath.validate("one[zwei].trois[quatro]")
+      JPath.validate("one[zwei].trois[quatro]")._1
     }
   }
 
   it should "validate and flag bad mixed syntax (nested dot)" in {
     assertResult(false) {
-      JPath.validate("one[zwei][trois.quatro]")
+      JPath.validate("one[zwei][trois.quatro]")._1
     }
   }
 
   it should "validate and flag bad mixed syntax (dot to bracket)" in {
     assertResult(false) {
-      JPath.validate("one[zwei].trois.[quatro]")
+      JPath.validate("one[zwei].trois.[quatro]")._1
     }
   }
   
   it should "validate string format expressions" in {
     assert(
-     JPath.validate("one[zwei].trois|qu${vier.funf>.id}arto${quatro}${four[4]}five")   
+     JPath.validate("one[zwei].trois|qu${vier.funf>.id}arto${quatro}${four[4]}five")._1
     )
   }
   
-  "JPath unescapeJKey" should "remove escaping from dots" in {
+  "JPath unescapeJsonKey" should "remove escaping from dots" in {
     assertResult("on.e") {
-      JPath.unescapeJKey("""on\.e""")
+      JPath.unescapeJsonKey("""on\.e""")
     }
   }
   
   it should "remove escaping from square brackets" in {
     assertResult("o[n]e") {
-      JPath.unescapeJKey("""o\[n\]e""")
+      JPath.unescapeJsonKey("""o\[n\]e""")
     }
   }
   
   it should "remove escaping from chevron" in {
     assertResult("on>>e>") {
-      JPath.unescapeJKey("""on\>\>e\>""")
+      JPath.unescapeJsonKey("""on\>\>e\>""")
     }
   }
   
   it should "remove escaping with multiple backslashes" in {
     assertResult("""on\\>.e\\\\]""") {
-      JPath.unescapeJKey("""on\\\>\.e\\\\\]""")
+      JPath.unescapeJsonKey("""on\\\>\.e\\\\\]""")
     }
   }
   
-  "JPath escapeJKey" should "escape dots" in {
+  "JPath escapeJsonKey" should "escape dots" in {
     assertResult("""on\.e""") {
-      JPath.escapeJKey("""on.e""")
+      JPath.escapeJsonKey("""on.e""")
     }
   }
   
   it should "escape square brackets" in {
     assertResult("""on\]\[e""") {
-      JPath.escapeJKey("""on][e""")
+      JPath.escapeJsonKey("""on][e""")
     }
   }
   
   it should "escape chevron" in {
     assertResult("""on\>e""") {
-      JPath.escapeJKey("""on>e""")
+      JPath.escapeJsonKey("""on>e""")
     }
   }
   
   it should "escape cancelled escaped special chars" in {
     assertResult("""on\\\.e""") {
-      JPath.escapeJKey("""on\\.e""")
+      JPath.escapeJsonKey("""on\\.e""")
     }
   }
   
-  "JPath escapeJKey and unescapeJKey" should "be inverse functions" in {
+  "JPath escapeJsonKey and unescapeJsonKey" should "be inverse functions" in {
     val tricky = """>o\\"\\\\.n\\>e.tw\\o't\\]\\[h[ree""";
     assertResult(tricky) {
-      JPath.unescapeJKey(JPath.escapeJKey(tricky))
+      JPath.unescapeJsonKey(JPath.escapeJsonKey(tricky))
     }
   }
   
   "JPath StringFormatExpression patterns" should "match with corresponding string expressions" in {
+    val lit = StringFormatExpression.literalStr
+    val key = StringFormatExpression.keyStr
     val strMatches = Seq(
-        """|key${key.key}key${key}key""",
-        """|${key.key}key${key}key""",
-        """|${key[key](key)}${key}key""",
+        """|lit${key.key}lit${key}lit""",
+        """|${key.key}lit${key}lit""",
+        """|${key[key](lit)}${key}lit""",
         """|${key.key}""",
-        """|key${key[key]>.key}""",
-        """|key${key.key}key${key}""",
-        """|key${key.key>.key}key${key}${key[key]}key""")
+        """|lit${key[key]>.key}""",
+        """|lit${key.key}lit${key}""",
+        """|lit${key.key>.key}lit${key}${key[key]}lit""")
         
     val p = StringFormatExpression.patterns(0)
         
     assert(
-      strMatches.forall { (str: String) => str match {
-        case p(_*) => true
-        case _ => {println(str);false}
-      }}
+      strMatches.forall { (str: String) => 
+        str.replace("lit", lit).replace("key", key) match {
+          case p(_*) => true
+          case _ => {println(str);false}
+        }
+      }
     )
     
   }
