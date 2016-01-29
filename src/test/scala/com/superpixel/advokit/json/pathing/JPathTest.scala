@@ -38,6 +38,13 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       }
   }
   
+  it should "be able to interpret square brackets array syntax at start" in {
+    assertResult(
+      JPath(JArrayPath(1), JObjectPath("zwei"), JObjectPath("trois"))) {
+        JPath.fromString("[1].zwei[trois]")
+      }
+  }
+  
   it should "be able to interpret default values" in {
     assertResult(
         JPath(JObjectPath("one"), JObjectPath("zwei"), JDefaultValue("abc"))) {

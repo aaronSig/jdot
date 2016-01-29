@@ -113,10 +113,7 @@ object JPath {
         case Nil => acc
         case (StartAccessExpression, Nil) +: Nil => acc
         case (StartAccessExpression, exprSeq) +: Nil => 
-          exprSeq filter {!_.isInstanceOf[Delimiter]} match {
-            case JsonKey(key) +: Nil => jsonPathConstructor(Nil, JObjectPath(key) +: acc)
-            case _ => throw new JPathException(s"Cannot find Json Key expression element in StartAccessExpression: $exprSeq", pathString)
-          }
+          jsonPathConstructor(Nil, parseAccessExpression(exprSeq) +: acc)
         
         case (DefaultValueExpression, exprSeq) +: tl =>
           exprSeq filter {!_.isInstanceOf[Delimiter]} match {
@@ -128,33 +125,37 @@ object JPath {
         case (_, exprSeq) +: Nil => 
           throw new JPathException("JPath String does not start correctly, the first expression must be a json key or a string literal in brackets.", pathString)
         
-        case (AccessExpression, exprSeq) +: tl => exprSeq match {
-          case Seq(Delimiter("["), JsonKey(IS_NUMERIC_REGEX(idx)), Delimiter("]")) => 
-            jsonPathConstructor(tl, JArrayPath(idx.toInt) +: acc)
-          case _ =>  
-            exprSeq filter {!_.isInstanceOf[Delimiter]} match {
-              case JsonKey(key) +: Nil => jsonPathConstructor(tl, JObjectPath(key) +: acc)
-              case _ => throw new JPathException(s"Cannot find Json Key expression element in AccessExpression: $exprSeq", pathString)
-            }
           
-        }
+        case (AccessExpression, exprSeq) +: tl => 
+          jsonPathConstructor(tl, parseAccessExpression(exprSeq) +: acc)
+          
         
         case (LinkExpression, exprSeq) +: tl => 
           jsonPathConstructor(tl, JPathLink +: acc)
           
           
         case (StringFormatExpression, exprSeq) +: tl =>
-          jsonPathConstructor(tl, parseStringFromatExpression(exprSeq) +: acc)
+          jsonPathConstructor(tl, parseStringFormatExpression(exprSeq) +: acc)
         
         case _ => throw new JPathException("JPath semantic error.", pathString)
       }
+    }
+    
+    def parseAccessExpression(exprSeq: Seq[ExpressionElement]): JPathElement = exprSeq match {
+      case Seq(Delimiter("["), JsonKey(IS_NUMERIC_REGEX(idx)), Delimiter("]")) => 
+        JArrayPath(idx.toInt)
+      case _ =>  
+        exprSeq filter {!_.isInstanceOf[Delimiter]} match {
+          case JsonKey(key) +: Nil => JObjectPath(key)
+          case _ => throw new JPathException(s"Cannot find Json Key expression element in access expression: $exprSeq", pathString)
+        }
     }
     
     /***
      * Helper method to parse StringFormatExpression sequences.
      * 
      */
-    def parseStringFromatExpression(exprSeq: Seq[ExpressionElement]) : JStringFormat = {
+    def parseStringFormatExpression(exprSeq: Seq[ExpressionElement]) : JStringFormat = {
       def inner(expr: Seq[ExpressionElement], accFormatString: Seq[StringFormat], accValuePaths: Seq[JPath]): JStringFormat = expr match {
         case Nil => JStringFormat(accFormatString.reverse, accValuePaths.reverse)
         case (Literal(lit) +: Nil) => JStringFormat((FormatLiteral(lit) +:accFormatString).reverse, accValuePaths.reverse)
@@ -207,9 +208,10 @@ object JPath {
   
   private val IS_DELIMITER_STR = """[""" + DELIMS.map(Pattern.quote(_)).mkString + """]"""
   private val IS_DELIMITER_REGEX = (IS_DELIMITER_STR).r
-  private val UNESCAPED_DELIMS_STR = """((?<=(?<!\\)(?:\\{2}){0,10})[""" + DELIMS.map(Pattern.quote(_)).mkString + """])"""
   
-  private val ESCAPED_DELIM_REGEX = ("""(\\)(""" + IS_DELIMITER_STR + """)""").r
+  private val PATTERN_ESCAPE = Regex.quote(ESCAPE)
+  private val UNESCAPED_DELIMS_STR = """((?<=(?<!""" + PATTERN_ESCAPE + """)(?:""" + PATTERN_ESCAPE + """{2}){0,10})[""" + DELIMS.map(Pattern.quote(_)).mkString + """])"""
+  private val ESCAPED_DELIM_REGEX = ("""(""" + PATTERN_ESCAPE + """)(""" + IS_DELIMITER_STR + """)""").r
   private val UNESCAPED_DELIM_REGEX = UNESCAPED_DELIMS_STR.r
   private val WITH_DELIMITER_REGEX_STR = {
     """((?<=""" + UNESCAPED_DELIMS_STR + """)|(?=""" + UNESCAPED_DELIMS_STR + """))"""
@@ -220,7 +222,7 @@ object JPath {
   }
   
   def escapeJsonKey(key: String): String = {
-    UNESCAPED_DELIM_REGEX.replaceAllIn(key, """\\$1""")
+    UNESCAPED_DELIM_REGEX.replaceAllIn(key, """\""" + ESCAPE + """$1""")
   }
   
   
@@ -274,7 +276,7 @@ object JPath {
       else {
         (pathString.charAt(check).toString(), literalUntil) match {
           case ("", _) => throw new JPathException(s"String format expression error. Check: $check Length: $length", pathString);
-          case (ESCAPE, _) => inner(start, check+2, acc, literalUntil)
+          case (ESCAPE, _) => {println(s"Escape found: $ESCAPE"); inner(start, check+2, acc, literalUntil)}
           case (c, Some(s)) if (s == c) => 
             inner(check+1, check+1, 
                   Delimiter(c) +: Literal(pathString.substring(start, check)) +: acc, 

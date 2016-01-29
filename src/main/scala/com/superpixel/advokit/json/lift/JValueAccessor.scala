@@ -18,7 +18,10 @@ object JValueAccessor {
   
   def apply(json: JValue, linkLamb: String=>Option[JValue] = (s)=>None): JValueAccessor = new JValueAccessor(json, linkLamb)
   
-  private val notFoundLamb = (jVal: JValue, jPath: JPathElement) => (JNothing, Continue)
+  private val notFoundLamb = (jVal: JValue, jPath: JPathElement) => {
+    println("NOT FOUND: " + jPath)
+    (JNothing, Continue)
+  }
   private val endLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], JValue] = 
     (JValueTraverser.jDefaultValueNoComplexEnd andThen { case s: String => JString(s) }) orElse 
     { case (jVal, _) => jVal }
