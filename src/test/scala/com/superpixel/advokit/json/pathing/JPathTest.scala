@@ -105,6 +105,17 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       }
   }
   
+  it should "be able to interpret conditional syntax" in {
+    assertResult(
+      JPath(JObjectPath("one"), JArrayPath(2), JConditional(
+        JPath(JObjectPath("three"), JObjectPath("four"), JPathLink, JObjectPath("five")),
+        JPath(JObjectPath("three"), JObjectPath("four"), JPathLink, JObjectPath("five"), JObjectPath("six")),
+        JPath(JObjectPath("notThree"))
+      ))) {
+      JPath.fromString("one[2]~three.four>.five?three.four>.five.six:notThree")
+    }
+  }
+  
   it should "be able to read blank string as blank path" in {
     assertResult(JPath()) {
       JPath.fromString("")

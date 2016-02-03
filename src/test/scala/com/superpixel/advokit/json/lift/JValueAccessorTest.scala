@@ -195,5 +195,22 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
     }
   }
   
+  it should "take true/false path based on condition path" in {
+    val accessor = JValueAccessor(jsonVal)
+    assertResult(JInt(5)) {
+      val jPath = JPath(JObjectPath("jsonObj"), JConditional(
+            JPath(JObjectPath("gender"), JObjectPath("male")),
+            JPath(JObjectPath("big")),
+            JPath(JObjectPath("misc"), JArrayPath(2))))
+      accessor.getValue(jPath)
+    }
+    assertResult(JString("c")) {
+      val jPath = JPath(JObjectPath("jsonObj"), JConditional(
+            JPath(JObjectPath("gender"), JObjectPath("female")),
+            JPath(JObjectPath("big")),
+            JPath(JObjectPath("misc"), JArrayPath(2))))
+      accessor.getValue(jPath)
+    }
+  }
   
 }

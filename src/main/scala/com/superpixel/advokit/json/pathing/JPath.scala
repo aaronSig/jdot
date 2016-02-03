@@ -35,7 +35,7 @@ object JPath {
   implicit def path2Seq(path: JPath): Seq[JPathElement] = path.seq
   
   val ESCAPE = """\"""
-  val DELIMS = Seq(""".""", """[""", """]""", """>""", """(""", """)""", """|""", """$""", """{""", """}""")
+  val DELIMS = Seq(""".""", """[""", """]""", """>""", """(""", """)""", """|""", """$""", """{""", """}""", """~""", """?""", """:""")
   val LITERAL_BETWEEN_DELIMS = Map("""(""" -> """)""", """|""" -> """$""", """}""" -> """$""")
   
   /***
@@ -47,6 +47,7 @@ object JPath {
   sealed trait ExpressionType {
     final val keyStr = "key";
     final val literalStr = "lit";
+    final val nestedPath = ".+";
     protected def nestedPathWithoutChar(c: String): String = """[^""" + Pattern.quote(c) + """]+"""
     
     def mustBeFinal: Boolean = false;
@@ -79,6 +80,12 @@ object JPath {
     override val mustBeFinal = true;
     override val patterns = Seq(
       ("""\|("""+ literalStr +""")?(\$\{"""+ nestedPathWithoutChar("}") +"""\}("""+ literalStr +""")?)*""").r
+    )
+  }
+  case object ConditionalExpression extends ExpressionType {
+    override val mustBeFinal = true;
+    override val patterns = Seq(
+      ("""\~""" + nestedPathWithoutChar("?") + """\?""" + nestedPathWithoutChar(":") + """\:""" + nestedPath).r
     )
   }
   
@@ -121,6 +128,13 @@ object JPath {
             case _ => throw new JPathException(s"Cannot find Literal expression element in DefaultValueExpression: $exprSeq", pathString)
           }
         
+        case (StringFormatExpression, exprSeq) +: tl =>
+          jsonPathConstructor(tl, parseStringFormatExpression(exprSeq) +: acc)
+          
+        case (ConditionalExpression, exprSeq) +: tl => 
+          jsonPathConstructor(tl, parseCondtionalExpression(exprSeq) +: acc) 
+          
+          
         //Only the above are allowed to start the pathString (which ends the expressionType sequence)
         case (_, exprSeq) +: Nil => 
           throw new JPathException("JPath String does not start correctly, the first expression must be a json key or a string literal in brackets.", pathString)
@@ -133,9 +147,6 @@ object JPath {
         case (LinkExpression, exprSeq) +: tl => 
           jsonPathConstructor(tl, JPathLink +: acc)
           
-          
-        case (StringFormatExpression, exprSeq) +: tl =>
-          jsonPathConstructor(tl, parseStringFormatExpression(exprSeq) +: acc)
         
         case _ => throw new JPathException("JPath semantic error.", pathString)
       }
@@ -178,6 +189,26 @@ object JPath {
       exprSeq.head match {
         case Delimiter("|") => inner(exprSeq.tail, Nil, Nil)
         case _ => throw new JPathException("String format expression does not start with '|': " + exprSeq.mkString, pathString)
+      }
+    }
+    
+    def parseCondtionalExpression(exprSeq: Seq[ExpressionElement]): JConditional = {
+      exprSeq.head match {
+        case Delimiter("~") => 
+          exprSeq.tail.span { (s: ExpressionElement) => s != Delimiter("?") } match {
+            case (conditionSeq, Delimiter("?") +: tl) => 
+              tl.span { (s:ExpressionElement) => s != Delimiter(":") } match {
+                case (truthSeq, Delimiter(":") +: falseSeq) => 
+                  JConditional(
+                        jsonPathConstructor(transformToExpressions(conditionSeq), Nil),
+                        jsonPathConstructor(transformToExpressions(truthSeq), Nil),
+                        jsonPathConstructor(transformToExpressions(falseSeq), Nil)
+                  )
+                case _ => throw new JPathException("Conditional expression does not contain ':' character: " + exprSeq.mkString, pathString)
+              }
+            case _ => throw new JPathException("Conditional expression does not contain '?' character: " + exprSeq.mkString, pathString)
+          }
+        case _ => throw new JPathException("Conditional expression does not start with '~': " + exprSeq.mkString, pathString)
       }
     }
     
@@ -362,7 +393,7 @@ object JPath {
     def inner(exprSeq: Seq[ExpressionElement], acc: Seq[(ExpressionType, Seq[ExpressionElement])]): Seq[(ExpressionType, Seq[ExpressionElement])] = exprSeq match {
       case Nil => acc
       case seq => {
-        val retTup = extractNextExpression(seq, testForExpressionType(AccessExpression, LinkExpression, DefaultValueExpression, StringFormatExpression))
+        val retTup = extractNextExpression(seq, testForExpressionType(AccessExpression, LinkExpression, DefaultValueExpression, StringFormatExpression, ConditionalExpression))
         inner(retTup._2, retTup._1 +: acc)
       }
     }

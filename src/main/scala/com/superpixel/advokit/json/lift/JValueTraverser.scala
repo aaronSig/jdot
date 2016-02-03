@@ -50,7 +50,7 @@ object JValueTraverser {
             }, pathSeq.head, tl)
         
         case JDefaultValue(dVal) +: tl => value match {
-          case JNothing => endLamb.lift(JString(dVal), Some(pathSeq.head))
+          case JNothing | JNull => endLamb.lift(JString(dVal), Some(pathSeq.head))
           case jV => routeValueOption(Some(jV), pathSeq.head, tl)
         }
         
@@ -70,6 +70,17 @@ object JValueTraverser {
               Some(pathSeq.head))
           }
         }
+        
+        case JConditional(conditionPath, truthPath, falsePath) +: tl => {
+          if (tl != Nil) throw new JsonTraversalException(s"JConditional must be final element in JPath: $jPath", jVal)
+          else {
+            traverse(linkLamb, notFoundLamb, innerConditionJPathEndLamb)(value, conditionPath) match {
+              case Some(true) => routeValueOption(Some(value), pathSeq.head, truthPath)
+              case _ => routeValueOption(Some(value), pathSeq.head, falsePath)
+            }
+            
+          }
+        }
       }
     }
     
@@ -85,6 +96,17 @@ object JValueTraverser {
       case (JInt(int), _) => int.toString
       case (JBool(bool), _) => bool.toString
     }
+  
+  private val innerConditionJPathEndLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], Boolean] = {
+    case (JBool(bool), _) => bool
+    case (JString(str: String), _) => str.toLowerCase != "false"
+    case (JInt(int), _) => int != 0
+    case (JDouble(db), _) => db != 0
+    case (JDecimal(bd), _) => bd != 0
+    case (JObject(fieldLs), _) => !fieldLs.isEmpty
+    case (JArray(itemLs), _) => !itemLs.isEmpty
+    case (JNothing | JNull, _) => false
+  }
   
   private def accessJArrayValue(jVal: JValue, key: Int): Option[JValue] = jVal match {
     case JObject(fieldLs) => fieldLs.find { jFld => jFld._1 == key.toString } .map(_._2)
