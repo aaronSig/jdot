@@ -90,6 +90,12 @@ object JPath {
   }
   
   /***
+   * Marks expressions that can-only/cannnot be used at the start of the path string
+   */
+  val allowedStartingExpressions = Seq(StartAccessExpression, DefaultValueExpression, StringFormatExpression, ConditionalExpression)
+  val allowedNonStartingExpressions = Seq(AccessExpression, LinkExpression, DefaultValueExpression, StringFormatExpression, ConditionalExpression)
+  
+  /***
    * Helper trait for splitting and identifying pathString elements
    */
   sealed trait ExpressionElement {
@@ -393,7 +399,7 @@ object JPath {
     def inner(exprSeq: Seq[ExpressionElement], acc: Seq[(ExpressionType, Seq[ExpressionElement])]): Seq[(ExpressionType, Seq[ExpressionElement])] = exprSeq match {
       case Nil => acc
       case seq => {
-        val retTup = extractNextExpression(seq, testForExpressionType(AccessExpression, LinkExpression, DefaultValueExpression, StringFormatExpression, ConditionalExpression))
+        val retTup = extractNextExpression(seq, testForExpressionType(allowedNonStartingExpressions))
         inner(retTup._2, retTup._1 +: acc)
       }
     }
@@ -435,7 +441,7 @@ object JPath {
      * And JsonKeys or Literals are replaced by a placeholder and then concatenated to a single string with Delimiters verbatim.
      * This allows for easy matching and simple declaration of the expression patterns.
      */
-    def testForExpressionType(exprTypes: ExpressionType*): (Seq[ExpressionElement], Boolean)=>Option[ExpressionType] = {
+    def testForExpressionType(exprTypes: Seq[ExpressionType]): (Seq[ExpressionElement], Boolean)=>Option[ExpressionType] = {
       (exprEleSeq: Seq[ExpressionElement], end: Boolean) => {
         val exprStr = exprEleSeq.map { exE => exE match {
           case Delimiter(d) => d
@@ -453,7 +459,7 @@ object JPath {
     //if the expression doesn't start properly.
     // In our example This tuple looks like:
     // ((StartAccessExpression, Seq("one")), Seq(".", "two", "[", "three", "]" , ".", "four", ">", ".", "five"))
-    val startingTuple = extractNextExpression(exprSeq, testForExpressionType(StartAccessExpression, DefaultValueExpression))
+    val startingTuple = extractNextExpression(exprSeq, testForExpressionType(allowedStartingExpressions))
     
     //Pulls out the remaining expressions tail recursively and returns them
     return inner(startingTuple._2, Seq(startingTuple._1));
