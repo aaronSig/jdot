@@ -3,10 +3,18 @@ target/
 .project
 .settings/
 .cache
+.history
+.lib/
 bin/
+dist/*
 project/
 
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+
 *.class
+*.log
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
