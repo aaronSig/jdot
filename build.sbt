@@ -4,8 +4,11 @@ organization := "com.superpixel.advokit"
 name := "content-mapper"
 
 version := "0.0.1-SHAPSHOT"
+isSnapshot := true
 
 scalaVersion := "2.11.4"
+
+scalacOptions += "-feature"
 
 EclipseKeys.withSource := true
 

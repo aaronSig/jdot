@@ -11,7 +11,7 @@ object StringFormat {
   
   def formatToString(sfSeq: Seq[StringFormat], strings: Seq[String]): String = {
     def inner(seq: Seq[StringFormat], strs: Seq[String], acc: Seq[String]): Seq[String] = seq match {
-      case Nil => acc reverse
+      case Nil => acc.reverse
       case (ReplaceHolder +: tl) => 
         inner(tl, strs.tail, strs.headOption.getOrElse {
           throw new StringFormatException("Insufficient number of formatStrings ", sfSeq, strings)

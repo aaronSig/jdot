@@ -305,7 +305,7 @@ object JPath {
   private def splitToDelimiterSequence(pathString: String): Seq[ExpressionElement] = {
     val length = pathString.length();
     def inner(start: Int, check: Int, acc: Seq[ExpressionElement], literalUntil: Option[String] = None): Seq[ExpressionElement] = {
-      if (start >= length) acc filter { _.str != "" } reverse;
+      if (start >= length) (acc filter { _.str != ""}).reverse;
       else if (check >= length) literalUntil match {
         case Some(_) => inner(check+1, check+1, (Literal(pathString.substring(start, length)) +: acc)) 
         case None => inner(check+1, check+1, (JsonKey(unescapeJsonKey(pathString.substring(start, length))) +: acc))
