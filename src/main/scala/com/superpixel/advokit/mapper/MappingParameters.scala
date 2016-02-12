@@ -1,5 +1,7 @@
 package com.superpixel.advokit.mapper
 
+import com.superpixel.advokit.json.pathing.JPath
+
 
 sealed trait Inclusions;
 case class FixedInclusions(inc: Map[String, String]) extends Inclusions;
@@ -20,6 +22,7 @@ case class SimpleAttachment(jsonToAttach: String, attacher: JsonContentAttacher)
 case class SimpleListAttachment(jsonListToAttach: List[String], attacher: JsonContentAttacher) extends Attachment
 case class SimpleTransformAttachment(jsonToTransformAttach: String, transformer: JsonContentTransformer, attacher: JsonContentAttacher) extends Attachment
 case class SimpleTransformListAttachment(jsonListToTransformAttach: List[String], transformer: JsonContentTransformer, attacher: JsonContentAttacher) extends Attachment
+case class JsonArrayTransformAttachment(jPathToArray: String, jsonContainingArray: String, transformer: JsonContentTransformer, attacher: JsonContentAttacher) extends Attachment
 case class NestedTransformAttachment(jsonToTransformAttach: String, transformer: JsonContentTransformer, transformAttachments: List[Attachment], attacher: JsonContentAttacher) extends Attachment
 case class NestedTransformListAttachment(jsonListToTransformAttach: List[String], transformer: JsonContentTransformer, transformAttachments: List[Attachment], attacher: JsonContentAttacher) extends Attachment
-
+case class JsonArrayNestedTransformAttachment(jPathToArray: String, jsonContainingArray: String, transformer: JsonContentTransformer, transformAttachments: List[Attachment], attacher: JsonContentAttacher) extends Attachment
