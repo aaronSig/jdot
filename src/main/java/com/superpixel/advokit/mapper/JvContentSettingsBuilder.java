@@ -1,6 +1,6 @@
 package com.superpixel.advokit.mapper;
 
-import static com.superpixel.advokit.ScalaConverters.jvArrayToScSeq;
+import static com.superpixel.advokit.ScalaConverters.jvListToScSeq;
 import static com.superpixel.advokit.ScalaConverters.jvToScList;
 import static com.superpixel.advokit.ScalaConverters.jvToScMap;
 
@@ -29,11 +29,11 @@ public class JvContentSettingsBuilder {
 	    
 	    MergingJson scMergJson;
 	    if (preMergingJsonOpt.isPresent() && postMergingJsonOpt.isPresent()) {
-	      scMergJson = new MergingJsonPrePost(jvArrayToScSeq(preMergingJsonOpt.get()), jvArrayToScSeq(postMergingJsonOpt.get()));
+	      scMergJson = new MergingJsonPrePost(jvListToScSeq(preMergingJsonOpt.get()), jvListToScSeq(postMergingJsonOpt.get()));
 	    } else if (preMergingJsonOpt.isPresent()) {
-	      scMergJson = new MergingJsonPre(jvArrayToScSeq(preMergingJsonOpt.get()));
+	      scMergJson = new MergingJsonPre(jvListToScSeq(preMergingJsonOpt.get()));
 	    } else if (postMergingJsonOpt.isPresent()) {
-	      scMergJson = new MergingJsonPost(jvArrayToScSeq(postMergingJsonOpt.get()));
+	      scMergJson = new MergingJsonPost(jvListToScSeq(postMergingJsonOpt.get()));
 	    } else {
 	      scMergJson = NoMerging$.MODULE$;
 	    }
