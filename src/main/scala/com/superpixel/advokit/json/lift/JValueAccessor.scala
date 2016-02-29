@@ -1,15 +1,26 @@
 package com.superpixel.advokit.json.lift
 
-import com.superpixel.advokit.json.pathing._
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import com.superpixel.advokit.json.lift.JValueTraverser.{RouteChoice, Continue, Stop}
+
+import com.superpixel.advokit.json.lift.JValueTraverser.Continue
+import com.superpixel.advokit.json.pathing._
 
 class JValueAccessor(json: JValue, linkLamb: String=>Option[JValue]) {
 
 	private val traverseForValue = JValueTraverser.traverse(linkLamb, JValueAccessor.notFoundLamb, JValueAccessor.endLamb)_
 
-  def getValue(jPath: JPath): JValue = traverseForValue(json, jPath).getOrElse(JNothing)
+  def getValue(jPath: JPath): JValue = {
+    try {
+      traverseForValue(json, jPath).getOrElse(JNothing)
+    } catch {
+      case e: JsonTraversalException => {
+        println(e.getMessage)
+        e.printStackTrace()
+        return JNothing
+      }
+    }
+  }
    
 }
 
