@@ -14,13 +14,13 @@ object JValueTraverser {
   case object Stop extends RouteChoice;
   case object Continue extends RouteChoice;
   
-  val existsOrNotFalsePartial = traverse((s: String) => None, 
+  val existsAndNotFalsePartial = traverse((s: String) => None, 
                                   (jVal: JValue, jPath: JPathElement) => (JNothing, Stop),
                                   innerConditionJPathEndLamb)_
   
-  def existsOrNotFalse(value: JValue, conditionPath: JPath): Boolean = existsOrNotFalsePartial(value, conditionPath).getOrElse(false);
+  def existsAndNotFalse(value: JValue, conditionPath: JPath): Boolean = existsAndNotFalsePartial(value, conditionPath).getOrElse(false);
   
-  def existsOrNotFalse(value: String, conditionPath: String): Boolean = existsOrNotFalsePartial(parse(value), JPath.fromString(conditionPath)).getOrElse(false);
+  def existsAndNotFalse(value: String, conditionPath: String): Boolean = existsAndNotFalsePartial(parse(value), JPath.fromString(conditionPath)).getOrElse(false);
 
   def traverse[T](linkLamb: String=>Option[JValue],
                   notFoundLamb: (JValue, JPathElement) => (JValue, RouteChoice),

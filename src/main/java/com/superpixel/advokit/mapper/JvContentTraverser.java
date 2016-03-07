@@ -4,8 +4,8 @@ import com.superpixel.advokit.json.lift.JValueTraverser;
 
 public class JvContentTraverser {
 
-	public Boolean pathExistsOrIsNotFalse(String path, String content) {
-		return JValueTraverser.existsOrNotFalse(content, path);
+	public Boolean pathExistsAndIsNotFalse(String path, String content) {
+		return JValueTraverser.existsAndNotFalse(content, path);
 	}
 	
 }
