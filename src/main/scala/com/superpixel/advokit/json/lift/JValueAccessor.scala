@@ -16,7 +16,6 @@ class JValueAccessor(json: JValue, linkLamb: String=>Option[JValue]) {
     } catch {
       case e: JsonTraversalException => {
         println(e.getMessage)
-        e.printStackTrace()
         return JNothing
       }
     }

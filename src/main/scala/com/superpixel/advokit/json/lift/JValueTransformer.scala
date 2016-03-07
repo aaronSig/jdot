@@ -39,8 +39,8 @@ class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusion
     
     val localMergingJValues = JValueMerger.transfromMergingJson(localMerges)
     
-    import JValueMerger.MergeArraysAsValues
-    val leftMerge = JValueMerger.leftMerge(MergeArraysAsValues)_
+    import JValueMerger.MergeArraysOnIndex
+    val leftMerge = JValueMerger.leftMerge(MergeArraysOnIndex)_
     val mergingFn = applyMerges(leftMerge)_
     
     
