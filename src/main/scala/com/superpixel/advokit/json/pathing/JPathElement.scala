@@ -15,4 +15,6 @@ case class JDefaultValue(value: String) extends JPathElement
 
 case class JStringFormat(formatSeq: Seq[StringFormat], valuePaths: Seq[JPath]) extends JPathElement
 
-case class JConditional(conditionPath: JPath, truePath: JPath, falsePath: JPath) extends JPathElement
+case class JConditional(conditionPath: JPath, testPath: Option[JPath], truePath: JPath, falsePath: JPath) extends JPathElement
+
+case class JTransmute(transmuteType: String, argument: Option[String]) extends JPathElement

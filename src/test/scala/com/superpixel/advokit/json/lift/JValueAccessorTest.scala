@@ -200,6 +200,7 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
     assertResult(JInt(5)) {
       val jPath = JPath(JObjectPath("jsonObj"), JConditional(
             JPath(JObjectPath("gender"), JObjectPath("male")),
+            None,
             JPath(JObjectPath("big")),
             JPath(JObjectPath("misc"), JArrayPath(2))))
       accessor.getValue(jPath)
@@ -207,6 +208,7 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
     assertResult(JString("c")) {
       val jPath = JPath(JObjectPath("jsonObj"), JConditional(
             JPath(JObjectPath("gender"), JObjectPath("female")),
+            None,
             JPath(JObjectPath("big")),
             JPath(JObjectPath("misc"), JArrayPath(2))))
       accessor.getValue(jPath)

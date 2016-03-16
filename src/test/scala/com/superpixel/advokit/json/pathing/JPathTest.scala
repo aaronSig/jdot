@@ -79,7 +79,7 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
               Seq(JPath(JObjectPath("vier"), JObjectPath("funf"), JPathLink, JObjectPath("id")),
                   JPath(JObjectPath("quatro")),
                   JPath(JObjectPath("four"), JArrayPath(4)))))) {
-        JPath.fromString("one[2].trois|qu${vier.funf>.id}arto${quatro}${four[4]}five")
+        JPath.fromString("one[2].trois|qu{vier.funf>.id}arto{quatro}{four[4]}five")
       }
   }
   
@@ -90,7 +90,7 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
           JStringFormat(
               Seq(FormatLiteral("web.start?id="), ReplaceHolder),
               Seq(JPath(JObjectPath("three"), JDefaultValue("1.234")))))) {
-        JPath.fromString("one.two|web.start?id=${three(1.234)}")
+        JPath.fromString("one.two|web.start?id={three(1.234)}")
       }
   }
   
@@ -101,14 +101,14 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
               Seq(FormatLiteral("comp="), ReplaceHolder, FormatLiteral("."), ReplaceHolder),
               Seq(JPath(JObjectPath("three")),
                   JPath(JObjectPath("four")))))) {
-        JPath.fromString("one.two|comp=${three}.${four}")
+        JPath.fromString("one.two|comp={three}.{four}")
       }
   }
   
   it should "be able to interpret conditional syntax" in {
     assertResult(
       JPath(JObjectPath("one"), JArrayPath(2), JConditional(
-        JPath(JObjectPath("three"), JObjectPath("four"), JPathLink, JObjectPath("five")),
+        JPath(JObjectPath("three"), JObjectPath("four"), JPathLink, JObjectPath("five")), None,
         JPath(JObjectPath("three"), JObjectPath("four"), JPathLink, JObjectPath("five"), JObjectPath("six")),
         JPath(JObjectPath("notThree"))
       ))) {
@@ -208,7 +208,7 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "validate string format expressions" in {
     assert(
-     JPath.validate("one[zwei].trois|qu${vier.funf>.id}arto${quatro}${four[4]}five")._1
+     JPath.validate("one[zwei].trois|qu{vier.funf>.id}arto{quatro}{four[4]}five")._1
     )
   }
   
@@ -271,13 +271,13 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     val lit = StringFormatExpression.literalStr
     val key = StringFormatExpression.keyStr
     val strMatches = Seq(
-        """|lit${key.key}lit${key}lit""",
-        """|${key.key}lit${key}lit""",
-        """|${key[key](lit)}${key}lit""",
-        """|${key.key}""",
-        """|lit${key[key]>.key}""",
-        """|lit${key.key}lit${key}""",
-        """|lit${key.key>.key}lit${key}${key[key]}lit""")
+        """|lit{key.key}lit{key}lit""",
+        """|{key.key}lit{key}lit""",
+        """|{key[key](lit)}{key}lit""",
+        """|{key.key}""",
+        """|lit{key[key]>.key}""",
+        """|lit{key.key}lit{key}""",
+        """|lit{key.key>.key}lit{key}{key[key]}lit""")
         
     val p = StringFormatExpression.patterns(0)
         

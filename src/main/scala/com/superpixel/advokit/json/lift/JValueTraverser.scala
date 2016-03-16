@@ -10,18 +10,21 @@ object JValueTraverser {
     case (_:JObject | _:JArray , Some(JDefaultValue(dVal))) => dVal
   }
   
+  type TraverseFn[T] = (JValue,JPath) => Option[T] 
+  
   sealed trait RouteChoice;
   case object Stop extends RouteChoice;
   case object Continue extends RouteChoice;
   
-  val existsAndNotFalsePartial = traverse((s: String) => None, 
-                                  (jVal: JValue, jPath: JPathElement) => (JNothing, Stop),
-                                  innerConditionJPathEndLamb)_
+  val existsAndNotFalsePartial: TraverseFn[Boolean] = traverse((s: String) => None, 
+                                                       (jVal: JValue, jPath: JPathElement) => (JNothing, Stop),
+                                                       innerConditionJPathEndLamb)_
   
   def existsAndNotFalse(value: JValue, conditionPath: JPath): Boolean = existsAndNotFalsePartial(value, conditionPath).getOrElse(false);
   
   def existsAndNotFalse(value: String, conditionPath: String): Boolean = existsAndNotFalsePartial(parse(value), JPath.fromString(conditionPath)).getOrElse(false);
 
+  @throws(classOf[JsonTraversalException])
   def traverse[T](linkLamb: String=>Option[JValue],
                   notFoundLamb: (JValue, JPathElement) => (JValue, RouteChoice),
                   endLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]],T])
@@ -65,30 +68,47 @@ object JValueTraverser {
         // Potentially could be cleaner/more efficient by defining own endLamb and creating own curried traverse
         // This would include moving JDefaultValue logic in endLamb to own PartialFunction, so it could be included here
         case JStringFormat(formatSeq, valuePaths) +: tl => {
-          if (tl != Nil) throw new JsonTraversalException(s"JStringFormat must be final element in JPath: $jPath", jVal)
-          else {
-            val innerStringFormatJPathTraverse = traverse(linkLamb, notFoundLamb, innerStringFormatJPathEndLamb(jVal, jPath))_
-            endLamb.lift(
-              JString(StringFormat.formatToString(formatSeq, 
-                  valuePaths.map { (vP: JPath) =>  innerStringFormatJPathTraverse(value, vP) match {
-                    case None => throw new JsonTraversalException(s"JPath in String formatting could not be followed, it must end in a stringable value: $jPath", jVal)
-                    case Some(s) => s
-                  }
-              })),
-              Some(pathSeq.head))
+          val innerStringFormatJPathTraverse = traverse(linkLamb, notFoundLamb, innerStringFormatJPathEndLamb(jVal, jPath))_
+          routeValueOption(
+            Some(JString(StringFormat.formatToString(formatSeq, 
+                valuePaths.map { (vP: JPath) =>  innerStringFormatJPathTraverse(value, vP) match {
+                  case None => throw new JsonTraversalException(s"JPath in String formatting could not be followed, it must end in a stringable value: $jPath", jVal)
+                  case Some(s) => s
+                }
+            }))),
+            pathSeq.head,
+            tl)
+        }
+        
+        case JConditional(conditionPath, testPathOpt, truthPath, falsePath) +: tl => testPathOpt match {
+          case None => {
+            traverse(linkLamb, notFoundLamb, innerConditionJPathEndLamb)(value, conditionPath) match {
+              case Some(true) => routeValueOption(Some(value), pathSeq.head, truthPath ++ tl)
+              case _ => routeValueOption(Some(value), pathSeq.head, falsePath ++ tl)
+            }
+          }
+          case Some(testPath) => {
+            //Could use existing traverseRecu, or make one with JValue end
+            val testTraverse: TraverseFn[JValue] = traverse(linkLamb, notFoundLamb, standardEndLamb)_
+            testTraverse(value, conditionPath) match {
+              case None | Some(JNothing) => routeValueOption(Some(value), pathSeq.head, falsePath ++ tl)
+              case Some(x) => testTraverse(value, testPath) match {
+                case None | Some(JNothing) => routeValueOption(Some(value), pathSeq.head, falsePath ++ tl)
+                case Some(y) if x == y => routeValueOption(Some(value), pathSeq.head, truthPath ++ tl)
+                case _ => routeValueOption(Some(value), pathSeq.head, falsePath ++ tl)
+              }
+            }
           }
         }
         
-        case JConditional(conditionPath, truthPath, falsePath) +: tl => {
-          if (tl != Nil) throw new JsonTraversalException(s"JConditional must be final element in JPath: $jPath", jVal)
-          else {
-            traverse(linkLamb, notFoundLamb, innerConditionJPathEndLamb)(value, conditionPath) match {
-              case Some(true) => routeValueOption(Some(value), pathSeq.head, truthPath)
-              case _ => routeValueOption(Some(value), pathSeq.head, falsePath)
-            }
-            
+        case JTransmute(transmuteType, argument) +: tl => 
+          try {
+            routeValueOption(Some(JValueTransmuter.transmute(value, transmuteType, argument)), pathSeq.head, tl)
+          } catch {
+            case e: JsonTransmutingException =>
+              throw new JsonTraversalException(e.message, e.jVal)
           }
-        }
+        
       }
     }
     
@@ -102,6 +122,7 @@ object JValueTraverser {
       case (JDouble(db), _) => db.toString
       case (JDecimal(bd), _) => bd.toString
       case (JInt(int), _) => int.toString
+      case (JLong(l), _) => l.toString
       case (JBool(bool), _) => bool.toString
     }
   
@@ -111,10 +132,15 @@ object JValueTraverser {
     case (JInt(int), _) => int != 0
     case (JDouble(db), _) => db != 0
     case (JDecimal(bd), _) => bd != 0
+    case (JLong(l), _) => l != 0
     case (JObject(fieldLs), _) => !fieldLs.isEmpty
     case (JArray(itemLs), _) => !itemLs.isEmpty
     case (JNothing | JNull, _) => false
   }
+  
+  val standardEndLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], JValue] = 
+    (jDefaultValueNoComplexEnd andThen { case s: String => JString(s) }) orElse 
+    { case (jVal, _) => jVal }
   
   private def accessJArrayValue(jVal: JValue, key: Int): Option[JValue] = jVal match {
     case JObject(fieldLs) => fieldLs.find { jFld => jFld._1 == key.toString } .map(_._2)
