@@ -45,6 +45,18 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       }
   }
   
+  it should "be able to interpret literal expression" in {
+    assertResult(JPath(JPathValue("one"))) {
+      JPath.fromString("(one)")
+    }
+  }
+  
+  it should "be able to interpret literal expression with transmute" in {
+    assertResult(JPath(JPathValue("1"), JTransmute("i", None))) {
+      JPath.fromString("(1)^i")
+    }
+  }
+  
   it should "be able to interpret default values" in {
     assertResult(
         JPath(JObjectPath("one"), JObjectPath("zwei"), JDefaultValue("abc"))) {

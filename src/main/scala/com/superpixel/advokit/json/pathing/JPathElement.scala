@@ -11,6 +11,8 @@ case class JObjectPath(key: String) extends JPathElement
 
 case class JArrayPath(idx: Int) extends JPathElement
 
+case class JPathValue(value: String) extends JPathElement
+
 case class JDefaultValue(value: String) extends JPathElement
 
 case class JStringFormat(formatSeq: Seq[StringFormat], valuePaths: Seq[JPath]) extends JPathElement

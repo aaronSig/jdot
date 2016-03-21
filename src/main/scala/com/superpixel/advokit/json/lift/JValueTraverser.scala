@@ -59,9 +59,16 @@ object JValueTraverser {
                 case _ => None
               }
             }, pathSeq.head, tl)
+            
+        case JPathValue(str: String) +: tl =>
+          routeValueOption(Some(JString(str)), pathSeq.head, tl)
         
         case JDefaultValue(dVal) +: tl => value match {
-          case JNothing | JNull => endLamb.lift(JString(dVal), Some(pathSeq.head))
+          case JNothing | JNull => routeValueOption(Some(JString(dVal)), pathSeq.head, tl.dropWhile {
+            case _:JObjectPath | _:JArrayPath  => true
+            case _:JConditional => true
+            case _ => false
+          })
           case jV => routeValueOption(Some(jV), pathSeq.head, tl)
         }
         

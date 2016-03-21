@@ -75,6 +75,15 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
     }
   }
   
+  it should "extract a jpathvalue" in {
+    val accessor = JValueAccessor(jsonVal)
+    
+    assertResult(JString("Hello World!")) {
+      val jPath = JPath(JPathValue("Hello World!"))
+      accessor.getValue(jPath)
+    }
+  }
+  
   it should "extract from link path" in {
     val accessor = JValueAccessor(jsonVal, linkLamb)
     
@@ -85,6 +94,14 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
     
     assertResult(JString("velma")) {
       val jPath = JPath(JObjectPath("mediaSingle"), JObjectPath("sys"), JObjectPath("id"), JPathLink, JObjectPath("file"), JObjectPath("creators"), JArrayPath(2))
+      accessor.getValue(jPath)
+    }
+  }
+  
+  it should "date format" in {
+    val accessor = JValueAccessor(jsonVal)
+    assertResult(JString("2015:12:25")) {
+      val jPath = JPath(JObjectPath("date"), JTransmute("d", Some("yyyy:MM:dd")))
       accessor.getValue(jPath)
     }
   }
@@ -107,6 +124,13 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
     val accessor = JValueAccessor(jsonVal)
     assertResult(JString("3")) {
       accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("medium"), JDefaultValue("3")))
+    }
+  }
+  
+  it should "take default, after not finding path, and transmute to integer" in {
+    val accessor = JValueAccessor(jsonVal)
+    assertResult(JLong(3)) {
+      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("medium"), JDefaultValue("3"), JTransmute("n", None)))
     }
   }
   
@@ -136,6 +160,9 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
     }
     assertResult(JString("true")) {
       accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("hender"), JDefaultValue("true"), JObjectPath("female"), JDefaultValue("false")))
+    }
+    assertResult(JBool(false)) {
+      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("hender"), JDefaultValue("true"), JObjectPath("female"), JDefaultValue("false"), JTransmute("b", Some("!"))))
     }
   }
   

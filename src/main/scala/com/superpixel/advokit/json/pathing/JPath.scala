@@ -128,6 +128,13 @@ object JPath {
       """\>""".r
     )
   }
+  case object LiteralExpression extends ExpressionType {
+    override val accepts = Path
+    override val outputs = Value
+    override val patterns = Seq(
+      ("""\(""" + literalStr + """\)""").r    
+    )
+  }
   case object DefaultValueExpression extends ExpressionType {
     override val accepts = Path
     override val outputs = Path
@@ -153,14 +160,14 @@ object JPath {
     override val accepts = Value
     override val outputs = Value
     override val patterns = Seq(
-      ("""\^""" + """(s|f|n|\%|ord)""" + """(\<""" + literalStr + """)?""").r
+      ("""\^""" + """(b|n|s|f|i|\%|d|ord)""" + """(\<""" + literalStr + """)?""").r
     )
   }
   
   /***
    * Marks expressions that can-only/cannot be used at the start of the path string
    */
-  val allowedStartingExpressions = Seq(StartAccessExpression, DefaultValueExpression, StringFormatExpression, ConditionalExpression, TransmuteExpression)
+  val allowedStartingExpressions = Seq(StartAccessExpression, LiteralExpression, StringFormatExpression, ConditionalExpression, TransmuteExpression)
   val allowedNonStartingExpressions = Seq(AccessExpression, LinkExpression, DefaultValueExpression, StringFormatExpression, ConditionalExpression, TransmuteExpression)
   
   
@@ -266,12 +273,12 @@ object JPath {
   
   def escapeJsonKey(key: String): String = {
     val isDelimOption = PathMode.delimiters.map { stS =>  stS.mkString("[\\", "\\", "]")  }
-    println(isDelimOption.get)
+//    println(isDelimOption.get)
     isDelimOption match {
       case None => return key
       case Some(isDelimStr) => {
         val unescapedDelimRegex = ("""((?<=(?<!\""" + ESCAPE + """)(?:\""" + ESCAPE + """{2}){0,10})""" + isDelimStr + """)""").r
-        println(unescapedDelimRegex.toString())
+//        println(unescapedDelimRegex.toString())
         unescapedDelimRegex.replaceAllIn(key, """\""" + ESCAPE + """$1""")
       }
     }
@@ -628,7 +635,7 @@ object JPath {
       case seq => {
         val prevOutput: Option[ExpressionOutput] = acc.headOption.map{ case (et, _) => et.accepts}
         val retTup = extractNextExpression(seq)
-        println("Extracted: " + retTup)
+//        println("Extracted: " + retTup)
         val exprType: ExpressionType = retTup._1._1;
         if (ExpressionOutput.compatible(Some(exprType.outputs), prevOutput)) {
           inner(retTup._2, retTup._1 +: acc)
@@ -688,7 +695,7 @@ object JPath {
           case Literal(_) => exprTypes.head.literalStr
           case NestedPath(_) => exprTypes.head.nestedPathStr
         }}.mkString
-        println(exprStr)
+//        println(exprStr)
         exprTypes.find { x => x.patterns.exists { (p: Regex) => exprStr match {
           case p(_*) => true
           case _ => false
@@ -724,6 +731,12 @@ object JPath {
         case (StartAccessExpression, Nil) +: Nil => acc
         case (StartAccessExpression, exprSeq) +: Nil => 
           innerJPConstr(Nil, parseAccessExpression(exprSeq) +: acc)
+          
+        case (LiteralExpression, exprSeq) +: Nil =>
+          exprSeq filter {!_.isInstanceOf[Delimiter]} match {
+            case Literal(lit) +: Nil => innerJPConstr(Nil, JPathValue(lit) +: acc)
+            case _ => throw new JPathException(s"Cannot find Literal expression element in LiteralExpression: $exprSeq", pathString)
+          }
         
         case (DefaultValueExpression, exprSeq) +: tl =>
           exprSeq filter {!_.isInstanceOf[Delimiter]} match {
