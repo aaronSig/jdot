@@ -67,10 +67,11 @@ object JPath {
   
   sealed trait ExpressionOutput
   object ExpressionOutput {
-	  def compatible(in: Option[ExpressionOutput], expecting: ExpressionOutput): Boolean = (in, expecting) match {
+	  def compatible(in: Option[ExpressionOutput], expecting: Option[ExpressionOutput]): Boolean = (in, expecting) match {
 	  case (None, _) => true
-	  case (Some(Path), _) => true
-	  case (Some(Value), Value) => true
+    case (_, None) => true
+	  case (Some(Path), Some(_)) => true
+	  case (Some(Value), Some(Value)) => true
 	  case _ => false
 	  }
   }
@@ -145,14 +146,14 @@ object JPath {
     override val accepts = Path
     override val outputs = Value
     override val patterns = Seq(
-      ("""\~\{?""" + nestedPathStr + """(=""" + nestedPathStr + """)?\?""" + nestedPathStr + """\:""" + nestedPathStr + """\}?""").r
+      ("""\~""" + nestedPathStr + """(=""" + nestedPathStr + """)?\?""" + nestedPathStr + """\:""" + nestedPathStr).r
     )
   }
   case object TransmuteExpression extends ExpressionType {
     override val accepts = Value
     override val outputs = Value
     override val patterns = Seq(
-      ("""\^""" + literalStr + """(\<""" + literalStr + """)?;?""").r
+      ("""\^""" + """(s|f|n|\%|ord)""" + """(\<""" + literalStr + """)?""").r
     )
   }
   
@@ -171,6 +172,7 @@ object JPath {
    */
   sealed trait ExpressionMode {
     def brackets: Option[Tuple2[String, String]] = None;
+    def internalBrackets: Option[Tuple2[String, String]] = None;
     def starters: Option[Set[String]] = None;
     def betweenMap: Option[Map[String, String]] = None;
     def delimiters: Option[Set[String]] = None;
@@ -197,6 +199,7 @@ object JPath {
    */
   case object NestMode extends ExpressionMode {
     override val brackets = Some(("""{""", """}"""))
+    override val internalBrackets = Some(("""(""", """)"""))
     override val starters = Some(Set("""~"""))
     override val starterDelimeters = 
       Some(Map("""~""" -> Set("""=""", """?""", """:""")))
@@ -262,11 +265,13 @@ object JPath {
   }
   
   def escapeJsonKey(key: String): String = {
-    val isDelimOption = PathMode.delimiters.map { stS => """[""" + stS.map(s => Pattern.quote(s)).mkString + """]""" }
+    val isDelimOption = PathMode.delimiters.map { stS =>  stS.mkString("[\\", "\\", "]")  }
+    println(isDelimOption.get)
     isDelimOption match {
       case None => return key
       case Some(isDelimStr) => {
-        val unescapedDelimRegex = ("""((?<=(?<!""" + Regex.quote(ESCAPE) + """)(?:""" + Regex.quote(ESCAPE) + """{2}){0,10})""" + isDelimOption + """)""").r
+        val unescapedDelimRegex = ("""((?<=(?<!\""" + ESCAPE + """)(?:\""" + ESCAPE + """{2}){0,10})""" + isDelimStr + """)""").r
+        println(unescapedDelimRegex.toString())
         unescapedDelimRegex.replaceAllIn(key, """\""" + ESCAPE + """$1""")
       }
     }
@@ -321,8 +326,14 @@ object JPath {
     type ModeBox = (ExpressionMode, Option[Delimiter], ModeBreakout, Int, Seq[ExpressionElement])
     type BracketBox = (Int, String, String)
     
-
-    def pathStringIndex(index: Int): Option[String] = if (index >= length) None else Some(pathString(index).toString)
+    def stringIndex(s: String, i: Int): Option[String] = {
+      val sLen = s.length
+      if (i >= sLen || i < -sLen) None 
+      else if (i < 0) Some(s(sLen + i).toString())
+      else Some(s(i).toString)
+    }
+    
+    def pathStringIndex(index: Int): Option[String] = stringIndex(pathString, index)
     
     def optionSetExists(set: Option[Set[String]], string: String): Boolean = set.exists { st => st.contains(string) }
     
@@ -343,7 +354,24 @@ object JPath {
     
     def getJsonKey(startInc: Int, endExc: Int): Option[JsonKey] = subpath(startInc, endExc).map{s=>JsonKey(unescapeJsonKey(s))}
     
-    def getLiteral(startInc: Int, endExc: Int): Option[Literal] = subpath(startInc, endExc).map{s=>Literal(unescape(s))}
+    def getLiteral(startInc: Int, endExc: Int): Option[Literal] = {
+      @tailrec
+      def removeOuterBrackets(string: String, check:Int, starterIndex: Option[Int]): String = {
+        (starterIndex, stringIndex(string, check), LiteralMode.brackets) match {
+          case (_, None, _) => string
+          case (_, Some(e), _) if e == ESCAPE => 
+            removeOuterBrackets(string, check+2, starterIndex)
+          case (None, Some(b), Some((left, _))) if b == left =>
+            removeOuterBrackets(string, check+1, Some(check))
+          case (Some(sI), Some(b), Some((_, right))) if b == right =>
+            string.take(sI) + string.slice(sI+1, check) + string.drop(check+1)
+          case _ =>
+            removeOuterBrackets(string, check+1, starterIndex)
+        }
+      }
+      subpath(startInc, endExc)
+        .map{s=> Literal(unescape(removeOuterBrackets(s, 0, None)))}
+    }
     
     def getSpecial(startInc: Int, endExc: Int): Option[Special] = subpath(startInc, endExc).map{s=>Special(unescape(s))}
     
@@ -368,7 +396,7 @@ object JPath {
                     (nextCheck, 
                         (depth+1, left, right) +: bracketStack, 
                         (mode, Some(bD), Bracketed(right), depth+1, Nil) +:
-                            (curMode, curModeStarter, curBreakout, curStartDepth, bD +: curModeAcc) +: modeTl)
+                            (curMode, curModeStarter, curBreakout, curStartDepth, bD +: curModeAcc) +: modeTl) 
             
                   //Clarifying bracket checker - immediately after a starter delim starts a new mode, 
                   //brackets can be added to clarify the expression e.g. one|({two^n} March 2016)^d
@@ -377,7 +405,7 @@ object JPath {
                     (nextCheck+1, 
                         (depth+1, left, right) +: bracketStack,
                         (mode, Some(d), Bracketed(right), depth+1, Nil) +: 
-                            (curMode, curModeStarter, curBreakout, curStartDepth, Delimiter(b) +: d +: curModeAcc) +: modeTl)                
+                            (curMode, curModeStarter, curBreakout, curStartDepth, d +: curModeAcc) +: modeTl) //TODO BD removed               
                         
                   //If no bracket then start new mode with out bracket mode enabled (which is then ended by context only)
                   case (dOpt, _, _) => {
@@ -406,7 +434,7 @@ object JPath {
       @tailrec
       def popMode(delimiter: Option[Delimiter], nextCheck: Int, bracketStack: Seq[BracketBox], 
           modeStack: Seq[ModeBox]): (Int, Seq[BracketBox], Seq[ModeBox]) = modeStack match {
-        case (_, _, curBreakout, curStartDepth, curModeAcc) +: (prevMode, prevStarter, prevBreakout, prevStartDepth, prevModeAcc) +: modeTl => (bracketStack, delimiter) match {
+        case (_, curStarter, curBreakout, curStartDepth, curModeAcc) +: (prevMode, prevStarter, prevBreakout, prevStartDepth, prevModeAcc) +: modeTl => (bracketStack, delimiter) match {
           
           case (Nil, None) => curBreakout match {
             case _:Context if curStartDepth == 0 =>
@@ -423,7 +451,7 @@ object JPath {
             
           case (Nil, Some(d)) => curBreakout match {
             case Context(_,thisLevel) if curStartDepth == 0 && thisLevel.contains(d.str) =>
-              (nextCheck, bracketStack, (prevMode, prevStarter, prevBreakout, prevStartDepth, d +: curModeAcc ++: prevModeAcc) +: modeTl)
+              pushModeFromDelimiter(d, nextCheck, bracketStack, (prevMode, prevStarter, prevBreakout, prevStartDepth, curModeAcc ++: prevModeAcc) +: modeTl)
             case Context(inherited, _) if curStartDepth == 0 && inherited.contains(d.str) =>
               popMode(Some(d), nextCheck, bracketStack, (prevMode, prevStarter, prevBreakout, prevStartDepth, curModeAcc ++: prevModeAcc) +: modeTl)
             case _:Bracketed =>
@@ -432,13 +460,18 @@ object JPath {
               throw new JPathException("INTERNAL_ERROR: Mode stack pop requested, but delimiter doesn't match any brackout clause.", pathString, nextCheck-1)
           }
           
-          case ((bDepth, _, bRight) +: brackTl, Some(d)) => 
+          case ((bDepth, bLeft, bRight) +: brackTl, Some(d)) => 
             if (bDepth != curStartDepth) {
               throw new JPathException("INTENRAL_ERROR: stack pop requested, but bracket depth does not match mode start depth", pathString, nextCheck-1)
             } else curBreakout match {
               
               case Bracketed(expRight) if expRight == bRight && d.str == bRight =>
-                (nextCheck, brackTl, (prevMode, prevStarter, prevBreakout, prevStartDepth, d +: curModeAcc ++: prevModeAcc) +: modeTl)
+                //Only add bracket into the exprSeq if it is not a clarifying bracket
+                if (curStarter.exists(sD => sD.str == bLeft)) {
+                	(nextCheck, brackTl, (prevMode, prevStarter, prevBreakout, prevStartDepth, d +: curModeAcc ++: prevModeAcc) +: modeTl)                  
+                } else {
+                  (nextCheck, brackTl, (prevMode, prevStarter, prevBreakout, prevStartDepth, curModeAcc ++: prevModeAcc) +: modeTl)
+                }
               case Bracketed(expRight) =>
                 throw new JPathException("INTERNAL_ERROR: pop requested but brackets do not match", pathString, nextCheck-1)    
               case Context(_,thisLevel) if thisLevel.contains(d.str) && d.str == bRight =>
@@ -455,7 +488,8 @@ object JPath {
       }
       
       (modeStack, bracketStack.headOption.getOrElse((0, "", ""))) match {
-        case ((mode, modeStarter, breakout, startDepth, modeAcc) +: modeStackTl, (depth, _, receivingBrack)) => pathStringIndex(check) match {
+        case ((mode, modeStarter, breakout, startDepth, modeAcc) +: modeStackTl, (depth, _, receivingBrack)) => 
+          pathStringIndex(check) match {
           case Some(ESCAPE) => inner2(start, check+2, bracketStack, modeStack)
           case cO => mode match {
               case BaseMode => (cO, breakout) match {
@@ -496,9 +530,17 @@ object JPath {
                       }
                   case (Some(brack), _) if mode.brackets.exists{ case (left, right) => brack == left } => 
                       inner2(start, check+1, (depth+1, mode.brackets.get._1,  mode.brackets.get._2) +: bracketStack, modeStack)
+                  case (Some(brack), _) if mode.internalBrackets.exists{ case (left, right) => brack == left } => 
+                      inner2(start, check+1, (depth+1, mode.internalBrackets.get._1,  mode.internalBrackets.get._2) +: bracketStack, modeStack)
+                      
                   case (Some(brack), _) if mode.brackets.exists{ case (left, right) => brack == right } && brack == receivingBrack => 
                       inner2(start, check+1, bracketStack.tail, modeStack)
+                  case (Some(brack), _) if mode.internalBrackets.exists{ case (left, right) => brack == right } && brack == receivingBrack => 
+                      inner2(start, check+1, bracketStack.tail, modeStack)
+                      
                   case (Some(brack), _) if mode.brackets.exists{ case (left, right) => brack == right } && brack != receivingBrack => 
+                      throw new JPathException(s"Expecting '$receivingBrack' bracket, but found '$brack'", pathString, check)
+                  case (Some(brack), _) if mode.internalBrackets.exists{ case (left, right) => brack == right } && brack != receivingBrack => 
                       throw new JPathException(s"Expecting '$receivingBrack' bracket, but found '$brack'", pathString, check)
                       
                   case (Some(d), _) if depth == startDepth && isDelimiter(mode, modeStarter.map(_.str), d)  =>
@@ -582,12 +624,13 @@ object JPath {
      *  )
      */
     def inner(exprSeq: Seq[ExpressionElement], acc: Seq[(ExpressionType, Seq[ExpressionElement])]): Seq[(ExpressionType, Seq[ExpressionElement])] = exprSeq match {
-      case Nil => acc
+      case Nil => acc.reverse
       case seq => {
-        val prevOutput: Option[ExpressionOutput] = acc.headOption.map{ case (et, _) => et.outputs}
-        val retTup = extractNextExpression(seq, testForExpressionType(allowedNonStartingExpressions))
+        val prevOutput: Option[ExpressionOutput] = acc.headOption.map{ case (et, _) => et.accepts}
+        val retTup = extractNextExpression(seq)
+        println("Extracted: " + retTup)
         val exprType: ExpressionType = retTup._1._1;
-        if (ExpressionOutput.compatible(prevOutput, exprType.accepts)) {
+        if (ExpressionOutput.compatible(Some(exprType.outputs), prevOutput)) {
           inner(retTup._2, retTup._1 +: acc)
         } else {
           throw new JPathException("A " + exprType + " cannot be placed after a " + acc.head._1 + " as its output cannot be accepted by a " + exprType , exprSeq.mkString)
@@ -606,15 +649,19 @@ object JPath {
      * If no sub-sequence passes the expression test an exception is thrown.
      */
     @throws(classOf[JPathException])
-    def extractNextExpression(exprSeq: Seq[ExpressionElement], expressionTest: (Seq[ExpressionElement])=>Option[ExpressionType]): ((ExpressionType, Seq[ExpressionElement]), Seq[ExpressionElement]) = exprSeq match {
-      case Nil => expressionTest(Nil) match {
+    def extractNextExpression(exprSeq: Seq[ExpressionElement]): ((ExpressionType, Seq[ExpressionElement]), Seq[ExpressionElement]) = exprSeq match {
+      case Nil => testForExpressionType(allowedStartingExpressions)(Nil) match {
         case Some(exprType) => return ((exprType, Nil), Nil)
         case None => throw new JPathException("Empty expression sequence does not match to any allowed expression type.", exprSeq.mkString)
       }
       case _ => {
-        for (i <- 1 to exprSeq.size) {
+        for (i <- 0 to exprSeq.size) {
           exprSeq.splitAt(i) match {
-            case (expr, remainder) => expressionTest(expr) match {
+            case (Nil, expr) => testForExpressionType(allowedStartingExpressions)(expr) match {
+              case Some(exprType) => return ((exprType, expr), Nil)
+              case None => 
+            }
+            case (remainder, expr) => testForExpressionType(allowedNonStartingExpressions)(expr) match {
               case Some(exprType) => return ((exprType, expr), remainder)
               case None => 
             }
@@ -653,10 +700,10 @@ object JPath {
     //if the expression doesn't start properly.
     // In our example This tuple looks like:
     // ((StartAccessExpression, Seq("one")), Seq(".", "two", "[", "three", "]" , ".", "four", ">", ".", "five"))
-    val startingTuple = extractNextExpression(exprSeq, testForExpressionType(allowedStartingExpressions))
+//    val startingTuple = extractNextExpression(exprSeq, testForExpressionType(allowedStartingExpressions))
     
     //Pulls out the remaining expressions tail recursively and returns them
-    return inner(startingTuple._2, Seq(startingTuple._1));
+    return inner(exprSeq, Nil);
   }
   
   
@@ -723,12 +770,12 @@ object JPath {
       def innerStrFormat(expr: Seq[ExpressionElement], accFormatString: Seq[StringFormat], accValuePaths: Seq[JPath]): JStringFormat = expr match {
         case Nil => JStringFormat(accFormatString.reverse, accValuePaths.reverse)
         
-        case (Seq(Delimiter("{"), NestedPath(innerExprSeq), Delimiter("}")) +: tl) =>
+        case Delimiter("{") +: NestedPath(innerExprSeq) +: Delimiter("}") +: tl =>
           innerStrFormat(tl, ReplaceHolder +: accFormatString, new JPath(innerJPConstr(transformToExpressions(innerExprSeq))) +: accValuePaths)
           
         case Literal(lit) +: tl => innerStrFormat(tl, FormatLiteral(lit) +: accFormatString, accValuePaths)
         
-        case _ => throw new JPathException("String format path parsing error in: " + exprSeq.mkString, pathString)
+        case seq => throw new JPathException("String format path parsing error in: " + exprSeq.mkString + " - " + seq.mkString, pathString)
       }
       exprSeq.head match {
         case Delimiter("|") => innerStrFormat(exprSeq.tail, Nil, Nil)
@@ -740,19 +787,19 @@ object JPath {
      * Helper method to parse ConditionalExpression sequences.
      */
     def parseCondtionalExpression(exprSeq: Seq[ExpressionElement]): JConditional = exprSeq match {
-      case Seq(Delimiter("~"), NestedPath(conditionSeq), 
-               Delimiter("="), NestedPath(testSeq), 
-               Delimiter("?"), NestedPath(trueSeq), 
-               Delimiter(":"), NestedPath(falseSeq)) 
-               +: tl if seqMatchOptionalSemiColon(tl)  =>
+      case Delimiter("~") +: NestedPath(conditionSeq) +:
+           Delimiter("=") +: NestedPath(testSeq) +:
+           Delimiter("?") +: NestedPath(trueSeq) +:
+           Delimiter(":") +: NestedPath(falseSeq) +:
+               tl  =>
         JConditional(innerJPConstr(transformToExpressions(conditionSeq)),
                      Some(innerJPConstr(transformToExpressions(testSeq))),
                      innerJPConstr(transformToExpressions(trueSeq)),
                      innerJPConstr(transformToExpressions(falseSeq)));
-      case Seq(Delimiter("~"), NestedPath(conditionSeq), 
-               Delimiter("?"), NestedPath(trueSeq), 
-               Delimiter(":"), NestedPath(falseSeq)) 
-               +: tl if seqMatchOptionalSemiColon(tl)  =>
+      case Delimiter("~") +: NestedPath(conditionSeq) +:
+           Delimiter("?") +: NestedPath(trueSeq) +:
+           Delimiter(":") +: NestedPath(falseSeq) +:
+               tl  =>
         JConditional(innerJPConstr(transformToExpressions(conditionSeq)), None,
                      innerJPConstr(transformToExpressions(trueSeq)),
                      innerJPConstr(transformToExpressions(falseSeq)));
@@ -764,12 +811,14 @@ object JPath {
      * Helper method to parse TransmuteExpression sequences.
      */
     def parseTransmuteExpression(exprSeq: Seq[ExpressionElement]): JTransmute = exprSeq match {
-      case Seq(Delimiter("^"), Literal(typeLit), Delimiter("<"), Literal(argLit))
-        +: tl if seqMatchOptionalSemiColon(tl)  =>
-          JTransmute(typeLit, Some(argLit))
-      case Seq(Delimiter("^"), Literal(typeLit))
-        +: tl if seqMatchOptionalSemiColon(tl)  =>
-          JTransmute(typeLit, None)
+      case Delimiter("^") +: Special(spec) +: Delimiter("<") +: Literal(argLit)
+        +: tl  =>
+          JTransmute(spec, Some(argLit))
+      case Delimiter("^") +: Special(spec)
+        +: tl  =>
+          JTransmute(spec, None)
+      case _ =>
+        throw new JPathException("Transmute Expressions is malformed and cannot be understood: " + exprSeq.mkString, pathString)
     }
     
     def seqMatchOptionalSemiColon(seq: Seq[ExpressionElement]): Boolean = seq match {

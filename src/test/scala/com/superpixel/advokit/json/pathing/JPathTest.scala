@@ -121,6 +121,208 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       JPath.fromString("")
     }
   }
+  
+  it should "be able to interpret transmutation expressions" in {
+    assertResult(JPath(JObjectPath("one"), JTransmute("n", None))) {
+      JPath.fromString("one^n")
+    }
+  }
+  
+  it should "be able to interpret transmutation expressions with argument" in {
+    assertResult(JPath(JObjectPath("one"), JTransmute("f", Some("2.2")))) {
+      JPath.fromString("one^f<2.2")
+    }
+  }
+  
+  it should "be able to interpret tricky 1" in {
+    assertResult(
+      JPath(JObjectPath("one"), JConditional(
+            JPath(JObjectPath("two")),
+            Some(JPath(JObjectPath("three"))),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral(" equals "), ReplaceHolder),
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
+                    JPath(JObjectPath("three"), JDefaultValue("3")))
+            )),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
+                    JPath(JObjectPath("two"), JDefaultValue("2")))
+            ))), JTransmute("s", None)
+      )    
+    ){
+     JPath.fromString("one~{two=three?|{two(2)} equals {three(3)}:|({three(3)}ne{two(2)})}^s")
+    }
+  }
+  
+  it should "be able to interpret tricky 2" in {
+    assertResult(
+      JPath(JObjectPath("one"), JConditional(
+            JPath(JObjectPath("two")),
+            Some(JPath(JObjectPath("three"))),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral(" equals "), ReplaceHolder),
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
+                    JPath(JObjectPath("three"), JDefaultValue("3")))
+            )),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
+                    JPath(JObjectPath("two"), JDefaultValue("2")))
+            ))), JTransmute("s", None)
+      )    
+    ){
+     JPath.fromString("one~{two=three?|{two(2)} equals {three(3)}:|{three(3)}ne{two(2)}}^s")
+    }
+  }
+  
+  it should "be able to interpret tricky 3" in {
+    
+     assertResult(
+      JPath(JObjectPath("one"), JConditional(
+            JPath(JObjectPath("two")),
+            Some(JPath(JObjectPath("three"))),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral(" equals "), ReplaceHolder),
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
+                    JPath(JObjectPath("three"), JDefaultValue("3")))
+            )),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
+                    JPath(JObjectPath("two"), JDefaultValue("2")))
+            )))
+      )    
+    ){
+     JPath.fromString("one~two=three?|{two(2)} equals {three(3)}:|{three(3)}ne{two(2)}")
+    }
+  }
+  
+  it should "be able to interpret tricky 4" in {
+    assertResult(
+      JPath(JObjectPath("one"), JConditional(
+            JPath(JObjectPath("two")),
+            Some(JPath(JObjectPath("three"))),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral(" :equals: "), ReplaceHolder),
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
+                    JPath(JObjectPath("three"), JDefaultValue("3")))
+            )),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
+                    JPath(JObjectPath("two"), JDefaultValue("2")))
+            )))
+      )    
+    ){
+     JPath.fromString("one~two=three?|({two(2)}( :equals: ){three(3)}):|{three(3)}ne{two(2)}")
+    }
+  }
+  
+  it should "be able to interpret tricky 4.5" in {
+    assertResult(
+      JPath(JObjectPath("one"), JConditional(
+            JPath(JObjectPath("two")),
+            Some(JPath(JObjectPath("three"))),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral("( :equals: )"), ReplaceHolder),
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
+                    JPath(JObjectPath("three"), JDefaultValue("3")))
+            )),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
+                    JPath(JObjectPath("two"), JDefaultValue("2")))
+            )))
+      )    
+    ){
+     JPath.fromString("""one~two=three?|({two(2)}\( :equals: \){three(3)}):|{three(3)}ne{two(2)}""")
+    }
+  }
+  
+  it should "be able to interpret tricky 4.75" in {
+    assertResult(
+      JPath(JObjectPath("one"), JConditional(
+            JPath(JObjectPath("two")),
+            Some(JPath(JObjectPath("three"))),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral("( :equals: )"), ReplaceHolder),
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
+                    JPath(JObjectPath("three"), JDefaultValue("3")))
+            )),
+            JPath(JStringFormat(
+                Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
+                    JPath(JObjectPath("two"), JDefaultValue("2")))
+            )))
+      )    
+    ){
+     JPath.fromString("""one~two=three?|({two(2)}(\( :equals: \)){three(3)}):|{three(3)}ne{two(2)}""")
+    }
+  }
+  
+  it should "be able to interpret tricky 5" in {
+    assertResult(
+      JPath(JObjectPath("one"), JStringFormat(
+                Seq(FormatLiteral("23"), ReplaceHolder, FormatLiteral("56")),
+                Seq(JPath(JObjectPath("two")))
+            ), JTransmute("f", Some("2.2"))
+      )    
+    ){
+     JPath.fromString("one|23{two}56^f<2.2")
+    }
+  }
+  
+  it should "be able to interpret tricky 6" in {
+    assertResult(
+      JPath(JObjectPath("one"), JStringFormat(
+                Seq(FormatLiteral("23"), ReplaceHolder, FormatLiteral("56")),
+                Seq(JPath(JObjectPath("two")))
+            ), JTransmute("f", Some("2.2"))
+      )    
+    ){
+     JPath.fromString("one|(23{two}56)^f<(2.2)")
+    }
+  }
+  
+  it should "be able to interpret tricky 7" in {
+    assertResult(
+      JPath(JObjectPath("one"), JStringFormat(
+                Seq(FormatLiteral("23"), ReplaceHolder, FormatLiteral("51")),
+                Seq(JPath(JObjectPath("two")))
+            ), JTransmute("ord", None)
+      )    
+    ){
+     JPath.fromString("one|(23{two}51)^ord")
+    }
+  }
+  
+  it should "be able to interpret tricky 8" in {
+    assertResult(
+      JPath(JObjectPath("one"), JStringFormat(
+                Seq(FormatLiteral("23"), ReplaceHolder, FormatLiteral("51")),
+                Seq(JPath(JObjectPath("two")))
+            ), JTransmute("%", None)
+      )    
+    ){
+     JPath.fromString("one|(23{two}51)^%")
+    }
+  }
+  
+  it should "be able to interpret tricky 9" in {
+    assertResult(
+      JPath(JStringFormat(
+                Seq(FormatLiteral("Hey "), ReplaceHolder, FormatLiteral("!"), ReplaceHolder),
+                Seq(JPath(JObjectPath("name")), 
+                    JPath(JStringFormat(
+                        Seq(FormatLiteral("This is a hat: ^")), Seq())
+                    , JTransmute("s", Some("U")))))
+            , JTransmute("s", Some("l"))
+      )    
+    ){
+     JPath.fromString("|(Hey {name}!{|(This is a hat: (^))^s<U})^s<l")
+    }
+  }
 
   "JPath validate" should "validate dot syntax" in {
     assertResult(true) {
@@ -212,6 +414,48 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     )
   }
   
+  it should "validate tricky 1" in {
+    assert(
+     JPath.validate("one~{two=three?|{two(2)} equals {three(3)}:|({three(3)}ne{two(2)})}^s")._1
+    )
+  }
+  
+  it should "validate tricky 2" in {
+    assert(
+     JPath.validate("one~{two=three?|{two(2)} equals {three(3)}:|{three(3)}ne{two(2)}}^s")._1
+    )
+  }
+  
+  it should "validate tricky 3" in {
+    assert(
+     JPath.validate("one~two=three?|{two(2)} equals {three(3)}:|{three(3)}ne{two(2)}")._1
+    )
+  }
+  
+  it should "validate tricky 4" in {
+    assert(
+     JPath.validate("one~two=three?|({two(2)}( :equals: ){three(3)}):|{three(3)}ne{two(2)}")._1
+    )
+  }
+  
+  it should "validate tricky 5" in {
+    assert(
+     JPath.validate("one|23{two}56^f<2.2")._1
+    )
+  }
+  
+  it should "validate tricky 6" in {
+    assert(
+     JPath.validate("one|(23{two}56)^f<(2.2)")._1
+    )
+  }
+  
+  it should "validate tricky 7" in {
+    assert(
+     JPath.validate("one|(23{two}51)^ord")._1
+    )
+  }
+  
   "JPath unescapeJsonKey" should "remove escaping from dots" in {
     assertResult("on.e") {
       JPath.unescapeJsonKey("""on\.e""")
@@ -269,21 +513,19 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   "JPath StringFormatExpression patterns" should "match with corresponding string expressions" in {
     val lit = StringFormatExpression.literalStr
-    val key = StringFormatExpression.keyStr
+    val nest = StringFormatExpression.nestedPathStr
     val strMatches = Seq(
-        """|lit{key.key}lit{key}lit""",
-        """|{key.key}lit{key}lit""",
-        """|{key[key](lit)}{key}lit""",
-        """|{key.key}""",
-        """|lit{key[key]>.key}""",
-        """|lit{key.key}lit{key}""",
-        """|lit{key.key>.key}lit{key}{key[key]}lit""")
+        """|lit{nest}lit{nest}lit""",
+        """|{nest}lit{nest}lit""",
+        """|{nest}{nest}lit""",
+        """|{nest}""",
+        """|lit{nest}""",
+        """|lit{nest}lit{nest}""")
         
     val p = StringFormatExpression.patterns(0)
-        
     assert(
       strMatches.forall { (str: String) => 
-        str.replace("lit", lit).replace("key", key) match {
+        str.replace("lit", lit).replace("nest", nest) match {
           case p(_*) => true
           case _ => {println(str);false}
         }
