@@ -56,6 +56,11 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       JPath.fromString("(1)^i")
     }
   }
+  it should "be able to interpret blank literal expression with transmute" in {
+    assertResult(JPath(JPathValue(""))) {
+      JPath.fromString("()")
+    }
+  }
   
   it should "be able to interpret default values" in {
     assertResult(
@@ -65,6 +70,17 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     assertResult(
         JPath(JObjectPath("one"), JDefaultValue("abc"), JObjectPath("zwei"))) {
       JPath.fromString("one(abc).zwei")
+    }
+  }
+  
+  it should "be able to interpret blank default values" in {
+    assertResult(
+        JPath(JObjectPath("one"), JObjectPath("zwei"), JDefaultValue(""))) {
+      JPath.fromString("one.zwei()")
+    }
+    assertResult(
+        JPath(JObjectPath("one"), JDefaultValue(""), JObjectPath("zwei"))) {
+      JPath.fromString("one().zwei")
     }
   }
   

@@ -15,7 +15,9 @@ class JValueAccessor(json: JValue, linkLamb: String=>Option[JValue]) {
       traverseForValue(json, jPath).getOrElse(JNothing)
     } catch {
       case e: JsonTraversalException => {
-        println(e.getMessage)
+        println("ERROR: " + e.getMessage)
+        println("    for JPath: " + jPath.toString())
+        println("    for JSON: " + (if (json == JNothing) "nothing" else compact(render(json))))
         return JNothing
       }
     }

@@ -162,4 +162,4 @@ object JValueTraverser {
 }
 
 class JsonTraversalException(message: String, jVal: JValue = JNull) 
-  extends RuntimeException(s"$message. For Json:\n " + pretty(render(jVal)))
+  extends RuntimeException(s"$message. For Json:\n " + (if (jVal == JNothing) "nothing" else pretty(render(jVal))))

@@ -197,7 +197,7 @@ object JValueTransmuter {
       case jdc: JDecimal => jdc
       case jl: JLong => jl
       case _:JObject | _:JArray | JNothing | JNull => 
-        throw new JsonTransmutingException("Cannot convert " + value.getClass.getName + " to a json number.", value)
+        throw new JsonTransmutingException("Cannot convert " + value.getClass.getName + " to a json number", value)
       case JString(str: String) => argTup match {
         case Some((base, _)) if base == "2" || base == "8" || base == "16" => string2Number(str, Some(base.toInt))
         case _ => toNumber(string2Number(str), argument)
