@@ -14,28 +14,22 @@ object JValueTransmuter {
     case "n" => toNumber(value, argument)
     case "s" => toString(value, argument) //toString + operations e.g. .1:u would take first char and uppercase it: simpson -> S
     case "f" => toFormattedFloat(value, argument) //numberFormater, follows printf rules for 'f'
-    case "i" => toInt(value, argument) //intFormater, follows printf rules for 'i'
+    case "i" => toInt(value, argument) //intFormater, follows printf rules for 'd'
+    case "d" => toInt(value, argument) //intFormater, follows printf rules for 'd'
     case "%" => toPercentage(value, argument) //converts to float, then to percentage
-    case "d" => toDateFormat(value, argument) //date formatter, takes dateString or timestamp and toString based on argument
+    case "date" => toDateFormat(value, argument) //date formatter, takes dateString or timestamp and toString based on argument
     case "ord" => toOrdinal(value, argument) //ordinal formatter 1 -> 1st, 4 - 4th
     case _ => JString(value.toString)
-  }
-  
-  private def stringFormat(objArr: Array[_], op:String, arg: String, value: JValue): String = {
-    try {
-      String.format("%" + arg + op, objArr)
-    } catch {
-      case e : Throwable => throw new JsonTransmutingException(s"Did not understand transmutation arguments - $arg. Nested: ${e.getMessage}", value)
-    }
   }
   
   private def toDateFormat(value: JValue, argument: Option[String]): JValue = {
     val dateOpt: Option[DateTime] = value match {
       case JBool(bool) => Some(DateTime.now)
-      case JInt(int) => Some(new DateTime(int.toLong))
-      case JDouble(db) => Some(new DateTime(db.toLong))
-      case JDecimal(bd) => Some(new DateTime(bd.toLong))
-      case JLong(l) => Some(new DateTime(l))
+      case JInt(int) => Some(new DateTime(int.toLong*1000))
+      case JDouble(db) => Some(new DateTime(db.toLong*1000))
+      case JDecimal(bd) => Some(new DateTime(bd.toLong*1000))
+      case JLong(l) => Some(new DateTime(l*1000))
+      case JString(now) if now.toLowerCase() == "now" => Some(DateTime.now)
       case JString(str) => Some(DateTime.parse(str))
       case _ => None
     }
@@ -72,7 +66,8 @@ object JValueTransmuter {
   }
   
   
-  val numericRegex = """(\d)""".r
+  val numericRegex = """(\d+)""".r
+  val opNumericRegex = """\!(\d+)""".r
   private def toPercentage(value: JValue, argument: Option[String]): JValue = {
     val fOpt: Option[Double] = value match {
       case JBool(bool) => Some(if (bool) 1d else 0d)
@@ -82,17 +77,24 @@ object JValueTransmuter {
       case JLong(l) => Some(l.toDouble)
       case _ => None
     }
+    val perNF = NumberFormat.getPercentInstance()
+    perNF.setMaximumFractionDigits(2)
     fOpt match {
       case None => toPercentage(toNumber(value, None), argument)
       case Some(d: Double) => argument.map { _.toLowerCase() } match {
-        case None => JString(NumberFormat.getPercentInstance().format(d))
-        case Some("!") | Some("c") => JString(NumberFormat.getPercentInstance().format(1.0d-d))
+        case None => JString(perNF.format(d))
+        case Some("!") | Some("c") => JString(perNF.format(1.0d-d))
         case Some(numericRegex(of)) => try {
-          JString(NumberFormat.getPercentInstance().format(d/of.toDouble))
+          JString(perNF.format(d/of.toDouble))
         } catch {
           case e: Throwable => throw new JsonTransmutingException(s"Cannot convert $of to a double for percentage format: ${e.getMessage}", value)
         }
-        case _ => JString(NumberFormat.getPercentInstance().format(d))
+        case Some(opNumericRegex(of)) => try {
+          JString(perNF.format(1.0d-(d/of.toDouble)))
+        } catch {
+          case e: Throwable => throw new JsonTransmutingException(s"Cannot convert $of to a double for percentage format: ${e.getMessage}", value)
+        }
+        case _ => JString(perNF.format(d))
       }
     }
   }
@@ -108,38 +110,48 @@ object JValueTransmuter {
     }
     iOpt match {
       case None => toInt(toNumber(value, None), argument)
-      case Some(i: Int) => JString(stringFormat(Array(i), "i", argument.getOrElse(""), value))
+      case Some(i: Int) => try {
+          val formatString: String = s"%${argument.getOrElse("")}d"
+          JString(formatString.format(i))
+        } catch {
+          case e : Throwable => throw new JsonTransmutingException(s"Did not understand formatted integer transmutation arguments - $argument - Nested: ${e.getMessage}", value)
+        }
     }
   }
   
   private def toFormattedFloat(value: JValue, argument: Option[String]): JValue = {
-    val fOpt: Option[Double] = value match {
-      case JBool(bool) => Some(if (bool) 1d else 0d)
-      case JInt(int) => Some(int.toDouble)
-      case JDouble(db) => Some(db)
-      case JDecimal(bd) => Some(bd.toDouble)
-      case JLong(l) => Some(l.toDouble)
+    val fOpt: Option[Float] = value match {
+      case JBool(bool) => Some(if (bool) 1f else 0f)
+      case JInt(int) => Some(int.toFloat)
+      case JDouble(db) => Some(db.toFloat)
+      case JDecimal(bd) => Some(bd.toFloat)
+      case JLong(l) => Some(l.toFloat)
       case _ => None
     }
     fOpt match {
       case None => toFormattedFloat(toNumber(value, None), argument)
-      case Some(d: Double) => JString(stringFormat(Array(d), "f", argument.getOrElse(""), value))
+      case Some(fl: Float) => try {
+          val formatString: String = s"%${argument.getOrElse("")}f"
+          JString(formatString.format(fl))
+        } catch {
+          case e : Throwable => throw new JsonTransmutingException(s"Did not understand formatted float transmutation arguments - $argument - Nested: ${e.getMessage}", value)
+        }
     }
     
   }
   
-  val substringRegex = """([0-9]*)\.([0-9]*)""".r
+  val substringRegex = """(\d*)\.(\d*)""".r
   private def toString(value: JValue, argument: Option[String]): JString = {
     def argApply(args: Seq[String], string: String): String = args match {
       case Nil => string
       case "u" +: tl => argApply(tl, string.toUpperCase())
       case "l" +: tl => argApply(tl, string.toLowerCase())
       case "1u" +: tl => argApply(tl, string.capitalize)
-      case substringRegex(ss) +: tl => {
-        ss.split("\\.") match {
-          case Array("", d) => argApply(tl, string.take(d.toInt))
-          case Array(d, "") => argApply(tl, string.drop(d.toInt))
-          case Array(d1, d2) => argApply(tl, string.substring(d1.toInt, d2.toInt))
+      case substringRegex(left, right) +: tl => {
+        (left, right) match {
+          case ("", d) => argApply(tl, string.take(d.toInt))
+          case (d, "") => argApply(tl, string.drop(d.toInt))
+          case (d1, d2) => argApply(tl, string.substring(d1.toInt, d2.toInt))
           case _ => argApply(tl, string)
         }
       }
@@ -150,11 +162,22 @@ object JValueTransmuter {
       }
     }
     
-    val str = value.toString();
+    val str: String = value match {
+      case JNothing => ""
+      case JString(str) => str
+      case JBool(bool) => bool.toString()
+      case JInt(int) => int.toString()
+      case JDouble(db) => db.toString()
+      case JDecimal(bd) => bd.toString()
+      case JLong(l) => l.toString()
+      case jv => compact(render(jv))
+    }
     
-    JString(argument.map { s => s.toLowerCase().split(":") } match {
+    JString(argument.map { s => s.toLowerCase().split("""\:""") } match {
       case None => str
-      case Some(arr) => argApply(arr, str)
+      case Some(arr) => {
+        argApply(arr, str)
+      }
     })
   }
   

@@ -101,7 +101,7 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
   it should "date format" in {
     val accessor = JValueAccessor(jsonVal)
     assertResult(JString("2015:12:25")) {
-      val jPath = JPath(JObjectPath("date"), JTransmute("d", Some("yyyy:MM:dd")))
+      val jPath = JPath(JObjectPath("date"), JTransmute("date", Some("yyyy:MM:dd")))
       accessor.getValue(jPath)
     }
   }
@@ -129,7 +129,7 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
   
   it should "take default, after not finding path, and transmute to integer" in {
     val accessor = JValueAccessor(jsonVal)
-    assertResult(JLong(3)) {
+    assertResult(JInt(3)) {
       accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("medium"), JDefaultValue("3"), JTransmute("n", None)))
     }
   }

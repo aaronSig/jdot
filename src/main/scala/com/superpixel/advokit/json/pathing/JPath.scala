@@ -160,7 +160,7 @@ object JPath {
     override val accepts = Value
     override val outputs = Value
     override val patterns = Seq(
-      ("""\^""" + """(b|n|s|f|i|\%|d|ord)""" + """(\<""" + literalStr + """)?""").r
+      ("""\^""" + """(b|n|s|f|i|d|\%|date|ord)""" + """(\<""" + literalStr + """)?""").r
     )
   }
   
