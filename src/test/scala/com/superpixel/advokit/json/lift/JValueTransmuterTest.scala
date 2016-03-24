@@ -472,6 +472,45 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     }
   }
   
+  it should "accept 'pretty' argument with qualifier" in {
+    assertResult(JString("21 days ago")) {
+      val str = DateTime.now().minusWeeks(3).toString();
+      JValueTransmuter.transmute(JString(str), "date", Some("pretty:day"))
+    }
+    
+    assertResult(JString("17 weeks from now")) {
+      val str = DateTime.now().plusMonths(4).toString();
+      JValueTransmuter.transmute(JString(str), "date", Some("pretty:week"))
+    }
+    
+    assertResult(JString("12 months ago")) {
+      val str = DateTime.now().minusYears(1).toString();
+      JValueTransmuter.transmute(JString(str), "date", Some("pretty:month"))
+    }
+  }
+  
+  it should "accept 'pretty_' argument with qualifier, render just duration" in {
+    assertResult(JString("1 week")) {
+      val str = DateTime.now().minusDays(7).toString();
+      JValueTransmuter.transmute(JString(str), "date", Some("pretty_"))
+    }
+    
+    assertResult(JString("21 days")) {
+      val str = DateTime.now().minusWeeks(3).toString();
+      JValueTransmuter.transmute(JString(str), "date", Some("pretty_:day"))
+    }
+    
+    assertResult(JString("17 weeks")) {
+      val str = DateTime.now().plusMonths(4).toString();
+      JValueTransmuter.transmute(JString(str), "date", Some("pretty_:week"))
+    }
+    
+    assertResult(JString("12 months")) {
+      val str = DateTime.now().minusYears(1).toString();
+      JValueTransmuter.transmute(JString(str), "date", Some("pretty_:month"))
+    }
+  }
+  
   "JValueTransmute ord" should "produce a suffix on any int" in {
     
     assertResult(JString("1st")) {
@@ -491,7 +530,7 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     }
   } 
   
-  "JValueTransmute ord" should "produce a full ordinal word on argument (up to 12)" in {
+  it should "produce a full ordinal word on argument (up to 12)" in {
     
     assertResult(JString("First")) {
       JValueTransmuter.transmute(JInt(1), "ord", Some("full"))

@@ -6,8 +6,13 @@ import org.json4s.native.JsonMethods._
 import java.text.NumberFormat
 import com.github.nscala_time.time.Imports._
 import org.ocpsoft.prettytime.PrettyTime
+import scala.collection.JavaConverters._
 import java.util.Locale
 import java.util.Currency
+import org.ocpsoft.prettytime.units.{Day => PTDay, Week => PTWeek, Month => PTMonth, Year => PTYear}
+import org.ocpsoft.prettytime.TimeUnit
+import org.ocpsoft.prettytime.impl.ResourcesTimeFormat
+import java.util.Date
 
 object JValueTransmuter {
   
@@ -108,37 +113,72 @@ object JValueTransmuter {
     }
   }
   
+  val standardPT = new PrettyTime();
+  
+  val dayPT = {
+    val pt = new PrettyTime()
+    val ptUnits: List[TimeUnit] = pt.getUnits().asScala.toList
+    ptUnits.dropWhile { u => u.getClass != classOf[PTWeek] } foreach { u => pt.removeUnit(u) }
+    pt
+  }
+  val weekPT = {
+    val pt = new PrettyTime()
+    val ptUnits: List[TimeUnit] = pt.getUnits().asScala.toList
+    ptUnits.dropWhile { u => u.getClass != classOf[PTMonth] } foreach { u => pt.removeUnit(u) }
+    pt
+  }
+  val monthPT = {
+    val pt = new PrettyTime()
+    val ptUnits: List[TimeUnit] = pt.getUnits().asScala.toList
+    ptUnits.dropWhile { u => u.getClass != classOf[PTYear] } foreach { u => pt.removeUnit(u) }
+    pt
+  }
+  
+  
   val ordinalDayRegex = """(.*)do(.*)""".r
+  val prettyRegex = """pretty(_?):?(.*)""".r
   private def toDateFormat(value: JValue, argument: Option[String]): JValue = {
-    val dateOpt: Option[DateTime] = value match {
-      case JBool(bool) => Some(DateTime.now)
-      case JInt(int) => Some(new DateTime(int.toLong*1000))
-      case JDouble(db) => Some(new DateTime(db.toLong*1000))
-      case JDecimal(bd) => Some(new DateTime(bd.toLong*1000))
-      case JLong(l) => Some(new DateTime(l*1000))
-      case JString(now) if now.toLowerCase() == "now" => Some(DateTime.now)
-      case JString(str) => Some(DateTime.parse(str))
-      case _ => None
-    }
-    dateOpt match {
-      case None => throw new JsonTransmutingException("Cannot convert json value to date.", value)
-      case Some(d: DateTime) => argument match {
-        case None => JString(d.toString)
-        case Some("pretty") => {
-          val pt = new PrettyTime()
-          JString(pt.format(d.toDate()))
-        }
-        case Some(ordinalDayRegex(left, right)) => {
-          val dayOfMonth = d.getDayOfMonth
-          val leftStr = if (left == "") "" else d.toString(left)
-          val ord = dayOfMonth.toString + ordSuffix(dayOfMonth % 10)
-          val rightStr = if (right == "") "" else d.toString(right)
-          JString(leftStr + ord + rightStr)
-        }
-        case Some(arg: String) => JString(d.toString(arg))
+    try {
+      val dateOpt: Option[DateTime] = value match {
+        case JBool(bool) => Some(DateTime.now)
+        case JInt(int) => Some(new DateTime(int.toLong*1000))
+        case JDouble(db) => Some(new DateTime(db.toLong*1000))
+        case JDecimal(bd) => Some(new DateTime(bd.toLong*1000))
+        case JLong(l) => Some(new DateTime(l*1000))
+        case JString(now) if now.toLowerCase() == "now" => Some(DateTime.now)
+        case JString(str) => Some(DateTime.parse(str))
+        case _ => None
       }
+      dateOpt match {
+        case None => throw new JsonTransmutingException("Cannot convert json value to date.", value)
+        case Some(d: DateTime) => argument match {
+          case None => JString(d.toString)
+          case Some(prettyRegex(duration, arg)) => {
+            val pt: PrettyTime = arg match {
+              case "" => standardPT
+              case "day" => dayPT
+              case "week" => weekPT
+              case "month" => monthPT
+              case _ => standardPT
+            }
+            duration match {
+              case "_" => JString(pt.formatApproximateDuration(d.toDate()))
+              case _ => JString(pt.format(d.toDate()))
+            }
+          }
+          case Some(ordinalDayRegex(left, right)) => {
+            val dayOfMonth = d.getDayOfMonth
+            val leftStr = if (left == "") "" else d.toString(left)
+            val ord = dayOfMonth.toString + ordSuffix(dayOfMonth % 10)
+            val rightStr = if (right == "") "" else d.toString(right)
+            JString(leftStr + ord + rightStr)
+          }
+          case Some(arg: String) => JString(d.toString(arg))
+        }
+      }
+    } catch {
+      case e: Throwable => throw new JsonTransmutingException("Cannot convert json value to date.", value, e)
     }
-    
   }
   
   val ordSuffix = Array("th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th");
@@ -185,12 +225,12 @@ object JValueTransmuter {
         case Some(numericRegex(of)) => try {
           JString(perNF.format(d/of.toDouble))
         } catch {
-          case e: Throwable => throw new JsonTransmutingException(s"Cannot convert $of to a double for percentage format: ${e.getMessage}", value)
+          case e: Throwable => throw new JsonTransmutingException(s"Cannot convert $of to a double for percentage format", value, e)
         }
         case Some(opNumericRegex(of)) => try {
           JString(perNF.format(1.0d-(d/of.toDouble)))
         } catch {
-          case e: Throwable => throw new JsonTransmutingException(s"Cannot convert $of to a double for percentage format: ${e.getMessage}", value)
+          case e: Throwable => throw new JsonTransmutingException(s"Cannot convert $of to a double for percentage format", value, e)
         }
         case _ => JString(perNF.format(d))
       }
@@ -212,7 +252,7 @@ object JValueTransmuter {
           val formatString: String = s"%${argument.getOrElse("")}d"
           JString(formatString.format(i))
         } catch {
-          case e : Throwable => throw new JsonTransmutingException(s"Did not understand formatted integer transmutation arguments - $argument - Nested: ${e.getMessage}", value)
+          case e : Throwable => throw new JsonTransmutingException(s"Did not understand formatted integer transmutation arguments - $argument", value, e)
         }
     }
   }
@@ -232,7 +272,7 @@ object JValueTransmuter {
           val formatString: String = s"%${argument.getOrElse("")}f"
           JString(formatString.format(fl))
         } catch {
-          case e : Throwable => throw new JsonTransmutingException(s"Did not understand formatted float transmutation arguments - $argument - Nested: ${e.getMessage}", value)
+          case e : Throwable => throw new JsonTransmutingException(s"Did not understand formatted float transmutation arguments - $argument", value, e)
         }
     }
     
@@ -350,7 +390,7 @@ object JValueTransmuter {
         }
     }
   } catch {
-    case e: Throwable => throw new JsonTransmutingException(s"Could not convert string $str to number: ${e.getMessage}", JString(str))
+    case e: Throwable => throw new JsonTransmutingException(s"Could not convert string $str to number", JString(str), e)
   }
 
   private def toBoolean(value: JValue, argument: Option[String]): JBool = {
@@ -378,8 +418,8 @@ object JValueTransmuter {
 }
 
 
-class JsonTransmutingException(val message: String, val jVal: JValue) 
-  extends RuntimeException(s"$message. For Json:\n " + (if (jVal == JNothing) "nothing" else pretty(render(jVal))))
+class JsonTransmutingException(val message: String, val jVal: JValue, val e: Throwable = null) 
+  extends RuntimeException(s"$message. For Json:\n " + (if (jVal == JNothing) "nothing" else pretty(render(jVal))), e)
 
 //    case JBool(bool) => 
 //    case JString(str: String) => 
