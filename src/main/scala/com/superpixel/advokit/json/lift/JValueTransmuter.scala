@@ -5,6 +5,9 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import java.text.NumberFormat
 import com.github.nscala_time.time.Imports._
+import org.ocpsoft.prettytime.PrettyTime
+import java.util.Locale
+import java.util.Currency
 
 object JValueTransmuter {
   
@@ -19,9 +22,93 @@ object JValueTransmuter {
     case "%" => toPercentage(value, argument) //converts to float, then to percentage
     case "date" => toDateFormat(value, argument) //date formatter, takes dateString or timestamp and toString based on argument
     case "ord" => toOrdinal(value, argument) //ordinal formatter 1 -> 1st, 4 - 4th
+    case "cur" => toCurrency(value, argument)
     case _ => JString(value.toString)
   }
   
+  def stringIndex(s: String, i: Int): Option[Char] = {
+      val sLen = s.length
+      if (i >= sLen || i < -sLen) None 
+      else if (i < 0) Some(s(sLen + i))
+      else Some(s(i))
+    }
+  
+  
+  val localeTagRegex = """([a-z]{2}-[A-Z]{2})""".r
+  val iso4217 = """([A-Z]{3})""".r
+  val symbol = """([£$€¥])""".r
+  private def toCurrency(value: JValue, argument: Option[String]): JValue = {
+    def toCurrencyString(db: Double, tag: Option[String] = None, inSubunits: Boolean = false, whole: Boolean = false): String = {
+      tag match {
+        case Some(localeTagRegex(localeTag)) => {
+          val locale = Locale.forLanguageTag(localeTag)
+          val nf = NumberFormat.getCurrencyInstance(locale);
+          if (whole) nf.setMaximumFractionDigits(0)
+          (inSubunits, nf.getCurrency.getDefaultFractionDigits) match {
+            case (true, e) if e > 0 => {
+              val ratio = Math.pow(10, -e)
+              nf.format(db*ratio)
+            }
+            case _ => nf.format(db)
+          }
+        }
+        case Some(iso4217(currencyCode)) => {
+          val cur = Currency.getInstance(currencyCode);
+          val nf = NumberFormat.getCurrencyInstance
+          if (whole) nf.setMaximumFractionDigits(0)
+          nf.setCurrency(cur)
+          (inSubunits, cur.getDefaultFractionDigits) match {
+            case (true, e) if e > 0 => {
+              val ratio = Math.pow(10, -e)
+              nf.format(db*ratio)
+            }
+            case _ => nf.format(db)
+          }
+        }
+        case Some(symbol(sym)) => {
+          val am = if (inSubunits) db*0.01d else db
+          if (whole)
+            f"$sym$am%,.0f"
+          else
+            f"$sym$am%,.2f"
+        }
+        case _ => {
+          val nf = NumberFormat.getCurrencyInstance
+          val am = if (inSubunits) db*0.01d else db
+          if (whole) nf.setMaximumFractionDigits(0)
+          nf.format(am)
+        }
+      }
+    }
+    
+    val dOpt: Option[Double] = value match {
+      case JBool(bool) => Some(if (bool) 1d else 0d)
+      case JInt(int) => Some(int.toDouble)
+      case JDouble(db) => Some(db.toDouble)
+      case JDecimal(bd) => Some(bd.toDouble)
+      case JLong(l) => Some(l.toDouble)
+      case _ => None
+    }
+    dOpt match {
+      case None => toFormattedFloat(toNumber(value, None), argument)
+      case Some(d: Double) => argument match {
+        case None | Some("") => 
+          JString(toCurrencyString(d))
+        case Some(s) => (stringIndex(s, 0), stringIndex(s, 1)) match {
+          case (Some('_'), Some('0')) | (Some('0'), Some('_')) =>
+            JString(toCurrencyString(d, Some(s.drop(2)), true, true))
+          case (Some('_'), _) =>
+            JString(toCurrencyString(d, Some(s.drop(1)), true, false))
+          case (Some('0'), _) =>
+            JString(toCurrencyString(d, Some(s.drop(1)), false, true))
+          case _ =>
+            JString(toCurrencyString(d, Some(s)))
+        }
+      }
+    }
+  }
+  
+  val ordinalDayRegex = """(.*)do(.*)""".r
   private def toDateFormat(value: JValue, argument: Option[String]): JValue = {
     val dateOpt: Option[DateTime] = value match {
       case JBool(bool) => Some(DateTime.now)
@@ -37,6 +124,17 @@ object JValueTransmuter {
       case None => throw new JsonTransmutingException("Cannot convert json value to date.", value)
       case Some(d: DateTime) => argument match {
         case None => JString(d.toString)
+        case Some("pretty") => {
+          val pt = new PrettyTime()
+          JString(pt.format(d.toDate()))
+        }
+        case Some(ordinalDayRegex(left, right)) => {
+          val dayOfMonth = d.getDayOfMonth
+          val leftStr = if (left == "") "" else d.toString(left)
+          val ord = dayOfMonth.toString + ordSuffix(dayOfMonth % 10)
+          val rightStr = if (right == "") "" else d.toString(right)
+          JString(leftStr + ord + rightStr)
+        }
         case Some(arg: String) => JString(d.toString(arg))
       }
     }

@@ -439,6 +439,39 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
 
   }
   
+  it should "be able to render ordinal day of the month" in {
+    
+    assertResult(JString("28th Feb 2016")) {
+      JValueTransmuter.transmute(JString("2016-02-28T12:31:17.721Z"), "date", Some("do MMM yyyy"))
+    }
+    
+    assertResult(JString("March the 21st")) {
+      JValueTransmuter.transmute(JString("2016-03-21T12:31:17.721Z"), "date", Some("MMMM 'the' do"))
+    }
+    
+    assertResult(JString("Apr2nd2016")) {
+      JValueTransmuter.transmute(JString("2016-04-02T12:31:17.721Z"), "date", Some("MMMdoyyyy"))
+    }
+    
+  }
+  
+  it should "accept 'pretty' argument" in {
+    assertResult(JString("3 weeks ago")) {
+      val str = DateTime.now().minusWeeks(3).toString();
+      JValueTransmuter.transmute(JString(str), "date", Some("pretty"))
+    }
+    
+    assertResult(JString("4 days from now")) {
+      val str = DateTime.now().plusDays(4).toString();
+      JValueTransmuter.transmute(JString(str), "date", Some("pretty"))
+    }
+    
+    assertResult(JString("moments ago")) {
+      val str = DateTime.now().minusSeconds(1).toString();
+      JValueTransmuter.transmute(JString(str), "date", Some("pretty"))
+    }
+  }
+  
   "JValueTransmute ord" should "produce a suffix on any int" in {
     
     assertResult(JString("1st")) {
@@ -481,5 +514,117 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     }
     
   } 
+  
+  "JValueTransmute cur" should "produce formatted currency from locale tag" in {
+    assertResult(JString("£10.00")) {
+        JValueTransmuter.transmute(JInt(10), "cur", Some("en-GB"))
+    }
+        
+    assertResult(JString("$9.99")) {
+        JValueTransmuter.transmute(JDouble(9.99), "cur", Some("en-US"))
+    }
+        
+    assertResult(JString("€1,500.02")) {
+        JValueTransmuter.transmute(JDouble(1500.02), "cur", Some("en-IE"))
+    }
+    
+    assertResult(JString("12 500,99 €")) {
+        JValueTransmuter.transmute(JDouble(12500.99), "cur", Some("fr-FR"))
+    }
+  }
+  
+  it should "produce formatted currency from currency code" in {
+    assertResult(JString("£1,500.02")) {
+        JValueTransmuter.transmute(JDouble(1500.02), "cur", Some("GBP"))
+    }
+        
+    assertResult(JString("USD10.00")) {
+        JValueTransmuter.transmute(JInt(10), "cur", Some("USD"))
+    }
+        
+    assertResult(JString("€9.90")) {
+        JValueTransmuter.transmute(JDouble(9.90), "cur", Some("EUR"))
+    }
+    
+    assertResult(JString("DKK12,500.99")) {
+        JValueTransmuter.transmute(JDouble(12500.99), "cur", Some("DKK"))
+    }
+  }
+  
+  it should "produce formatted currency from select currency symbols" in {
+    assertResult(JString("£1,500.02")) {
+        JValueTransmuter.transmute(JDouble(1500.02), "cur", Some("£"))
+    }
+        
+    assertResult(JString("$10.00")) {
+        JValueTransmuter.transmute(JInt(10), "cur", Some("$"))
+    }
+        
+    assertResult(JString("€9.90")) {
+        JValueTransmuter.transmute(JDouble(9.90), "cur", Some("€"))
+    }
+    
+    assertResult(JString("¥100,000.00")) {
+        JValueTransmuter.transmute(JDouble(100000), "cur", Some("¥"))
+    }
+  }
+  
+  it should "be able to intrepret subunits when passed an underscore" in {
+    assertResult(JString("$0.10")) {
+        JValueTransmuter.transmute(JInt(10), "cur", Some("_$"))
+    }
+    
+    assertResult(JString("£1,500.02")) {
+        JValueTransmuter.transmute(JDouble(150002), "cur", Some("_GBP"))
+    }
+    
+    assertResult(JString("12 500,99 €")) {
+        JValueTransmuter.transmute(JDouble(1250099), "cur", Some("_fr-FR"))
+    }
+    
+    assertResult(JString("JPY 100,000")) {
+        JValueTransmuter.transmute(JDouble(100000), "cur", Some("_jp-JP"))
+    }
+    
+    assertResult(JString("CLF10.00")) {
+      JValueTransmuter.transmute(JInt(100000), "cur", Some("_CLF"))
+    }
+  }
+  
+  it should "render out wholes when passes a 0" in {
+    assertResult(JString("$10")) {
+        JValueTransmuter.transmute(JInt(10), "cur", Some("0$"))
+    }
+    
+    assertResult(JString("£1,500")) {
+        JValueTransmuter.transmute(JDouble(1500.02), "cur", Some("0GBP"))
+    }
+    
+    assertResult(JString("12 501 €")) {
+        JValueTransmuter.transmute(JDouble(12500.99), "cur", Some("0fr-FR"))
+    }
+    
+    assertResult(JString("JPY 100,000")) {
+        JValueTransmuter.transmute(JDouble(100000), "cur", Some("0jp-JP"))
+    }
+  }
+  
+  it should "be able to take both an underscore and a zero" in {
+    assertResult(JString("$10")) {
+        JValueTransmuter.transmute(JInt(1020), "cur", Some("_0$"))
+    }
+    
+    assertResult(JString("£1,501")) {
+        JValueTransmuter.transmute(JDouble(150078), "cur", Some("0_GBP"))
+    }
+    
+    assertResult(JString("12 501 €")) {
+        JValueTransmuter.transmute(JDouble(1250099), "cur", Some("_0fr-FR"))
+    }
+    
+    assertResult(JString("JPY 100,000")) {
+        JValueTransmuter.transmute(JDouble(100000), "cur", Some("_0jp-JP"))
+    }
+  }
 }
   
