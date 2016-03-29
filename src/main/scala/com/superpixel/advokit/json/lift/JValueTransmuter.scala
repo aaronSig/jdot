@@ -95,7 +95,7 @@ object JValueTransmuter {
       case _ => None
     }
     dOpt match {
-      case None => toFormattedFloat(toNumber(value, None), argument)
+      case None => toCurrency(toNumber(value, None), argument)
       case Some(d: Double) => argument match {
         case None | Some("") => 
           JString(toCurrencyString(d))

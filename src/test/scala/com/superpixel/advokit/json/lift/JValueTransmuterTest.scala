@@ -567,6 +567,10 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
         JValueTransmuter.transmute(JDouble(1500.02), "cur", Some("en-IE"))
     }
     
+    assertResult(JString("€1,500.02")) {
+        JValueTransmuter.transmute(JString("1500.02"), "cur", Some("en-IE"))
+    }
+    
     assertResult(JString("12 500,99 €")) {
         JValueTransmuter.transmute(JDouble(12500.99), "cur", Some("fr-FR"))
     }
