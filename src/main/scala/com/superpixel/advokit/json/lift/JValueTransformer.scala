@@ -48,7 +48,14 @@ class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusion
       
     val builtJV  = builder.build((getValues(postInJV, additionalInclusions)))
 
-    val preOutJV = JValueAttachment.applyAttachmentsToJValue(builtJV, attachments)
+    val preOutJV = try {
+      JValueAttachment.applyAttachmentsToJValue(builtJV, attachments)
+    } catch {
+      case jte: JsonTraversalException => {
+        println(s"ERROR: ${jte.getMessage}")
+        builtJV
+      }
+    }
 //      attachments.foldLeft(builtJV)(applyAttachment(additionalInclusions)_)
     
     val outJV    = mergingFn(preOutJV, localMergingJValues._2, mergingJValues._2)

@@ -22,6 +22,7 @@ object JValueAttachment {
     case FixedInclusions(mp) => s => mp.get(s).map { parse(_) };
   }
   
+  @throws(classOf[JsonTraversalException])
   private def getJArray(jPath: JPath, fromJson: String, inclusions: Inclusions): List[JValue] = {
     val jValueArray = parse(fromJson);
     JValueTraverser.traverse(linkLamb(inclusions), jArrayNotFoundLamb, jArrayEndLamb)(jValueArray, jPath)
