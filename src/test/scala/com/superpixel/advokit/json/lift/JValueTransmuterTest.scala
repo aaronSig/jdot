@@ -355,6 +355,47 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     }
     
   }
+  
+  "JValueTransmute ratio" should "leave a double alone" in {
+    assertResult(JDouble(0.45)) {
+      JValueTransmuter.transmute(JDouble(0.45d), "ratio", None)
+    }
+    
+    assertResult(JDouble(0.4565d)) {
+      JValueTransmuter.transmute(JDouble(0.4565d), "ratio", None)
+    }
+  }
+  
+  it should "take a string and convert to double" in {
+    assertResult(JDouble(0.45)) {
+      JValueTransmuter.transmute(JString("0.45d"), "ratio", None)
+    }
+    
+    assertResult(JDouble(0.4565d)) {
+      JValueTransmuter.transmute(JString("0.4565d"), "ratio", None)
+    }
+    
+    assertResult(JDouble(0.456522d)) {
+      JValueTransmuter.transmute(JString("0.456522d"), "ratio", None)
+    }
+  }
+  
+  it should "take a double and convert to ratio with args" in {
+    assertResult(JDouble(0.55d)) {
+      JValueTransmuter.transmute(JDouble(0.45d), "ratio", Some("!"))
+    }
+    
+    assertResult(JDouble(0.5d)) {
+      JValueTransmuter.transmute(JInt(25), "ratio", Some("50"))
+    }
+    
+    assertResult(JDouble(0.75d)) {
+      JValueTransmuter.transmute(JInt(25), "ratio", Some("!100"))
+    }
+    assertResult(JDouble(0.1d)) {
+      JValueTransmuter.transmute(JInt(1), "ratio", Some("10"))
+    }
+  }
  
   "JValueTransmute %" should "take a double and convert to percentage" in {
     assertResult(JString("45%")) {
@@ -392,8 +433,13 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     assertResult(JString("75%")) {
       JValueTransmuter.transmute(JInt(25), "%", Some("!100"))
     }
+    
     assertResult(JString("90%")) {
       JValueTransmuter.transmute(JInt(1), "%", Some("!10"))
+    }
+    
+    assertResult(JString("14%")) {
+      JValueTransmuter.transmute(JInt(6), "%", Some("!7:0"))
     }
   }
   
@@ -455,6 +501,16 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     
   }
   
+  it should "accept 'timestamp' and 'epoch' arguments" in {
+    assertResult(JLong(1456617600l)) {
+      JValueTransmuter.transmute(JString("2016-02-28"), "date", Some("timestamp"));
+    }
+    
+    assertResult(JLong(1456617600000l)) {
+      JValueTransmuter.transmute(JString("2016-02-28"), "date", Some("epoch"))
+    }
+  }
+  
   it should "accept 'pretty' argument" in {
     assertResult(JString("3 weeks ago")) {
       val str = DateTime.now().minusWeeks(3).toString();
@@ -471,7 +527,7 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
       JValueTransmuter.transmute(JString(str), "date", Some("pretty"))
     }
   }
-  
+    
   it should "accept 'pretty' argument with qualifier" in {
     assertResult(JString("21 days ago")) {
       val str = DateTime.now().minusWeeks(3).toString();
@@ -490,7 +546,7 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
   }
   
   it should "accept 'pretty_' argument with qualifier, render just duration" in {
-    assertResult(JString("1 week")) {
+    assertResult(JString("7 days")) {
       val str = DateTime.now().minusDays(7).toString();
       JValueTransmuter.transmute(JString(str), "date", Some("pretty_"))
     }

@@ -18,15 +18,159 @@ object JValueTransmuter {
   
   @throws(classOf[JsonTransmutingException])
   def transmute(value: JValue, transmuteType: String, argument: Option[String]): JValue = transmuteType match {
+    /***
+     * Takes string/number/boolean/objects/arrays and outputs a boolean value
+     * 
+     * String -> "false"/"f"/"n" goes to false, otherwise true
+     * Number -> 0 goes to false, otherwise true
+     * Boolean -> identity
+     * Object/Array -> existence
+     * 
+     * ARGUMENTS: "!"/"NOT" -> performs NOT operation
+     */
     case "b" => toBoolean(value, argument)
+    
+    /***
+     * Takes string/number/boolean to number value
+     * 
+     * String -> converts number strings, allows decimal point and suffixes (e.g. d)
+     * Number -> identity
+     * Boolean -> true-1, false-0
+     * Object/Array -> Exception
+     *
+     * 
+     * ARGUMENTS: 
+     *  Input arguments: Numeric - denotes base e.g. value="10110" arg="2"  output=22
+     *  Output arguments: Printf char - defines number type e.g. value="23.4" arg="i"  output=23
+     */
     case "n" => toNumber(value, argument)
+    
+    /***
+     * Takes string/number/boolean/array/object and converts to string
+     * 
+     * String -> identity
+     * Number/Boolean -> string valueOf
+     * Object/Array -> toString (json string)
+     * 
+     * ARGUMENTS:
+     *  MULTIPLE ARGUMENTS SEPARATED BY COLON (":")
+     *  Substring: "x.y" where x and y are noString or numeric -> substring operation starting at x, ending (exclusive) at y
+     *                blank values denote start and end of string. Minus numbers are supported
+     *  Case: "u"/"l"/"1u" -> perform uppercase/lowercase/first character uppercase respectively
+     *  Any other arguments are passed to Scala's String.format method, with type %s  
+     */
     case "s" => toString(value, argument) //toString + operations e.g. .1:u would take first char and uppercase it: simpson -> S
+    
+    /***
+     * Takes string/number/boolean/array/object and converts to string representing a float
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toFormattedFloat
+     * Number -> converts to float string, similar to printf/ Scala's String.format method with %f
+     * 
+     * ARGUMENTS:
+     *   All arguments are passed to Scala String.format method with type %f 
+     */
     case "f" => toFormattedFloat(value, argument) //numberFormater, follows printf rules for 'f'
+    
+    /***
+     * Takes string/number/boolean/array/object and converts to string representing a integer
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toInt
+     * Number -> converts to float string, similar to printf/ Scala's String.format method with %d
+     * 
+     * ARGUMENTS:
+     *   All arguments are passed to Scala String.format method with type %d
+     */
     case "i" => toInt(value, argument) //intFormater, follows printf rules for 'd'
+    
+    /***
+     * Takes string/number/boolean/array/object and converts to string representing a integer
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toInt
+     * Number -> converts to float string, similar to printf/ Scala's String.format method with %d
+     * 
+     * ARGUMENTS:
+     *   All arguments are passed to Scala String.format method with type %d
+     */
     case "d" => toInt(value, argument) //intFormater, follows printf rules for 'd'
-    case "%" => toPercentage(value, argument) //converts to float, then to percentage
+    
+    /***
+     * Takes string/number/boolean and converts to string representing a ratio (double between 0 and 1)
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toPercentage
+     * Number -> converts to float between 0 and 1
+     * 
+     * ARGUMENTS:
+     *   Complement: "!"/"c" -> gives the complement percentage e.g. input=0.45 arg="!" output=65%
+     *   OutOf: Numeric -> gives the percentage of the value passed out of the argument e.g. input=4 arg="40" output=10%
+     */
+    case "ratio" => toRatio(value, argument)
+    
+    /***
+     * Takes string/number/boolean and converts to string representing a percentage
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toPercentage
+     * Number -> converts to float between 0 and 1 then uses percentage number formatter
+     * 
+     * ARGUMENTS:
+     *   Complement: "!"/"c" -> gives the complement percentage e.g. input=0.45 arg="!" output=65%
+     *   OutOf: Numeric -> gives the percentage of the value passed out of the argument e.g. input=4 arg="40" output=10%
+     *   Decimal places: ":x" suffix (x numeric) -> controls number of max decimal places of output, default 2
+     */
+    case "%" => toPercentage(value, argument)
+    
+    /***
+     * Takes string/number/boolean and converts to formatted date string
+     * 
+     * String -> Accepts ISO standard date
+     * Number -> Treats number as epoch
+     * Boolean -> Always gives now date
+     * 
+     * ARGUMENTS:
+     * 
+     *
+     *   Format String: Date format string, following Joda times date formatting rules.
+     *                  Includes new "do" symbol, which give an ordinal day of the month e.g. input="2016-03-02" arg="do MMMM" output="2nd March"
+     *                  
+     *   Pretty Date: (keyword) "pretty" or "pretty_" -> Formats to PrettyTime string e.g. "4 day form now"
+     *                                                   Underscore just give duration e.g. "4 days"
+     *                                                   Can also take addition ":day"/":week"/":month" suffix, which defines the largest time type
+     *                                                   e.g. input="2016-03-02" [arg=pretty output="1 month ago"] [arg=pretty:week output="4 weeks ago"]
+     */
     case "date" => toDateFormat(value, argument) //date formatter, takes dateString or timestamp and toString based on argument
+    
+    /***
+     * Takes string/boolean/number and converts to formatted integer with ordinal string e.g. "1st"
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toOrdinal
+     * Number -> converts to int and adds ordinal suffix 
+     *
+     * ARGUMENTS:
+     * 
+     *  Full word: "full" -> produces word instead of suffix for 0 to 12 e.g. input=1 arg=full output=First 
+     * 
+     */
     case "ord" => toOrdinal(value, argument) //ordinal formatter 1 -> 1st, 4 - 4th
+    
+    /***
+     * Takes string/boolean/number and converts to formatted currency string
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toCurrency
+     * Number -> converts to currency formatted string
+     * 
+     * ARGUMENTS:
+     * 
+     * Language Code: xx-ZZ -> takes an iso language code and formats accordingly
+     * 
+     * Currency Code: YYY -> takes ISO 4217 Currency code and format accordingly (may not produce symbol)
+     * 
+     * Symbol: "£"/"€"/"$"/"¥" -> formats as float with symbol prepending
+     * 
+     * Subunits Input: prefix with "_" -> takes the number as subunits instead of whole units e.g. input=1050 arg=GBP output=£10.50
+     * 
+     * Unit Output: prefix with "0" -> outputs currency without subunits e.g. input=11.0 arg=EUR output=€11
+     *
+     */
     case "cur" => toCurrency(value, argument)
     case _ => JString(value.toString)
   }
@@ -42,6 +186,26 @@ object JValueTransmuter {
   val localeTagRegex = """([a-z]{2}-[A-Z]{2})""".r
   val iso4217 = """([A-Z]{3})""".r
   val symbol = """([£$€¥])""".r
+  
+  /***
+     * Takes string/boolean/number and converts to formatted currency string
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toCurrency
+     * Number -> converts to currency formatted string
+     * 
+     * ARGUMENTS:
+     * 
+     * Language Code: xx-ZZ -> takes an iso language code and formats accordingly
+     * 
+     * Currency Code: YYY -> takes ISO 4217 Currency code and format accordingly (may not produce symbol)
+     * 
+     * Symbol: "£"/"€"/"$"/"¥" -> formats as float with symbol prepending
+     * 
+     * Subunits Input: prefix with "_" -> takes the number as subunits instead of whole units e.g. input=1050 arg=_GBP output=£10.50
+     * 
+     * Unit Output: prefix with "0" -> outputs currency without subunits e.g. input=11.0 arg=0EUR output=€11
+     *
+     */
   private def toCurrency(value: JValue, argument: Option[String]): JValue = {
     def toCurrencyString(db: Double, tag: Option[String] = None, inSubunits: Boolean = false, whole: Boolean = false): String = {
       tag match {
@@ -137,6 +301,29 @@ object JValueTransmuter {
   
   val ordinalDayRegex = """(.*)do(.*)""".r
   val prettyRegex = """pretty(_?):?(.*)""".r
+  
+  /***
+     * Takes string/number/boolean and converts to formatted date string
+     * 
+     * String -> Accepts ISO standard date
+     * Number -> Treats number as timestamp (seconds since 1970-01-01)
+     * Boolean -> Always gives now date
+     * 
+     * ARGUMENTS:
+     * 
+     *
+     *   Format String: Date format string, following Joda times date formatting rules.
+     *                  Includes new "do" symbol, which give an ordinal day of the month e.g. input="2016-03-02" arg="do MMMM" output="2nd March"
+     *                  
+     *   Epoch: (keyword) "epoch" -> returns milliseconds since 1970-01-01                  
+     *
+     *   Timestamp: (keyword) "timestamp" -> return seconds since 1970-01-01
+     *
+     *   Pretty Date: (keyword) "pretty" or "pretty_" -> Formats to PrettyTime string e.g. "4 day form now"
+     *                                                   Underscore just give duration e.g. "4 days"
+     *                                                   Can also take addition ":day"/":week"/":month" suffix, which defines the largest time type
+     *                                                   e.g. input="2016-03-02" [arg=pretty output="1 month ago"] [arg=pretty:week output="4 weeks ago"]
+     */
   private def toDateFormat(value: JValue, argument: Option[String]): JValue = {
     try {
       val dateOpt: Option[DateTime] = value match {
@@ -166,6 +353,12 @@ object JValueTransmuter {
               case _ => JString(pt.format(d.toDate()))
             }
           }
+          case Some("epoch") => {
+            JLong(d.getMillis)
+          }
+          case Some("timestamp") => {
+            JLong(d.getMillis/1000l)
+          }
           case Some(ordinalDayRegex(left, right)) => {
             val dayOfMonth = d.getDayOfMonth
             val leftStr = if (left == "") "" else d.toString(left)
@@ -183,6 +376,18 @@ object JValueTransmuter {
   
   val ordSuffix = Array("th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th");
   val ordFullString = Array("Zeroth", "First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth", "Eleventh", "Twelth")
+  
+  /***
+     * Takes string/boolean/number and converts to formatted integer with ordinal string e.g. "1st"
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toOrdinal
+     * Number -> converts to int and adds ordinal suffix 
+     *
+     * ARGUMENTS:
+     * 
+     *  Full word: "full" -> produces word instead of suffix for 0-12 e.g. input=1 arg=full output=First 
+     * 
+     */
   private def toOrdinal(value: JValue, argument: Option[String]): JValue = {
     val iOpt: Option[Int] = value match {
       case JBool(bool) => Some(if (bool) 1 else 0)
@@ -205,8 +410,54 @@ object JValueTransmuter {
   
   
   val numericRegex = """(\d+)""".r
-  val opNumericRegex = """\!(\d+)""".r
+  val argSplitRatioPercent = """([^:.]*):(.*)""".r
+  /***
+     * Takes string/number/boolean and converts to string representing a percentage
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toPercentage
+     * Number -> converts to float between 0 and 1 then uses percentage number formatter
+     * 
+     * ARGUMENTS:
+     *   Complement: "!"/"c" -> gives the complement percentage e.g. input=0.45 arg="!" output=65%
+     *   
+     *   OutOf: Numeric -> gives the percentage of the value passed out of the argument e.g. input=4 arg="40" output=10%
+     *
+     *   Decimal places: ":x" suffix (x numeric) -> controls number of max decimal places of output, default 2
+     */
   private def toPercentage(value: JValue, argument: Option[String]): JValue = {
+    val argTup: Tuple2[Option[String], Option[String]] = argument match {
+      case None => (None, None)
+      case Some(argSplitRatioPercent(ratio, percent)) => (Some(ratio), Some(percent))
+      case Some(s) => (Some(s), None)
+    }
+    
+    argTup match {
+      case (ratioArg, percentArg) => {
+    	  val d: Double = this.toRatio(value, ratioArg).values
+			  val perNF = NumberFormat.getPercentInstance()
+        percentArg match {
+          case Some(numericRegex(i)) => perNF.setMaximumFractionDigits(i.toInt)
+          case _ => perNF.setMaximumFractionDigits(2)
+        }
+			  JString(perNF.format(d))
+      }
+    }
+    
+  }
+  
+  val opNumericRegex = """\!(\d+)""".r
+  
+  /***
+     * Takes string/number/boolean and converts to string representing a ratio (double between 0 and 1)
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toPercentage
+     * Number -> converts to float between 0 and 1
+     * 
+     * ARGUMENTS:
+     *   Complement: "!"/"c" -> gives the complement percentage e.g. input=0.45 arg="!" output=65%
+     *   OutOf: Numeric -> gives the percentage of the value passed out of the argument e.g. input=4 arg="40" output=10%
+     */
+  private def toRatio(value: JValue, argument: Option[String]): JDouble = {
     val fOpt: Option[Double] = value match {
       case JBool(bool) => Some(if (bool) 1d else 0d)
       case JInt(int) => Some(int.toDouble)
@@ -215,28 +466,36 @@ object JValueTransmuter {
       case JLong(l) => Some(l.toDouble)
       case _ => None
     }
-    val perNF = NumberFormat.getPercentInstance()
-    perNF.setMaximumFractionDigits(2)
     fOpt match {
-      case None => toPercentage(toNumber(value, None), argument)
+      case None => toRatio(toNumber(value, None), argument)
       case Some(d: Double) => argument.map { _.toLowerCase() } match {
-        case None => JString(perNF.format(d))
-        case Some("!") | Some("c") => JString(perNF.format(1.0d-d))
+        case None => JDouble(d)
+        case Some("!") | Some("c") => JDouble(1.0d-d)
         case Some(numericRegex(of)) => try {
-          JString(perNF.format(d/of.toDouble))
+          JDouble(d/of.toDouble)
         } catch {
-          case e: Throwable => throw new JsonTransmutingException(s"Cannot convert $of to a double for percentage format", value, e)
+          case e: Throwable => throw new JsonTransmutingException(s"Cannot convert $of to a double for ratio", value, e)
         }
         case Some(opNumericRegex(of)) => try {
-          JString(perNF.format(1.0d-(d/of.toDouble)))
+          JDouble(1.0d-(d/of.toDouble))
         } catch {
-          case e: Throwable => throw new JsonTransmutingException(s"Cannot convert $of to a double for percentage format", value, e)
+          case e: Throwable => throw new JsonTransmutingException(s"Cannot convert $of to a double for ratio", value, e)
         }
-        case _ => JString(perNF.format(d))
+        case _ => JDouble(d)
       }
     }
   }
   
+  
+  /***
+     * Takes string/number/boolean/array/object and converts to string representing a integer
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toInt
+     * Number -> converts to float string, similar to printf/ Scala's String.format method with %d
+     * 
+     * ARGUMENTS:
+     *   All arguments are passed to Scala String.format method with type %d
+     */
   private def toInt(value: JValue, argument: Option[String]): JValue = {
     val iOpt: Option[Int] = value match {
       case JBool(bool) => Some(if (bool) 1 else 0)
@@ -257,6 +516,15 @@ object JValueTransmuter {
     }
   }
   
+  /***
+     * Takes string/number/boolean/array/object and converts to string representing a float
+     * 
+     * String/Boolean -> converts to number via 'n' transmutation then toFormattedFloat
+     * Number -> converts to float string, similar to printf/ Scala's String.format method with %f
+     * 
+     * ARGUMENTS:
+     *   All arguments are passed to Scala String.format method with type %f 
+     */
   private def toFormattedFloat(value: JValue, argument: Option[String]): JValue = {
     val fOpt: Option[Float] = value match {
       case JBool(bool) => Some(if (bool) 1f else 0f)
@@ -279,6 +547,20 @@ object JValueTransmuter {
   }
   
   val substringRegex = """(\d*)\.(\d*)""".r
+  /***
+     * Takes string/number/boolean/array/object and converts to string
+     * 
+     * String -> identity
+     * Number/Boolean -> string valueOf
+     * Object/Array -> toString (json string)
+     * 
+     * ARGUMENTS:
+     *  MULTIPLE ARGUMENTS SEPARATED BY COLON (":")
+     *  Substring: "x.y" where x and y are noString or numeric -> substring operation starting at x, ending (exclusive) at y
+     *                blank values denote start and end of string. Minus numbers are supported
+     *  Case: "u"/"l"/"1u" -> perform uppercase/lowercase/first character uppercase respectively
+     *  Any other arguments are passed to Scala's String.format method, with type %s  
+     */
   private def toString(value: JValue, argument: Option[String]): JString = {
     def argApply(args: Seq[String], string: String): String = args match {
       case Nil => string
@@ -319,6 +601,19 @@ object JValueTransmuter {
     })
   }
   
+  /***
+     * Takes string/number/boolean to number value
+     * 
+     * String -> converts number strings, allows decimal point and suffixes (e.g. d)
+     * Number -> identity
+     * Boolean -> true-1, false-0
+     * Object/Array -> Exception
+     *
+     * 
+     * ARGUMENTS: 
+     *  Input arguments: Numeric - denotes base e.g. value="10110" arg="2"  output=22
+     *  Output arguments: Printf char - defines number type e.g. value="23.4" arg="i"  output=23
+     */
   private def toNumber(value: JValue, argument: Option[String]): JValue = {
     val argTup = argument.map(str => {
       val arr = str.split(":") 
@@ -393,6 +688,16 @@ object JValueTransmuter {
     case e: Throwable => throw new JsonTransmutingException(s"Could not convert string $str to number", JString(str), e)
   }
 
+  /***
+     * Takes string/number/boolean/objects/arrays and outputs a boolean value
+     * 
+     * String -> "false"/"f"/"n" goes to false, otherwise true
+     * Number -> 0 goes to false, otherwise true
+     * Boolean -> identity
+     * Object/Array -> existence
+     * 
+     * ARGUMENTS: "!"/"NOT" -> performs NOT operation
+     */
   private def toBoolean(value: JValue, argument: Option[String]): JBool = {
     val bool: Boolean = value match {
       case jb: JBool => jb.value
