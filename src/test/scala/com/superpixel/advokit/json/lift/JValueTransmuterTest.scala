@@ -438,6 +438,10 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
       JValueTransmuter.transmute(JInt(1), "%", Some("!10"))
     }
     
+    assertResult(JString("35%")) {
+      JValueTransmuter.transmute(JDouble(0.34524), "%", Some(":0"))
+    }
+    
     assertResult(JString("14%")) {
       JValueTransmuter.transmute(JInt(6), "%", Some("!7:0"))
     }
@@ -546,8 +550,8 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
   }
   
   it should "accept 'pretty_' argument with qualifier, render just duration" in {
-    assertResult(JString("7 days")) {
-      val str = DateTime.now().minusDays(7).toString();
+    assertResult(JString("1 week")) {
+      val str = DateTime.now().minusDays(9).toString();
       JValueTransmuter.transmute(JString(str), "date", Some("pretty_"))
     }
     
