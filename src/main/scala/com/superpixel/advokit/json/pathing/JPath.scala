@@ -382,8 +382,13 @@ object JPath {
     
     def getSpecial(startInc: Int, endExc: Int): Option[Special] = subpath(startInc, endExc).map{s=>Special(unescape(s))}
     
-    def getNestedPath(startInc: Int, endExc: Int): Option[NestedPath] = 
-      subpath(startInc, endExc).map { sp => NestedPath(splitToDelimiterSequence(sp)) }
+    def getNestedPath(startInc: Int, endExc: Int): Option[NestedPath] = (pathStringIndex(startInc), pathStringIndex(endExc-1)) match {
+      case (Some(l), Some(r)) if NestMode.brackets.exists{ case (left, right) => l == left && r == right } => 
+    	  subpath(startInc+1, endExc-1).map { sp => NestedPath(splitToDelimiterSequence(sp)) }
+      
+      case _ => 
+        subpath(startInc, endExc).map { sp => NestedPath(splitToDelimiterSequence(sp)) }
+    }
     
     /**
      * Get mode stack -> empty exit acc reverse
@@ -412,7 +417,7 @@ object JPath {
                     (nextCheck+1, 
                         (depth+1, left, right) +: bracketStack,
                         (mode, Some(d), Bracketed(right), depth+1, Nil) +: 
-                            (curMode, curModeStarter, curBreakout, curStartDepth, d +: curModeAcc) +: modeTl) //TODO BD removed               
+                            (curMode, curModeStarter, curBreakout, curStartDepth, d +: curModeAcc) +: modeTl) //Bracket removed               
                         
                   //If no bracket then start new mode with out bracket mode enabled (which is then ended by context only)
                   case (dOpt, _, _) => {

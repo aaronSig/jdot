@@ -133,6 +133,17 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       }
   }
   
+  it should "be able to interpret triky string format syntax, where literal is a delim and with clarifying brackets" in {
+    assertResult(
+      JPath(JObjectPath("one"), JObjectPath("two"), 
+          JStringFormat(
+              Seq(FormatLiteral("comp="), ReplaceHolder, FormatLiteral("."), ReplaceHolder),
+              Seq(JPath(JObjectPath("three")),
+                  JPath(JObjectPath("four")))))) {
+        JPath.fromString("one.two|(comp={three}.{four})")
+      }
+  }
+  
   it should "be able to interpret conditional syntax" in {
     assertResult(
       JPath(JObjectPath("one"), JArrayPath(2), JConditional(
@@ -141,6 +152,17 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
         JPath(JObjectPath("notThree"))
       ))) {
       JPath.fromString("one[2]~three.four>.five?three.four>.five.six:notThree")
+    }
+  }
+  
+  it should "be able to interpret conditional syntax with clarifying brackets" in {
+    assertResult(
+      JPath(JObjectPath("one"), JArrayPath(2), JConditional(
+        JPath(JObjectPath("three"), JObjectPath("four"), JPathLink, JObjectPath("five")), None,
+        JPath(JObjectPath("three"), JObjectPath("four"), JPathLink, JObjectPath("five"), JObjectPath("six")),
+        JPath(JObjectPath("notThree"))
+      ))) {
+      JPath.fromString("one[2]~{{three.four>.five}?{three.four>.five.six}:notThree}")
     }
   }
   
