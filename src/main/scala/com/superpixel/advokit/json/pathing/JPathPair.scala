@@ -16,6 +16,9 @@ object JPathPair {
     new JPathPair(to , from)
   }
   
+  implicit def tupleToJPathPair(tuple: (JPath, JPath)): JPathPair = JPathPair(tuple._1, tuple._2)
+  implicit def stringTupleToJPathPair(tuple: (String, String)): JPathPair = JPathPair(tuple._1, tuple._2)
+  
   implicit def strings2Paths(pathStringMap: JPathStringPair): JPathPair = {
     new JPathPair(JPath.fromString(pathStringMap.from), JPath.fromString(pathStringMap.to))
   }

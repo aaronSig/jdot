@@ -33,6 +33,7 @@ class JPathException(message: String, pathString: String, index: Int = -1, cause
 object JPath {
   def apply(jPathElements: JPathElement*): JPath = new JPath(jPathElements)
   
+  implicit def string2JPath(s: String): JPath = JPath.fromString(s)
   implicit def seq2JPath(seq: Seq[JPathElement]): JPath = new JPath(seq)
   implicit def path2Seq(path: JPath): Seq[JPathElement] = path.seq
   
