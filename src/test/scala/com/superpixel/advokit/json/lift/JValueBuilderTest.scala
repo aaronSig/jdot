@@ -19,14 +19,14 @@ class JValueBuilderTest extends FlatSpec with Matchers with MockFactory with Bef
 
   "JValueBuilder build" should "be able to build a simple object" in {
     
-    val pathVals: Set[(JPath, JValue)] = Set(
-      (JPath(JObjectPath("integer")), JInt(3)),
-      (JPath(JObjectPath("string")), JString("hello")),
-      (JPath(JObjectPath("boolean")), JBool(true)),
-      (JPath(JObjectPath("double")), JDouble(2.45))
+    val pathVals: Set[(JPath, Any)] = Set(
+      ("integer", 3),
+      ("string", "hello"),
+      ("boolean", true),
+      ("double", 2.45)
     )
     
-    val builder = JValueBuilder(pathVals.map{_._1})
+    val builder = JValueBuilder()
 
     val expected: JValue = 
         ("integer" -> 3) ~
@@ -34,22 +34,22 @@ class JValueBuilderTest extends FlatSpec with Matchers with MockFactory with Bef
         ("boolean" -> true) ~
         ("double" -> 2.45)
       
-    assert(expected == builder.build(pathVals))
-    println(pretty(render(builder.build(pathVals))))
+    assert(expected == parse(builder.build(pathVals)))
+    println(builder.build(pathVals))
   }
   
-  "JValueBuilder build" should "be able to build a nested object" in {
+  it should "be able to build a nested object" in {
     
-    val pathVals: Set[(JPath, JValue)] = Set(
-      (JPath(JObjectPath("integer")), JInt(3)),
-      (JPath(JObjectPath("string")), JString("hello")),
-      (JPath(JObjectPath("nObj"), JObjectPath("bool1")), JBool(true)),
-      (JPath(JObjectPath("nObj"), JObjectPath("bool2")), JBool(false)),
-      (JPath(JObjectPath("nObj"), JObjectPath("nObj2"), JObjectPath("double1")), JDouble(2.45)),
-      (JPath(JObjectPath("nObj"), JObjectPath("nObj2"), JObjectPath("double2")), JDouble(3.67))
+    val pathVals: Set[(JPath, Any)] = Set(
+      ("integer", 3),
+      ("string", "hello"),
+      ("nObj.bool1", true),
+      ("nObj.bool2", false),
+      ("nObj.nObj2.double1", 2.45),
+      ("nObj.nObj2.double2", 3.67)
     )
     
-    val builder = JValueBuilder(pathVals.map{_._1})
+    val builder = JValueBuilder()
 
     val expected: JValue = 
         ("integer" -> 3) ~
@@ -61,8 +61,56 @@ class JValueBuilderTest extends FlatSpec with Matchers with MockFactory with Bef
             ("double1" -> 2.45) ~
             ("double2" -> 3.67)))
       
-    assert(expected == builder.build(pathVals))
-    println(pretty(render(builder.build(pathVals))))
+    assert(expected == parse(builder.build(pathVals)))
+    println(builder.build(pathVals))
+  }
+  
+  "JValueBuilder buildJValue" should "be able to build a simple object" in {
+    
+    val pathVals: Set[(JPath, JValue)] = Set(
+      (JPath(JObjectPath("integer")), JInt(3)),
+      (JPath(JObjectPath("string")), JString("hello")),
+      (JPath(JObjectPath("boolean")), JBool(true)),
+      (JPath(JObjectPath("double")), JDouble(2.45))
+    )
+    
+    val builder = JValueBuilder()
+
+    val expected: JValue = 
+        ("integer" -> 3) ~
+        ("string" -> "hello") ~
+        ("boolean" -> true) ~
+        ("double" -> 2.45)
+      
+    assert(expected == builder.buildJValue(pathVals))
+    println(pretty(render(builder.buildJValue(pathVals))))
+  }
+  
+  it should "be able to build a nested object" in {
+    
+    val pathVals: Set[(JPath, JValue)] = Set(
+      (JPath(JObjectPath("integer")), JInt(3)),
+      (JPath(JObjectPath("string")), JString("hello")),
+      (JPath(JObjectPath("nObj"), JObjectPath("bool1")), JBool(true)),
+      (JPath(JObjectPath("nObj"), JObjectPath("bool2")), JBool(false)),
+      (JPath(JObjectPath("nObj"), JObjectPath("nObj2"), JObjectPath("double1")), JDouble(2.45)),
+      (JPath(JObjectPath("nObj"), JObjectPath("nObj2"), JObjectPath("double2")), JDouble(3.67))
+    )
+    
+    val builder = JValueBuilder()
+
+    val expected: JValue = 
+        ("integer" -> 3) ~
+        ("string" -> "hello") ~
+        ("nObj" -> 
+          ("bool1" -> true) ~
+          ("bool2" -> false) ~
+          ("nObj2" -> 
+            ("double1" -> 2.45) ~
+            ("double2" -> 3.67)))
+      
+    assert(expected == builder.buildJValue(pathVals))
+    println(pretty(render(builder.buildJValue(pathVals))))
   }
   
   it should "be able to build an array" in {
@@ -74,12 +122,12 @@ class JValueBuilderTest extends FlatSpec with Matchers with MockFactory with Bef
       (JPath(JArrayPath(0)), JString("hello"))
     )
     
-    val builder = JValueBuilder(pathVals.map{_._1})
+    val builder = JValueBuilder()
 
     val expected: JValue = List("hello", "world", "it's", "margaret")
     
-    assert(expected == builder.build(pathVals))
-    println(pretty(render(builder.build(pathVals))))
+    assert(expected == builder.buildJValue(pathVals))
+    println(pretty(render(builder.buildJValue(pathVals))))
   }
   
   it should "be able to build an array with missing indexes, that should minimise when stringified" in {
@@ -91,10 +139,10 @@ class JValueBuilderTest extends FlatSpec with Matchers with MockFactory with Bef
       (JPath(JArrayPath(1)), JString("hello"))
     )
     
-    val builder = JValueBuilder(pathVals.map{_._1})
+    val builder = JValueBuilder()
 
     val expected: JValue = JArray(List(JNothing, JString("hello"), JNothing, JString("world"), JNothing, JString("it's"), JString("margaret")))
-    val returned: JValue = builder.build(pathVals)
+    val returned: JValue = builder.buildJValue(pathVals)
     
     val expectedJsonString = """["hello","world","it's","margaret"]"""
     val jsonString = compact(render(returned))
@@ -116,7 +164,7 @@ class JValueBuilderTest extends FlatSpec with Matchers with MockFactory with Bef
       (JPath(JObjectPath("nObj"), JObjectPath("nObj2"), JObjectPath("double2")), JDouble(3.67))
     )
     
-    val builder = JValueBuilder(pathVals.map{_._1})
+    val builder = JValueBuilder()
 
     val expected: JValue = 
         ("integer" -> 3) ~
@@ -129,8 +177,8 @@ class JValueBuilderTest extends FlatSpec with Matchers with MockFactory with Bef
             ("double1" -> 2.45) ~
             ("double2" -> 3.67)))
       
-    assert(expected == builder.build(pathVals))
-    println(pretty(render(builder.build(pathVals))))
+    assert(expected == builder.buildJValue(pathVals))
+    println(pretty(render(builder.buildJValue(pathVals))))
     
   }
   
@@ -144,10 +192,10 @@ class JValueBuilderTest extends FlatSpec with Matchers with MockFactory with Bef
       (JPath(JObjectPath("nObj"), JObjectPath("nObj2"), JPathLink, JObjectPath("double2")), JDouble(3.67))
     )
     
-    val builder = JValueBuilder(pathVals.map{_._1})
+    val builder = JValueBuilder()
     
     intercept[JsonBuildingException] {
-      builder.build(pathVals);
+      builder.buildJValue(pathVals);
     }
 
   }
