@@ -7,7 +7,7 @@ import com.superpixel.advokit.mapper._
 
 class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusions: Inclusions) extends JsonContentTransformer {
 
-  val builder = JValueBuilder(fieldMap.map(_.to))
+  val builder = JValueBuilder()
   val mergingJValues: (Seq[JValue], Seq[JValue]) = JValueMerger.transfromMergingJson(merges)
   val inclusionsMap: Map[String, JValue] = parseInclusions(inclusions)
   
@@ -46,7 +46,7 @@ class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusion
     
     val postInJV = mergingFn(j, localMergingJValues._1, mergingJValues._1)
       
-    val builtJV  = builder.build((getValues(postInJV, additionalInclusions)))
+    val builtJV  = builder.buildJValue((getValues(postInJV, additionalInclusions)))
 
     val preOutJV = try {
       JValueAttachment.applyAttachmentsToJValue(builtJV, attachments)

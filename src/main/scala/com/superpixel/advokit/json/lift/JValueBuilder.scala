@@ -3,10 +3,11 @@ package com.superpixel.advokit.json.lift
 import com.superpixel.advokit.json.pathing._
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import com.superpixel.advokit.mapper.JsonContentBuilder
 
-class JValueBuilder(paths: Set[JPath]) {
+class JValueBuilder extends JsonContentBuilder {
 
-  def build(pathVals: Set[(JPath, JValue)]): JValue = {
+  def buildJValue(pathVals: Set[(JPath, JValue)]): JValue = {
     def buildLinearPath(revPath: Seq[JPathElement], acc: JValue): JValue = revPath match {
       case Nil => acc
       case JObjectPath(key) +: tl => 
@@ -15,10 +16,12 @@ class JValueBuilder(paths: Set[JPath]) {
         buildLinearPath(tl, JArray(List.tabulate(key+1){
             n:Int => if (n==key) acc else JNothing
         }))
-      case JPathLink +: tl =>
-        throw new JsonBuildingException("Json build paths cannot include JLinks.")
-      case JDefaultValue(_) +: tl =>
-        throw new JsonBuildingException("Json build paths cannot include JDefaultValues.")
+      case JDefaultValue(s) +: tl => acc match {
+        case JNothing | JNull => buildLinearPath(tl, JString(s))
+        case _ => buildLinearPath(tl, acc)
+      }
+      case jpe +: _ => 
+        throw new JsonBuildingException(s"JPaths cannot contain ${jpe.getClass.getName} elements in a building context: $jpe")
     }
     
     import JValueMerger.{MergeArraysOnIndex, leftMerge}
@@ -31,12 +34,34 @@ class JValueBuilder(paths: Set[JPath]) {
     }
   }
   
+  override def build(pathVals: Set[(JPath, Any)]): String = {
+    return compact(render(buildJValue(pathVals.map{
+      case (jp, s: String) => (jp, JString(s))
+      case (jp, n: Number) => {
+        n match {
+          case i: java.lang.Integer => (jp, JInt(i.intValue()))
+          case d: java.lang.Double => (jp, JDouble(d))
+          case l: java.lang.Long => (jp, JLong(l))
+          case f: java.lang.Float => (jp, JDouble(f.doubleValue()))
+          case _ => (jp, getNumberValue(n))
+        }
+      }
+      case (jp, b: Boolean) => (jp, JBool(b))
+      case (jp, o) => (jp, JString(o.toString()))
+    })))
+  }
+  
+  def getNumberValue[A](x: A)(implicit num: Numeric[A] = null): JValue = Option(num) match {
+    case Some(num) => JDouble(num.toDouble(x))
+    case None => JNothing
+  }
+  
 }
 
 class JsonBuildingException(message: String) extends RuntimeException(message)
 
 object JValueBuilder {
   
-  def apply(paths: Set[JPath]): JValueBuilder = new JValueBuilder(paths)
+  def apply(): JValueBuilder = new JValueBuilder()
   
 }

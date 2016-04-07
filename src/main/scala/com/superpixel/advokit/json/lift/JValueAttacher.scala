@@ -8,7 +8,7 @@ import org.json4s.native.JsonMethods._
 
 class JValueAttacher(attachmentPairs: Set[JPathPair]) extends JsonContentAttacher {
 
-  val attachBuilder = JValueBuilder(attachmentPairs.map(_.to))
+  val attachBuilder = JValueBuilder()
   
   private def _attach(attachJson: Either[String, List[String]], attachToJson: String): String = {
     compact(render(_attachJValue(
@@ -24,7 +24,7 @@ class JValueAttacher(attachmentPairs: Set[JPathPair]) extends JsonContentAttache
         case Left(j) => j
         case Right(jList) => JArray(jList)
       })
-    val attachee = attachBuilder.build(attachmentPairs.map{ jpm: JPathPair => (jpm.to, accessor.getValue(jpm.from))});
+    val attachee = attachBuilder.buildJValue(attachmentPairs.map{ jpm: JPathPair => (jpm.to, accessor.getValue(jpm.from))});
     
     //    println("Attachee:\n " + compact(render(attachee)))
     //    println("AttachTo:\n " + compact(render(attachToJson)))
