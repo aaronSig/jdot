@@ -1,7 +1,7 @@
 
-organization := "com.superpixel.advokit"
+organization := "com.superpixel"
 
-name := "content-mapper"
+name := "jdot"
 
 version := "0.0.1-SHAPSHOT"
 isSnapshot := true
