@@ -9,11 +9,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Optional;
+import java.util.Scanner;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.superpixel.advokit.mapper.fixtures.GoalsHolder;
+import com.superpixel.advokit.mapper.fixtures.MatchPairJava;
+import com.superpixel.advokit.mapper.fixtures.MatchFixtureJava;
+import com.superpixel.advokit.mapper.fixtures.SimpleMatchJava;
 
 public class JvContentMapperBuilderTest {
 	
@@ -94,6 +99,28 @@ public class JvContentMapperBuilderTest {
 		System.out.println(jsonList.get(0));
 		System.out.println(mapper.map(jsonList.get(0)));
 	}
+	
+	@Test
+	public void simpleMatchLambdaTest() {
+		
+		Map<String, String> pathMap = new HashMap<>();
+		pathMap.put("game", "name");
+		pathMap.put("venue", "metadata.venue");
+		pathMap.put("score", "eventResult.metadata.score");
+		pathMap.put("winningTeam", "eventResult.metadata.winnerCode");
+		
+		JvContentMapperBuilder builder = new JvContentMapperBuilder().withPathMapping(pathMap);
+		
+		JvContentMapper<SimpleMatchJava> mapper = builder.build((String json) -> {
+			System.out.println("In lambda! : " + json);
+			return new SimpleMatchJava("Sunderland vs. Stoke", Optional.of("Stadium of Light"), "2 - 0", "sunderland");
+		});
+		
+		
+		assertEquals(new SimpleMatchJava("Sunderland vs. Stoke", Optional.of("Stadium of Light"), "2 - 0", "sunderland"), 
+				mapper.map(jsonList.get(0)));
+	}
+	
 	
 	@Test
 	public void goalHolderBuilderTest() {
@@ -179,5 +206,39 @@ public class JvContentMapperBuilderTest {
 		System.out.println(jsonList.get(3));
 		System.out.println(ret);
 	
+	}
+	
+	@Test
+	public void matchPairTestFromTypeHint() {
+		
+		SimpleMatchJava matchOne = new SimpleMatchJava("Sunderland vs. Stoke", Optional.of("Stadium of Light"), "2 - 0", "sunderland");
+		MatchFixtureJava matchTwo = new MatchFixtureJava("Man City vs. Southampton", "Etihad Stadium", "2015-11-28T15:00:00Z");
+		MatchPairJava expected = new MatchPairJava(matchOne, matchTwo);
+				
+		List<Class<?>> typeHintList = new ArrayList<>();
+		typeHintList.add(SimpleMatchJava.class);
+		typeHintList.add(MatchFixtureJava.class);
+		
+		Map<String, String> pathMap = new HashMap<>();
+		pathMap.put("matchOne._t", "(SimpleMatchJava)");
+		pathMap.put("matchOne.game", "[0].name");
+		pathMap.put("matchOne.venue", "[0].metadata.venue");
+		pathMap.put("matchOne.score", "[0].eventResult.metadata.score");
+		pathMap.put("matchOne.winningTeam", "[0].eventResult.metadata.winnerCode");
+		
+		pathMap.put("matchTwo._t", "(MatchFixtureJava)");
+		pathMap.put("matchTwo.game", "[1].name");
+		pathMap.put("matchTwo.venue", "[1].metadata.venue");
+		pathMap.put("matchTwo.startDate", "[1].startDate");
+		
+		JvContentMapperBuilder builder = new JvContentMapperBuilder().withPathMapping(pathMap).withTypeHintList(typeHintList);
+		JvContentMapper<MatchPairJava> mapper = builder.build(MatchPairJava.class);
+		
+		String json = "[" + jsonList.get(0) + "," + jsonList.get(1) + "]";
+		
+		System.out.println(json);
+		
+		assertEquals(expected, mapper.map(json));
+		
 	}
 }

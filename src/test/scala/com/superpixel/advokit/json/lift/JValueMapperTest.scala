@@ -7,49 +7,6 @@ import org.scalatest.FlatSpec
 import scala.io.Source
 import com.superpixel.advokit.json.pathing._
 
-trait Match
-
-class MatchWithResult(val game: String, val venue: String, val score: String, val winningTeam: String) extends Match {
-  override def equals(that: Any): Boolean = that match {
-    case that: MatchWithResult => 
-      this.game == that.game &&
-      this.venue == that.venue &&
-      this.score == that.score &&
-      this.winningTeam == that.winningTeam      
-  }
-  override def toString: String = s"Game: $game, Venue: $venue, Score: $score, Winning Team: $winningTeam."
-}
-
-class MatchFixture(val game: String, val venue: String, val startDate: String) extends Match {
-  override def equals(that: Any): Boolean = that match {
-    case that: MatchFixture => 
-      this.game == that.game &&
-      this.venue == that.venue &&
-      this.startDate == that.startDate
-  }
-  override def toString: String = s"Game: $game, Venue: $venue, Start Date: $startDate."
-}
-
-class Weekend(val weekName: String, val matchList: List[Match]) {
-  override def equals(that: Any): Boolean = that match {
-    case that: Weekend => 
-      this.matchList == that.matchList &&
-      this.weekName == that.weekName
-  }
-  override def toString: String = s"Week Name: $weekName, Match List: " + matchList.mkString("\n");
-}
-
-class MatchPair(val matchOne: Match, val matchTwo: Match) {
-  override def equals(that: Any): Boolean = that match {
-    case that: MatchPair => 
-      this.matchOne == that.matchOne &&
-      this.matchTwo == that.matchTwo    
-  }
-  override def toString: String = s"Match One: $matchOne, Match Two: $matchTwo."
-}
-
-
-
 class JValueMapperTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterAll {
   
   val jsonList: List[String] = {
@@ -122,7 +79,7 @@ class JValueMapperTest extends FlatSpec with Matchers with MockFactory with Befo
       )
       
 
-      val mapper = JValueMapper[MatchWithResult](fieldMap)
+      val mapper = JValueMapper[MatchWithResult](JValueTransformer(fieldMap))
       
       val returned = jsonList.map { json => mapper.map(json) }
       

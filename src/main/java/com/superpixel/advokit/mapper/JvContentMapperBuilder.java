@@ -2,23 +2,18 @@ package com.superpixel.advokit.mapper;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static com.superpixel.advokit.ScalaConverters.*;
-import com.superpixel.advokit.json.lift.JValueMapper;
-import com.superpixel.advokit.json.pathing.JPathPair;
+
 
 public class JvContentMapperBuilder {
 
-	private Optional<Map<String, String>> inclusionsMap = Optional.empty();
+
+	private JvContentTransformerBuilder transformerBuilder = new JvContentTransformerBuilder();
 	
-	private Optional<String[]> preMergingJson = Optional.empty();
-	private Optional<String[]> postMergingJson = Optional.empty();
-	
-	/***
-	 * Format Destination -> Source.
-	 * Destinations paths are keys with source paths as values.
-	 */
-	private Map<String, String> pathMapping;
+	private Optional<String> typeHintFieldName = Optional.empty();
+	private Optional<java.util.List<Class<?>>> typeHintList = Optional.empty();
 	
 	/***
 	 * Declares the paths for the json transformation.
@@ -34,7 +29,7 @@ public class JvContentMapperBuilder {
 	 * @return
 	 */
 	public JvContentMapperBuilder withPathMapping(Map<String, String> pathMapping) {
-		this.pathMapping = pathMapping;
+		transformerBuilder.withPathMapping(pathMapping);
 		return this;
 	}
 	
@@ -47,7 +42,7 @@ public class JvContentMapperBuilder {
 	 * @return
 	 */
 	public JvContentMapperBuilder withInclusionsMap(Map<String, String> inclusionsMap) {
-		this.inclusionsMap = Optional.of(inclusionsMap);
+		transformerBuilder.withInclusionsMap(inclusionsMap);
 		return this;
 	}
 	
@@ -59,7 +54,7 @@ public class JvContentMapperBuilder {
 	 * @return
 	 */
 	public JvContentMapperBuilder withPreJsonMerging(String... preMergingJson) {
-		this.preMergingJson = Optional.of(preMergingJson);
+		transformerBuilder.withPreJsonMerging(preMergingJson);
 		return this;
 	}
 	
@@ -71,32 +66,116 @@ public class JvContentMapperBuilder {
 	 * @return
 	 */
 	public JvContentMapperBuilder withPostJsonMerging(String... postMergingJson) {
-		this.postMergingJson = Optional.of(postMergingJson);
+		transformerBuilder.withPostJsonMerging(postMergingJson);
 		return this;
+	}
+	
+	/***
+	 * If you are building with build(Class<T> targetClass) and the targetClass you are extracting contains interface or abstract fields,
+	 * you will need to add the implementing class to the typeHintList and ensure that the json corresponding to the field contains the typeHintFieldName,
+	 * which should hold the name of the implementing class. For example with the classes:
+	 * 
+	 * public class Pet {
+	 * 	 private Animal animal;
+	 * 	 ...
+	 * }
+	 * 
+	 * public class Dog implements Animal {
+	 * 	 private String breed;
+	 * 	 ...
+	 * }
+	 * 
+	 * Dog.class must be added to typeHintList
+	 * and the json (after transformation) must contain your typeHintFieldName (or the default if not set: "_t"} as follows:
+	 * 
+	 * {
+	 * 	 "animal" : {
+	 * 		"{yourTypeHintFieldNameHere}" : "Dog",
+	 * 		"breed" : "Corgi"
+	 *   }
+	 * }
+	 *  
+	 * @param typeHintList
+	 * @return
+	 */
+	public JvContentMapperBuilder withTypeHintList(java.util.List<Class<?>> typeHintList) {
+		this.typeHintList = Optional.ofNullable(typeHintList);
+		return this;
+	}
+	
+	/***
+	 * Default typeHintFieldName is "_t"
+	 * 
+	 * If you are building with build(Class<T> targetClass) and the targetClass you are extracting contains interface or abstract fields,
+	 * you will need to add the implementing class to the typeHintList and ensure that the json corresponding to the field contains the typeHintFieldName,
+	 * which should hold the name of the implementing class. For example with the classes:
+	 * 
+	 * public class Pet {
+	 * 	 private Animal animal;
+	 * 	 ...
+	 * }
+	 * 
+	 * public class Dog implements Animal {
+	 * 	 private String breed;
+	 * 	 ...
+	 * }
+	 * 
+	 * Dog.class must be added to typeHintList
+	 * and the json (after transformation) must contain your typeHintFieldName (or the default if not set: "_t"} as follows:
+	 * 
+	 * {
+	 * 	 "animal" : {
+	 * 		"{yourTypeHintFieldNameHere}" : "Dog",
+	 * 		"breed" : "Corgi"
+	 *   }
+	 * }
+	 * 
+	 * @param typeHintList
+	 * @return
+	 */
+	public JvContentMapperBuilder withTypeHintFieldName(String typeHintFieldName) {
+		this.typeHintFieldName = Optional.ofNullable(typeHintFieldName);
+		return this;
+	}
+	
+	public <T> JvContentMapper<T> build(Function<String, T> extractFunction) {
+		scala.Function1<String, T> f = new scala.runtime.AbstractFunction1<String, T>() {
+		    public T apply(String json) {
+		        return extractFunction.apply(json);
+		    }
+		};
+		JsonContentExtractor<T> scExtractor = JsonContentExtractor$.MODULE$.apply(f);
+		JsonContentTransformer scTransformer = this.buildTransformer();
+		
+		JsonContentMapper<T> scMapper = JsonContentMapper$.MODULE$.apply(scTransformer, scExtractor);
+		return new JvContentMapper<T>(scMapper);
 	}
 	
 	public <T> JvContentMapper<T> build(Class<T> targetClass) {
 
-		scala.collection.immutable.Set<JPathPair> scPathMapping = jvStringMapToJPathPairSet(pathMapping);
+ 		scala.collection.immutable.List<Class<?>> scTypeHintList;
+ 		if (typeHintList.isPresent()) {
+ 			scTypeHintList = jvToScList(typeHintList.get());
+ 		} else {
+ 			scTypeHintList = JsonContentExtractor$.MODULE$.forClass$default$2();
+ 		}
  		
-		Inclusions scIncMap;
-		if (inclusionsMap.isPresent()) {
-			scIncMap = new FixedInclusions(jvToScMap(inclusionsMap.get()));
-		} else {
-			scIncMap = JValueMapper.forTargetClass$default$4();
-		}
-		MergingJson scMergJson;
-		if (preMergingJson.isPresent() && postMergingJson.isPresent()) {
-			scMergJson = new MergingJsonPrePost(jvArrayToScSeq(preMergingJson.get()), jvArrayToScSeq(postMergingJson.get()));
-		} else if (preMergingJson.isPresent()) {
-			scMergJson = new MergingJsonPre(jvArrayToScSeq(preMergingJson.get()));
-		} else if (postMergingJson.isPresent()) {
-			scMergJson = new MergingJsonPost(jvArrayToScSeq(postMergingJson.get()));
-		} else {
-			scMergJson = JValueMapper.forTargetClass$default$3();
-		}
+ 		scala.Option<String> scTypeHintFieldName;
+ 		if (typeHintFieldName.isPresent()) {
+ 			scTypeHintFieldName = scala.Option$.MODULE$.apply(typeHintFieldName.get());
+ 		} else {
+ 			scTypeHintFieldName = JsonContentExtractor$.MODULE$.forClass$default$3();
+ 		}
+
+		JsonContentExtractor<T> scExtractor = JsonContentExtractor$.MODULE$.forClass(targetClass, scTypeHintList, scTypeHintFieldName);
 		
-		JsonContentMapper<T> scMapper = JValueMapper.forTargetClass(targetClass, scPathMapping, scMergJson, scIncMap);
+		JsonContentTransformer scTransformer = this.buildTransformer();
+		
+		JsonContentMapper<T> scMapper = JsonContentMapper$.MODULE$.apply(scTransformer, scExtractor);
 		return new JvContentMapper<T>(scMapper);
+	}
+	
+	private JsonContentTransformer buildTransformer() {
+		return this.transformerBuilder.build().getScTransformer();
 	}
 }

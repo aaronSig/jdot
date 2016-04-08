@@ -97,7 +97,7 @@ public class JvContentTransformerBuilder {
       scMergJson = JValueTransformer.apply$default$2();
     }
     
-    JsonContentTransformer scTransformer = JValueTransformer.apply(scPathMapping, scMergJson, scIncMap);
+    JsonContentTransformer scTransformer = JsonContentTransformer$.MODULE$.apply(scPathMapping, scMergJson, scIncMap);
     return new JvContentTransformer(scTransformer);
   }
 }
