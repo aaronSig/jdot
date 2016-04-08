@@ -1,8 +1,10 @@
 package com.superpixel.advokit.mapper;
 
-import static com.superpixel.advokit.ScalaConverters.*;
+import static com.superpixel.jdot.util.ScalaConverters.*;
 
 import java.util.List;
+
+import com.superpixel.jdot.JsonContentTransformer;
 
 
 public class JvContentTransformer {

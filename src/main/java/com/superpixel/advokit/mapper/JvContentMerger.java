@@ -1,6 +1,6 @@
 package com.superpixel.advokit.mapper;
 
-import com.superpixel.advokit.json.lift.JValueMerger;
+import com.superpixel.jdot.json4s.JValueMerger;
 
 public class JvContentMerger {
 

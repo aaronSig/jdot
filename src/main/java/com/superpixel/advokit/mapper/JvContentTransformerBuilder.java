@@ -3,10 +3,18 @@ package com.superpixel.advokit.mapper;
 import java.util.Map;
 import java.util.Optional;
 
-import com.superpixel.advokit.json.lift.JValueTransformer;
-import com.superpixel.advokit.json.pathing.JPathPair;
+import com.superpixel.jdot.FixedInclusions;
+import com.superpixel.jdot.Inclusions;
+import com.superpixel.jdot.JsonContentTransformer;
+import com.superpixel.jdot.JsonContentTransformer$;
+import com.superpixel.jdot.MergingJson;
+import com.superpixel.jdot.MergingJsonPost;
+import com.superpixel.jdot.MergingJsonPre;
+import com.superpixel.jdot.MergingJsonPrePost;
+import com.superpixel.jdot.json4s.JValueTransformer;
+import com.superpixel.jdot.pathing.JPathPair;
 
-import static com.superpixel.advokit.ScalaConverters.*;
+import static com.superpixel.jdot.util.ScalaConverters.*;
 
 public class JvContentTransformerBuilder {
 

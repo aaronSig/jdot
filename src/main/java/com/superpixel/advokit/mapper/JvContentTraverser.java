@@ -1,6 +1,6 @@
 package com.superpixel.advokit.mapper;
 
-import com.superpixel.advokit.json.lift.JValueTraverser;
+import com.superpixel.jdot.json4s.JValueTraverser;
 
 public class JvContentTraverser {
 

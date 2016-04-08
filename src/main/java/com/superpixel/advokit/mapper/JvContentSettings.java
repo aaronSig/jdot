@@ -1,5 +1,9 @@
 package com.superpixel.advokit.mapper;
 
+import com.superpixel.jdot.Attachment;
+import com.superpixel.jdot.Inclusions;
+import com.superpixel.jdot.MergingJson;
+
 import scala.collection.immutable.List;
 
 public class JvContentSettings {

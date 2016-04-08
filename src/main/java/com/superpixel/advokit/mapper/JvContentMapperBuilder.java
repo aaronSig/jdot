@@ -4,7 +4,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static com.superpixel.advokit.ScalaConverters.*;
+import com.superpixel.jdot.JsonContentExtractor;
+import com.superpixel.jdot.JsonContentExtractor$;
+import com.superpixel.jdot.JsonContentMapper;
+import com.superpixel.jdot.JsonContentMapper$;
+import com.superpixel.jdot.JsonContentTransformer;
+
+import static com.superpixel.jdot.util.ScalaConverters.*;
 
 
 public class JvContentMapperBuilder {

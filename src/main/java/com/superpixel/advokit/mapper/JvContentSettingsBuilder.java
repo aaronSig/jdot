@@ -1,8 +1,8 @@
 package com.superpixel.advokit.mapper;
 
-import static com.superpixel.advokit.ScalaConverters.jvListToScSeq;
-import static com.superpixel.advokit.ScalaConverters.jvToScList;
-import static com.superpixel.advokit.ScalaConverters.jvToScMap;
+import static com.superpixel.jdot.util.ScalaConverters.jvListToScSeq;
+import static com.superpixel.jdot.util.ScalaConverters.jvToScList;
+import static com.superpixel.jdot.util.ScalaConverters.jvToScMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,6 +10,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import com.superpixel.jdot.Attachment;
+import com.superpixel.jdot.FixedInclusions;
+import com.superpixel.jdot.Inclusions;
+import com.superpixel.jdot.JsonArrayNestedTransformAttachment;
+import com.superpixel.jdot.JsonArrayTransformAttachment;
+import com.superpixel.jdot.MergingJson;
+import com.superpixel.jdot.MergingJsonPost;
+import com.superpixel.jdot.MergingJsonPre;
+import com.superpixel.jdot.MergingJsonPrePost;
+import com.superpixel.jdot.NestedTransformAttachment;
+import com.superpixel.jdot.NestedTransformListAttachment;
+import com.superpixel.jdot.NoInclusions$;
+import com.superpixel.jdot.NoMerging$;
+import com.superpixel.jdot.SimpleAttachment;
+import com.superpixel.jdot.SimpleListAttachment;
+import com.superpixel.jdot.SimpleTransformAttachment;
+import com.superpixel.jdot.SimpleTransformListAttachment;
 
 public class JvContentSettingsBuilder {
 

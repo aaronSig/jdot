@@ -1,6 +1,6 @@
 package com.superpixel.advokit.mapper;
 
-import com.superpixel.advokit.json.lift.JValueAttachment;
+import com.superpixel.jdot.json4s.JValueAttachment;
 
 public class JvContentAttachment {
 

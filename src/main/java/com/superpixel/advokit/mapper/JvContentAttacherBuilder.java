@@ -1,10 +1,12 @@
 package com.superpixel.advokit.mapper;
 
-import static com.superpixel.advokit.ScalaConverters.jvStringMapToJPathPairSet;
+import static com.superpixel.jdot.util.ScalaConverters.jvStringMapToJPathPairSet;
 
 import java.util.Map;
 
-import com.superpixel.advokit.json.pathing.JPathPair;
+import com.superpixel.jdot.JsonContentAttacher;
+import com.superpixel.jdot.JsonContentAttacher$;
+import com.superpixel.jdot.pathing.JPathPair;
 
 public class JvContentAttacherBuilder {
 

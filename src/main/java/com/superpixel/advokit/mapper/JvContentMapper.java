@@ -1,5 +1,7 @@
 package com.superpixel.advokit.mapper;
 
+import com.superpixel.jdot.JsonContentMapper;
+
 
 public class JvContentMapper<T> {
 
