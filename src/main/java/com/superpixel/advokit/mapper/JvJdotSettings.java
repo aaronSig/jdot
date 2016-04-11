@@ -6,13 +6,13 @@ import com.superpixel.jdot.MergingJson;
 
 import scala.collection.immutable.List;
 
-public class JvContentSettings {
+public class JvJdotSettings {
 
 	Inclusions inclusions;
 	MergingJson mergingJson;
 	scala.collection.immutable.List<Attachment> attachments;
 	
-	JvContentSettings(Inclusions inclusions, MergingJson mergingJson,
+	JvJdotSettings(Inclusions inclusions, MergingJson mergingJson,
 			List<Attachment> attachments) {
 		super();
 		this.inclusions = inclusions;

@@ -1,13 +1,13 @@
 package com.superpixel.advokit.mapper;
 
-import com.superpixel.jdot.JsonContentMapper;
+import com.superpixel.jdot.JdotMapper;
 
 
-public class JvContentMapper<T> {
+public class JvJdotMapper<T> {
 
-	private JsonContentMapper<T> scMapper;
+	private JdotMapper<T> scMapper;
 	
-	public JvContentMapper(JsonContentMapper<T> scMapper) {
+	public JvJdotMapper(JdotMapper<T> scMapper) {
 		this.scMapper = scMapper;
 	}
 	
@@ -16,7 +16,7 @@ public class JvContentMapper<T> {
 	}
 	
 	
-	public T map(String json, JvContentSettings settings) {
+	public T map(String json, JvJdotSettings settings) {
 		return scMapper.map(json, settings.attachments, settings.mergingJson, settings.inclusions);
 	}
 }

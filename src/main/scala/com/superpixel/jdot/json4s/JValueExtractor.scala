@@ -4,7 +4,7 @@ import com.superpixel.jdot._
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
-class JValueExtractor[T](extractFn: JValue => T) extends JsonContentExtractor[T] {
+class JValueExtractor[T](extractFn: JValue => T) extends JdotExtractor[T] {
 
   
   override def extract(json: String): T = {

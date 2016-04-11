@@ -5,8 +5,8 @@ import org.json4s.native.JsonMethods._
 
 import com.superpixel.jdot.pathing._
 import com.superpixel.jdot._
-import com.superpixel.jdot.JsonContentTransformer
-import com.superpixel.jdot.JsonContentAttacher
+import com.superpixel.jdot.JdotTransformer
+import com.superpixel.jdot.JdotAttacher
 
 object JValueAttachment {
   
@@ -57,7 +57,7 @@ object JValueAttachment {
   
   private def simpleAttach(attachJson: Either[Either[String, JValue], List[String]], 
                            attachToJson: JValue, 
-                           attacher: JsonContentAttacher): JValue = (attachJson, attacher) match {
+                           attacher: JdotAttacher): JValue = (attachJson, attacher) match {
     case (Left(Left(jsonStr)), atchr: JValueAttacher) => atchr.attachJValue(parse(jsonStr), attachToJson)
     case (Left(Right(jVal)), atchr: JValueAttacher) => atchr.attachJValue(jVal, attachToJson)
     case (Left(Left(jsonStr)), atchr) => parse(atchr.attach(jsonStr, compact(render(attachToJson))))
@@ -69,8 +69,8 @@ object JValueAttachment {
   
   private def attachWithTransformer(attachJson: Either[Either[String, JValue], Either[List[String], List[JValue]]], 
                                     attachToJson: JValue, 
-                                    transformer: JsonContentTransformer,
-                                    attacher: JsonContentAttacher,
+                                    transformer: JdotTransformer,
+                                    attacher: JdotAttacher,
                                     inclusions: Inclusions = NoInclusions,
                                     transformAttachments: List[Attachment] = Nil): JValue = {
     simpleAttach(

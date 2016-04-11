@@ -20,7 +20,7 @@ import com.superpixel.advokit.mapper.fixtures.MatchPairJava;
 import com.superpixel.advokit.mapper.fixtures.MatchFixtureJava;
 import com.superpixel.advokit.mapper.fixtures.SimpleMatchJava;
 
-public class JvContentMapperBuilderTest {
+public class JvJdotMapperBuilderTest {
 	
 	static private List<String> jsonList = new LinkedList<>();
 	
@@ -28,7 +28,7 @@ public class JvContentMapperBuilderTest {
 	public static void beforeAll() {
 
 		//Get file from resources folder
-		ClassLoader classLoader = JvContentMapperBuilderTest.class.getClassLoader();
+		ClassLoader classLoader = JvJdotMapperBuilderTest.class.getClassLoader();
 		File file = new File(classLoader.getResource("pl-league-week-14.json").getFile());
 
 		try (Scanner scanner = new Scanner(file)) {
@@ -70,9 +70,9 @@ public class JvContentMapperBuilderTest {
 		pathMap.put("score", "eventResult.metadata.score");
 		pathMap.put("winningTeam", "eventResult.metadata.winnerCode");
 		
-		JvContentMapperBuilder builder = new JvContentMapperBuilder().withPathMapping(pathMap);
+		JvJdotMapperBuilder builder = new JvJdotMapperBuilder().withPathMapping(pathMap);
 		
-		JvContentMapper<SimpleMatchJava> mapper = builder.build(SimpleMatchJava.class);
+		JvJdotMapper<SimpleMatchJava> mapper = builder.build(SimpleMatchJava.class);
 		
 		System.out.println("WOOOO:" + mapper.map(jsonList.get(0)));
 		assertEquals(new SimpleMatchJava("Sunderland vs. Stoke", Optional.of("Stadium of Light"), "2 - 0", "sunderland"), 
@@ -109,9 +109,9 @@ public class JvContentMapperBuilderTest {
 		pathMap.put("score", "eventResult.metadata.score");
 		pathMap.put("winningTeam", "eventResult.metadata.winnerCode");
 		
-		JvContentMapperBuilder builder = new JvContentMapperBuilder().withPathMapping(pathMap);
+		JvJdotMapperBuilder builder = new JvJdotMapperBuilder().withPathMapping(pathMap);
 		
-		JvContentMapper<SimpleMatchJava> mapper = builder.build((String json) -> {
+		JvJdotMapper<SimpleMatchJava> mapper = builder.build((String json) -> {
 			System.out.println("In lambda! : " + json);
 			return new SimpleMatchJava("Sunderland vs. Stoke", Optional.of("Stadium of Light"), "2 - 0", "sunderland");
 		});
@@ -142,8 +142,8 @@ public class JvContentMapperBuilderTest {
 		pathMap.put("scoreNames[1]", "eventResult.metadata.awayScorers");
 		
 		
-		JvContentMapperBuilder builder = new JvContentMapperBuilder().withPathMapping(pathMap);
-		JvContentMapper<GoalsHolder> mapper = builder.build(GoalsHolder.class);
+		JvJdotMapperBuilder builder = new JvJdotMapperBuilder().withPathMapping(pathMap);
+		JvJdotMapper<GoalsHolder> mapper = builder.build(GoalsHolder.class);
 		
 		List<String> ghag = new ArrayList<>();
 		ghag.add("25");
@@ -185,8 +185,8 @@ public class JvContentMapperBuilderTest {
 		pathMap.put("scoreNames[1]", "eventResult.metadata.awayScorers");
 		
 		
-		JvContentMapperBuilder builder = new JvContentMapperBuilder().withPathMapping(pathMap);
-		JvContentMapper<GoalsHolder> mapper = builder.build(GoalsHolder.class);
+		JvJdotMapperBuilder builder = new JvJdotMapperBuilder().withPathMapping(pathMap);
+		JvJdotMapper<GoalsHolder> mapper = builder.build(GoalsHolder.class);
 		
 		List<String> ghag = new ArrayList<>();
 		ghag.add("25");
@@ -231,8 +231,8 @@ public class JvContentMapperBuilderTest {
 		pathMap.put("matchTwo.venue", "[1].metadata.venue");
 		pathMap.put("matchTwo.startDate", "[1].startDate");
 		
-		JvContentMapperBuilder builder = new JvContentMapperBuilder().withPathMapping(pathMap).withTypeHintList(typeHintList);
-		JvContentMapper<MatchPairJava> mapper = builder.build(MatchPairJava.class);
+		JvJdotMapperBuilder builder = new JvJdotMapperBuilder().withPathMapping(pathMap).withTypeHintList(typeHintList);
+		JvJdotMapper<MatchPairJava> mapper = builder.build(MatchPairJava.class);
 		
 		String json = "[" + jsonList.get(0) + "," + jsonList.get(1) + "]";
 		

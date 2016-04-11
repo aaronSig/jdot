@@ -3,7 +3,7 @@ package com.superpixel.jdot
 import com.superpixel.jdot.pathing.JPath
 import com.superpixel.jdot.json4s.JValueAccessor
 
-trait JsonContentAccessor {
+trait JdotAccessor {
 
   def getNumber(jPath: JPath): Option[Number]
   def getBoolean(jPath: JPath): Option[Boolean]
@@ -13,8 +13,8 @@ trait JsonContentAccessor {
   
 }
 
-object JsonContentAccessor {
+object JdotAccessor {
   import org.json4s.native.JsonMethods._
-  def apply(json: String): JsonContentAccessor = JValueAccessor(parse(json));
+  def apply(json: String): JdotAccessor = JValueAccessor(parse(json));
   
 }

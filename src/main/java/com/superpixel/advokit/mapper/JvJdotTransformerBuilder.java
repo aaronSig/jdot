@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import com.superpixel.jdot.FixedInclusions;
 import com.superpixel.jdot.Inclusions;
-import com.superpixel.jdot.JsonContentTransformer;
-import com.superpixel.jdot.JsonContentTransformer$;
+import com.superpixel.jdot.JdotTransformer;
+import com.superpixel.jdot.JdotTransformer$;
 import com.superpixel.jdot.MergingJson;
 import com.superpixel.jdot.MergingJsonPost;
 import com.superpixel.jdot.MergingJsonPre;
@@ -16,7 +16,7 @@ import com.superpixel.jdot.pathing.JPathPair;
 
 import static com.superpixel.jdot.util.ScalaConverters.*;
 
-public class JvContentTransformerBuilder {
+public class JvJdotTransformerBuilder {
 
   private Optional<Map<String, String>> inclusionsMap = Optional.empty();
   
@@ -42,7 +42,7 @@ public class JvContentTransformerBuilder {
    * @param pathMapping
    * @return
    */
-  public JvContentTransformerBuilder withPathMapping(Map<String, String> pathMapping) {
+  public JvJdotTransformerBuilder withPathMapping(Map<String, String> pathMapping) {
     this.pathMapping = pathMapping;
     return this;
   }
@@ -55,7 +55,7 @@ public class JvContentTransformerBuilder {
    * @param inclusionsMap
    * @return
    */
-  public JvContentTransformerBuilder withInclusionsMap(Map<String, String> inclusionsMap) {
+  public JvJdotTransformerBuilder withInclusionsMap(Map<String, String> inclusionsMap) {
     this.inclusionsMap = Optional.of(inclusionsMap);
     return this;
   }
@@ -67,7 +67,7 @@ public class JvContentTransformerBuilder {
    * @param defaultInJson
    * @return
    */
-  public JvContentTransformerBuilder withPreJsonMerging(String... preMergingJson) {
+  public JvJdotTransformerBuilder withPreJsonMerging(String... preMergingJson) {
     this.preMergingJson = Optional.of(preMergingJson);
     return this;
   }
@@ -79,12 +79,12 @@ public class JvContentTransformerBuilder {
    * @param defaultOutJson
    * @return
    */
-  public JvContentTransformerBuilder withPostJsonMerging(String... postMergingJson) {
+  public JvJdotTransformerBuilder withPostJsonMerging(String... postMergingJson) {
     this.postMergingJson = Optional.of(postMergingJson);
     return this;
   }
   
-  public JvContentTransformer build() {
+  public JvJdotTransformer build() {
 
     scala.collection.immutable.Set<JPathPair> scPathMapping = jvStringMapToJPathPairSet(pathMapping);
     
@@ -105,7 +105,7 @@ public class JvContentTransformerBuilder {
       scMergJson = JValueTransformer.apply$default$2();
     }
     
-    JsonContentTransformer scTransformer = JsonContentTransformer$.MODULE$.apply(scPathMapping, scMergJson, scIncMap);
-    return new JvContentTransformer(scTransformer);
+    JdotTransformer scTransformer = JdotTransformer$.MODULE$.apply(scPathMapping, scMergJson, scIncMap);
+    return new JvJdotTransformer(scTransformer);
   }
 }

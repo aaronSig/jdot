@@ -4,19 +4,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.superpixel.jdot.JsonContentExtractor;
-import com.superpixel.jdot.JsonContentExtractor$;
-import com.superpixel.jdot.JsonContentMapper;
-import com.superpixel.jdot.JsonContentMapper$;
-import com.superpixel.jdot.JsonContentTransformer;
+import com.superpixel.jdot.JdotExtractor;
+import com.superpixel.jdot.JdotExtractor$;
+import com.superpixel.jdot.JdotMapper;
+import com.superpixel.jdot.JdotMapper$;
+import com.superpixel.jdot.JdotTransformer;
 
 import static com.superpixel.jdot.util.ScalaConverters.*;
 
 
-public class JvContentMapperBuilder {
+public class JvJdotMapperBuilder {
 
 
-	private JvContentTransformerBuilder transformerBuilder = new JvContentTransformerBuilder();
+	private JvJdotTransformerBuilder transformerBuilder = new JvJdotTransformerBuilder();
 	
 	private Optional<String> typeHintFieldName = Optional.empty();
 	private Optional<java.util.List<Class<?>>> typeHintList = Optional.empty();
@@ -34,7 +34,7 @@ public class JvContentMapperBuilder {
 	 * @param pathMapping
 	 * @return
 	 */
-	public JvContentMapperBuilder withPathMapping(Map<String, String> pathMapping) {
+	public JvJdotMapperBuilder withPathMapping(Map<String, String> pathMapping) {
 		transformerBuilder.withPathMapping(pathMapping);
 		return this;
 	}
@@ -47,7 +47,7 @@ public class JvContentMapperBuilder {
 	 * @param inclusionsMap
 	 * @return
 	 */
-	public JvContentMapperBuilder withInclusionsMap(Map<String, String> inclusionsMap) {
+	public JvJdotMapperBuilder withInclusionsMap(Map<String, String> inclusionsMap) {
 		transformerBuilder.withInclusionsMap(inclusionsMap);
 		return this;
 	}
@@ -59,7 +59,7 @@ public class JvContentMapperBuilder {
 	 * @param defaultInJson
 	 * @return
 	 */
-	public JvContentMapperBuilder withPreJsonMerging(String... preMergingJson) {
+	public JvJdotMapperBuilder withPreJsonMerging(String... preMergingJson) {
 		transformerBuilder.withPreJsonMerging(preMergingJson);
 		return this;
 	}
@@ -71,7 +71,7 @@ public class JvContentMapperBuilder {
 	 * @param defaultOutJson
 	 * @return
 	 */
-	public JvContentMapperBuilder withPostJsonMerging(String... postMergingJson) {
+	public JvJdotMapperBuilder withPostJsonMerging(String... postMergingJson) {
 		transformerBuilder.withPostJsonMerging(postMergingJson);
 		return this;
 	}
@@ -104,7 +104,7 @@ public class JvContentMapperBuilder {
 	 * @param typeHintList
 	 * @return
 	 */
-	public JvContentMapperBuilder withTypeHintList(java.util.List<Class<?>> typeHintList) {
+	public JvJdotMapperBuilder withTypeHintList(java.util.List<Class<?>> typeHintList) {
 		this.typeHintList = Optional.ofNullable(typeHintList);
 		return this;
 	}
@@ -139,49 +139,49 @@ public class JvContentMapperBuilder {
 	 * @param typeHintList
 	 * @return
 	 */
-	public JvContentMapperBuilder withTypeHintFieldName(String typeHintFieldName) {
+	public JvJdotMapperBuilder withTypeHintFieldName(String typeHintFieldName) {
 		this.typeHintFieldName = Optional.ofNullable(typeHintFieldName);
 		return this;
 	}
 	
-	public <T> JvContentMapper<T> build(Function<String, T> extractFunction) {
+	public <T> JvJdotMapper<T> build(Function<String, T> extractFunction) {
 		scala.Function1<String, T> f = new scala.runtime.AbstractFunction1<String, T>() {
 		    public T apply(String json) {
 		        return extractFunction.apply(json);
 		    }
 		};
-		JsonContentExtractor<T> scExtractor = JsonContentExtractor$.MODULE$.apply(f);
-		JsonContentTransformer scTransformer = this.buildTransformer();
+		JdotExtractor<T> scExtractor = JdotExtractor$.MODULE$.apply(f);
+		JdotTransformer scTransformer = this.buildTransformer();
 		
-		JsonContentMapper<T> scMapper = JsonContentMapper$.MODULE$.apply(scTransformer, scExtractor);
-		return new JvContentMapper<T>(scMapper);
+		JdotMapper<T> scMapper = JdotMapper$.MODULE$.apply(scTransformer, scExtractor);
+		return new JvJdotMapper<T>(scMapper);
 	}
 	
-	public <T> JvContentMapper<T> build(Class<T> targetClass) {
+	public <T> JvJdotMapper<T> build(Class<T> targetClass) {
 
  		scala.collection.immutable.List<Class<?>> scTypeHintList;
  		if (typeHintList.isPresent()) {
  			scTypeHintList = jvToScList(typeHintList.get());
  		} else {
- 			scTypeHintList = JsonContentExtractor$.MODULE$.forClass$default$2();
+ 			scTypeHintList = JdotExtractor$.MODULE$.forClass$default$2();
  		}
  		
  		scala.Option<String> scTypeHintFieldName;
  		if (typeHintFieldName.isPresent()) {
  			scTypeHintFieldName = scala.Option$.MODULE$.apply(typeHintFieldName.get());
  		} else {
- 			scTypeHintFieldName = JsonContentExtractor$.MODULE$.forClass$default$3();
+ 			scTypeHintFieldName = JdotExtractor$.MODULE$.forClass$default$3();
  		}
 
-		JsonContentExtractor<T> scExtractor = JsonContentExtractor$.MODULE$.forClass(targetClass, scTypeHintList, scTypeHintFieldName);
+		JdotExtractor<T> scExtractor = JdotExtractor$.MODULE$.forClass(targetClass, scTypeHintList, scTypeHintFieldName);
 		
-		JsonContentTransformer scTransformer = this.buildTransformer();
+		JdotTransformer scTransformer = this.buildTransformer();
 		
-		JsonContentMapper<T> scMapper = JsonContentMapper$.MODULE$.apply(scTransformer, scExtractor);
-		return new JvContentMapper<T>(scMapper);
+		JdotMapper<T> scMapper = JdotMapper$.MODULE$.apply(scTransformer, scExtractor);
+		return new JvJdotMapper<T>(scMapper);
 	}
 	
-	private JsonContentTransformer buildTransformer() {
+	private JdotTransformer buildTransformer() {
 		return this.transformerBuilder.build().getScTransformer();
 	}
 }

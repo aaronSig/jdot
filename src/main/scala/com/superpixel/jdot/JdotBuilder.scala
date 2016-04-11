@@ -3,14 +3,14 @@ package com.superpixel.jdot
 import com.superpixel.jdot.pathing.JPath
 import com.superpixel.jdot.json4s.JValueBuilder
 
-trait JsonContentBuilder {
+trait JdotBuilder {
 
   def build(pathVals: Set[(JPath, Any)]): String
   
 }
 
-object JsonContentBuilder { 
+object JdotBuilder { 
   
-  def apply: JsonContentBuilder = JValueBuilder()
+  def apply: JdotBuilder = JValueBuilder()
   
 }

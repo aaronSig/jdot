@@ -8,7 +8,7 @@ import org.json4s.native.JsonMethods._
 import com.superpixel.jdot.pathing._
 import com.superpixel.jdot._
 
-class JValueMapper[T](transformer: JsonContentTransformer, extractor: JsonContentExtractor[T]) extends JsonContentMapper[T] {
+class JValueMapper[T](transformer: JdotTransformer, extractor: JdotExtractor[T]) extends JdotMapper[T] {
   
   override def map(jsonContent: String, attachments: List[Attachment] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): T = {
     val jValContent = parse(jsonContent)
@@ -43,7 +43,7 @@ object JValueMapper {
     new JValueMapper[T](transformer, extractor)
   }
   
-  def apply[T](transformer: JsonContentTransformer, extractor: JsonContentExtractor[T]): JValueMapper[T] = {
+  def apply[T](transformer: JdotTransformer, extractor: JdotExtractor[T]): JValueMapper[T] = {
     new JValueMapper[T](transformer, extractor)
   }
   

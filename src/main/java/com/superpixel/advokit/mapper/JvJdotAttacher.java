@@ -4,18 +4,18 @@ import static com.superpixel.jdot.util.ScalaConverters.*;
 
 import java.util.List;
 
-import com.superpixel.jdot.JsonContentAttacher;
+import com.superpixel.jdot.JdotAttacher;
 
 
-public class JvContentAttacher {
+public class JvJdotAttacher {
 
-	private JsonContentAttacher scAttacher;
+	private JdotAttacher scAttacher;
 
-	public JvContentAttacher(JsonContentAttacher scAttacher) {
+	public JvJdotAttacher(JdotAttacher scAttacher) {
 		this.scAttacher = scAttacher;
 	}
 
-	public JsonContentAttacher getScAttacher() {
+	public JdotAttacher getScAttacher() {
 		return scAttacher;
 	}
 

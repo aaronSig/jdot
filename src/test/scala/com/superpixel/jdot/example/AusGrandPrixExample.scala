@@ -9,10 +9,7 @@ import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import scala.io.Source
 import org.scalatest.FunSpec
-import com.superpixel.jdot.JsonContentTransformer
-import com.superpixel.jdot.Attachment
-import com.superpixel.jdot.JsonArrayTransformAttachment
-import com.superpixel.jdot.JsonContentAttacher
+import com.superpixel.jdot._
 
 class AusGrandPrixExample extends FunSpec with Matchers {
 
@@ -32,9 +29,17 @@ class AusGrandPrixExample extends FunSpec with Matchers {
   describe("Accessing json with simple dot and square bracket syntax") {
     
     //Set up accessor with our example json
+    val accessor = JdotAccessor(ausF1Simple)
     
+    it("can access immediate fields") {
+      val racename = accessor.getString("raceName")
+      racename.foreach { println(_) }
+    }
     
-    
+    it("can access json objects") {
+      val circuit = accessor.getJsonString("circuit")
+      circuit.foreach { println(_) }
+    }
   }
   
   
@@ -44,7 +49,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     import scala.language.implicitConversions
 
     //     TO                  FROM
-    val jcTrans = JsonContentTransformer(
+    val jcTrans = JdotTransformer(
       Set(
         ("season",             "season"),
         ("round",              "round"),
@@ -57,7 +62,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
       )    
     )
     
-    val resultTrans = JsonContentTransformer(
+    val resultTrans = JdotTransformer(
       Set(
         ("driver.forename",     "Driver.givenName"),
         ("driver.surname",      "Driver.familyName"),
@@ -75,7 +80,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
       )    
     )
     
-    val attacher = JsonContentAttacher(Set(("results", "")))
+    val attacher = JdotAttacher(Set(("results", "")))
     
     it("should be equals to ausF1Simple") {
       val transformed = jcTrans.transform(ausF1, List(JsonArrayTransformAttachment("Results", ausF1, resultTrans, attacher)));
