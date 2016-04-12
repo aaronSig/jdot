@@ -1,13 +1,13 @@
 package com.superpixel.advokit.mapper;
 
-import com.superpixel.jdot.JdotMapper;
+import com.superpixel.jdot.JDotMapper;
 
 
-public class JvJdotMapper<T> {
+public class JvJDotMapper<T> {
 
-	private JdotMapper<T> scMapper;
+	private JDotMapper<T> scMapper;
 	
-	public JvJdotMapper(JdotMapper<T> scMapper) {
+	public JvJDotMapper(JDotMapper<T> scMapper) {
 		this.scMapper = scMapper;
 	}
 	
@@ -16,7 +16,7 @@ public class JvJdotMapper<T> {
 	}
 	
 	
-	public T map(String json, JvJdotSettings settings) {
+	public T map(String json, JvJDotSettings settings) {
 		return scMapper.map(json, settings.attachments, settings.mergingJson, settings.inclusions);
 	}
 }

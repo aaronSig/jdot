@@ -3,9 +3,9 @@ package com.superpixel.jdot.json4s
 import com.superpixel.jdot.pathing._
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import com.superpixel.jdot.JdotBuilder
+import com.superpixel.jdot.JDotBuilder
 
-class JValueBuilder extends JdotBuilder {
+class JValueBuilder extends JDotBuilder {
 
   def buildJValue(pathVals: Set[(JPath, JValue)]): JValue = {
     def buildLinearPath(revPath: Seq[JPathElement], acc: JValue): JValue = revPath match {

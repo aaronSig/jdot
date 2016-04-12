@@ -16,13 +16,13 @@ case object NoMerging extends MergingJson
 
 
 sealed trait Attachment {
-  def attacher: JdotAttacher;
+  def attacher: JDotAttacher;
 };
-case class SimpleAttachment(jsonToAttach: String, attacher: JdotAttacher) extends Attachment
-case class SimpleListAttachment(jsonListToAttach: List[String], attacher: JdotAttacher) extends Attachment
-case class SimpleTransformAttachment(jsonToTransformAttach: String, transformer: JdotTransformer, attacher: JdotAttacher) extends Attachment
-case class SimpleTransformListAttachment(jsonListToTransformAttach: List[String], transformer: JdotTransformer, attacher: JdotAttacher) extends Attachment
-case class JsonArrayTransformAttachment(jPathToArray: String, jsonContainingArray: String, transformer: JdotTransformer, attacher: JdotAttacher) extends Attachment
-case class NestedTransformAttachment(jsonToTransformAttach: String, transformer: JdotTransformer, transformAttachments: List[Attachment], attacher: JdotAttacher) extends Attachment
-case class NestedTransformListAttachment(jsonListToTransformAttach: List[String], transformer: JdotTransformer, transformAttachments: List[Attachment], attacher: JdotAttacher) extends Attachment
-case class JsonArrayNestedTransformAttachment(jPathToArray: String, jsonContainingArray: String, transformer: JdotTransformer, transformAttachments: List[Attachment], attacher: JdotAttacher) extends Attachment
+case class SimpleAttachment(jsonToAttach: String, attacher: JDotAttacher) extends Attachment
+case class SimpleListAttachment(jsonListToAttach: List[String], attacher: JDotAttacher) extends Attachment
+case class SimpleTransformAttachment(jsonToTransformAttach: String, transformer: JDotTransformer, attacher: JDotAttacher) extends Attachment
+case class SimpleTransformListAttachment(jsonListToTransformAttach: List[String], transformer: JDotTransformer, attacher: JDotAttacher) extends Attachment
+case class JsonArrayTransformAttachment(jPathToArray: String, jsonContainingArray: String, transformer: JDotTransformer, attacher: JDotAttacher) extends Attachment
+case class NestedTransformAttachment(jsonToTransformAttach: String, transformer: JDotTransformer, transformAttachments: List[Attachment], attacher: JDotAttacher) extends Attachment
+case class NestedTransformListAttachment(jsonListToTransformAttach: List[String], transformer: JDotTransformer, transformAttachments: List[Attachment], attacher: JDotAttacher) extends Attachment
+case class JsonArrayNestedTransformAttachment(jPathToArray: String, jsonContainingArray: String, transformer: JDotTransformer, transformAttachments: List[Attachment], attacher: JDotAttacher) extends Attachment

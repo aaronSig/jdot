@@ -4,18 +4,18 @@ import static com.superpixel.jdot.util.ScalaConverters.*;
 
 import java.util.List;
 
-import com.superpixel.jdot.JdotTransformer;
+import com.superpixel.jdot.JDotTransformer;
 
 
-public class JvJdotTransformer {
+public class JvJDotTransformer {
 
-	private JdotTransformer scTransformer;
+	private JDotTransformer scTransformer;
 
-	public JvJdotTransformer(JdotTransformer scTransformer) {
+	public JvJDotTransformer(JDotTransformer scTransformer) {
 		this.scTransformer = scTransformer;
 	}
 
-	public JdotTransformer getScTransformer() {
+	public JDotTransformer getScTransformer() {
 		return scTransformer;
 	}
 
@@ -34,14 +34,14 @@ public class JvJdotTransformer {
 	}
 
 
-	public String transform(String json, JvJdotSettings settings) {
+	public String transform(String json, JvJDotSettings settings) {
 		return scTransformer.transform(json,
 				settings.attachments,
 				settings.mergingJson,
 				settings.inclusions);
 	}
 	
-	public String transformList(List<String> jsonList, JvJdotSettings settings) {
+	public String transformList(List<String> jsonList, JvJDotSettings settings) {
 		return scTransformer.transformList(jvToScList(jsonList),
 				settings.attachments,
 				settings.mergingJson,

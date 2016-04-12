@@ -6,7 +6,7 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 
 
-class JValueAttacher(attachmentPairs: Set[JPathPair]) extends JdotAttacher {
+class JValueAttacher(attachmentPairs: Set[JPathPair]) extends JDotAttacher {
 
   val attachBuilder = JValueBuilder()
   

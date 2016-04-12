@@ -1,0 +1,19 @@
+{
+   "circuit":{
+      "name":"Albert Park Grand Prix Circuit",
+      "country":"Australia",
+      "city":"Melbourne"
+   },
+   "raceName":"Australian Grand Prix",
+   "season":"2016",
+   "round":1,
+   "finished":true,
+   "results":[
+      "ROS", "HAM", "VET", "RIC", "MAS", "GRO", "HUL", "BOT", "SAI", "VES", "PAL", "MAG", "PER", "BUT", "NAS", "WEH", "ERI", "RAI", "HAR", "GUT", "ALO", "KVY"
+   ],
+   "podiumDetail":[
+   		{"driverName":"Nico Rosberg","team":"Mercedes","points":25},
+   		{"driverName":"Lewis Hamilton","team":"Mercedes","points":18},
+   		{"driverName":"Sebastian Vettel","team":"Ferrari","points":15}
+   ]
+}

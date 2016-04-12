@@ -2,7 +2,7 @@ package com.superpixel.advokit.mapper;
 
 import com.superpixel.jdot.json4s.JValueMerger;
 
-public class JvJdotMerger {
+public class JvJDotMerger {
 
 	public String leftMergeWithArraysAsValues(String leftJson, String rightJson) {
 		return JValueMerger.leftMergeStrings(JValueMerger.mergeArraysAsValues(), leftJson, rightJson);

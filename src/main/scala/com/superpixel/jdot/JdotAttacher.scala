@@ -3,7 +3,7 @@ package com.superpixel.jdot
 import com.superpixel.jdot.pathing.JPathPair
 import com.superpixel.jdot.json4s.JValueAttacher
 
-trait JdotAttacher {
+trait JDotAttacher {
 
   def attach(attachJson: String, attachToJson: String): String
   
@@ -11,6 +11,6 @@ trait JdotAttacher {
   
 }
 
-object JdotAttacher {
-  def apply(attachmentPairs: Set[JPathPair]): JdotAttacher = JValueAttacher(attachmentPairs)
+object JDotAttacher {
+  def apply(attachmentPairs: Set[JPathPair]): JDotAttacher = JValueAttacher(attachmentPairs)
 }

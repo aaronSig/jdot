@@ -4,9 +4,9 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import com.superpixel.jdot.json4s.JValueTraverser.Continue
 import com.superpixel.jdot.pathing._
-import com.superpixel.jdot.JdotAccessor
+import com.superpixel.jdot.JDotAccessor
 
-class JValueAccessor(json: JValue, linkLamb: String=>Option[JValue]) extends JdotAccessor {
+class JValueAccessor(json: JValue, linkLamb: String=>Option[JValue]) extends JDotAccessor {
 
 	private val traverseForValue = JValueTraverser.traverse(linkLamb, JValueAccessor.notFoundLamb, JValueAccessor.endLamb)_
 

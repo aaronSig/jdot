@@ -7,7 +7,7 @@ import org.json4s.native.JsonMethods._
 import com.superpixel.jdot.pathing._
 import com.superpixel.jdot._
 
-class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusions: Inclusions) extends JdotTransformer {
+class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusions: Inclusions) extends JDotTransformer {
 
   val builder = JValueBuilder()
   val mergingJValues: (Seq[JValue], Seq[JValue]) = JValueMerger.transfromMergingJson(merges)

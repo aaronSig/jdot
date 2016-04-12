@@ -29,7 +29,7 @@ import com.superpixel.jdot.SimpleListAttachment;
 import com.superpixel.jdot.SimpleTransformAttachment;
 import com.superpixel.jdot.SimpleTransformListAttachment;
 
-public class JvJdotSettingsBuilder {
+public class JvJDotSettingsBuilder {
 
 	private Optional<Map<String, String>> inclusionsOpt = Optional.empty();
 	private Optional<List<String>> preMergingJsonOpt = Optional.empty();
@@ -37,7 +37,7 @@ public class JvJdotSettingsBuilder {
 	private Optional<List<Attachment>> attachmentsOpt = Optional.empty();
 	
 	
-	public JvJdotSettings build() {	    
+	public JvJDotSettings build() {	    
 	    Inclusions scIncMap;
 	    if (inclusionsOpt.isPresent()) {
 	      scIncMap = new FixedInclusions(jvToScMap(inclusionsOpt.get()));
@@ -63,18 +63,18 @@ public class JvJdotSettingsBuilder {
 	    	scAtt = scala.collection.immutable.List$.MODULE$.empty();
 	    }
 	    
-	    return new JvJdotSettings(scIncMap, scMergJson, scAtt);
+	    return new JvJDotSettings(scIncMap, scMergJson, scAtt);
 	}
 	
 	
-	public JvJdotSettingsBuilder withInclusion(String key, String jsonValue) {
+	public JvJDotSettingsBuilder withInclusion(String key, String jsonValue) {
 		if (!inclusionsOpt.isPresent()) {
 			inclusionsOpt = Optional.of(new HashMap<>());
 		}
 		inclusionsOpt.get().put(key, jsonValue);
 		return this;
 	}
-	public JvJdotSettingsBuilder withInclusions(Map<String, String> inclusions) {
+	public JvJDotSettingsBuilder withInclusions(Map<String, String> inclusions) {
 		if (!inclusionsOpt.isPresent()) {
 			inclusionsOpt = Optional.of(new HashMap<>());
 		}
@@ -82,14 +82,14 @@ public class JvJdotSettingsBuilder {
 		return this;
 	}
 	
-	public JvJdotSettingsBuilder withPreMergingJson(String... preMergingJson) {
+	public JvJDotSettingsBuilder withPreMergingJson(String... preMergingJson) {
 		if (!preMergingJsonOpt.isPresent()) {
 			preMergingJsonOpt = Optional.of(new ArrayList<>());
 		}
 		Collections.addAll(preMergingJsonOpt.get(), preMergingJson);
 		return this;
 	}
-	public JvJdotSettingsBuilder withPostMergingJson(String... postMergingJson) {
+	public JvJDotSettingsBuilder withPostMergingJson(String... postMergingJson) {
 		if (!postMergingJsonOpt.isPresent()) {
 			postMergingJsonOpt = Optional.of(new ArrayList<>());
 		}
@@ -97,18 +97,18 @@ public class JvJdotSettingsBuilder {
 		return this;
 	}
 	
-	public JvJdotSettingsBuilder withAttachments(List<Attachment> attachments) {
+	public JvJDotSettingsBuilder withAttachments(List<Attachment> attachments) {
 		attachmentsOpt = Optional.of(attachments);
 		return this;
 	}
-	public JvJdotSettingsBuilder addAttachments(List<Attachment> attachments) {
+	public JvJDotSettingsBuilder addAttachments(List<Attachment> attachments) {
 		if (!attachmentsOpt.isPresent()) {
 			attachmentsOpt = Optional.of(new ArrayList<>());
 		}
 		attachmentsOpt.get().addAll(attachments);
 		return this;
 	}
-	public JvJdotSettingsBuilder addAttachment(Attachment attachment) {
+	public JvJDotSettingsBuilder addAttachment(Attachment attachment) {
 		if (!attachmentsOpt.isPresent()) {
 			attachmentsOpt = Optional.of(new ArrayList<>());
 		}
@@ -116,59 +116,59 @@ public class JvJdotSettingsBuilder {
 		return this;
 	}
 	
-	public static SimpleAttachment getSimpleAttachment(String jsonToAttach, JvJdotAttacher attacher) {
+	public static SimpleAttachment getSimpleAttachment(String jsonToAttach, JvJDotAttacher attacher) {
 		return new SimpleAttachment(jsonToAttach, attacher.getScAttacher());
 	}
-	public JvJdotSettingsBuilder withSimpleAttachment(String jsonToAttach, JvJdotAttacher attacher) {
+	public JvJDotSettingsBuilder withSimpleAttachment(String jsonToAttach, JvJDotAttacher attacher) {
 		return addAttachment(getSimpleAttachment(jsonToAttach, attacher));
 	}
 	
-	public static SimpleListAttachment getSimpleListAttachment(List<String> jsonListToAttach, JvJdotAttacher attacher) {
+	public static SimpleListAttachment getSimpleListAttachment(List<String> jsonListToAttach, JvJDotAttacher attacher) {
 		return new SimpleListAttachment(jvToScList(jsonListToAttach), attacher.getScAttacher());
 	}
-	public JvJdotSettingsBuilder withSimpleListAttachment(List<String> jsonListToAttach, JvJdotAttacher attacher) {
+	public JvJDotSettingsBuilder withSimpleListAttachment(List<String> jsonListToAttach, JvJDotAttacher attacher) {
 		return addAttachment(getSimpleListAttachment(jsonListToAttach, attacher));
 	}
 	
-	public static SimpleTransformAttachment getSimpleTransformAttachment(String jsonToAttach, JvJdotTransformer transformer, JvJdotAttacher attacher) {
+	public static SimpleTransformAttachment getSimpleTransformAttachment(String jsonToAttach, JvJDotTransformer transformer, JvJDotAttacher attacher) {
 		return new SimpleTransformAttachment(jsonToAttach, transformer.getScTransformer(), attacher.getScAttacher());
 	}
-	public JvJdotSettingsBuilder withSimpleTransformAttachment(String jsonToAttach, JvJdotTransformer transformer, JvJdotAttacher attacher) {
+	public JvJDotSettingsBuilder withSimpleTransformAttachment(String jsonToAttach, JvJDotTransformer transformer, JvJDotAttacher attacher) {
 		return addAttachment(getSimpleTransformAttachment(jsonToAttach, transformer, attacher));
 	}
 	
-	public static SimpleTransformListAttachment getSimpleTransformListAttachment(List<String> jsonListToAttach, JvJdotTransformer transformer, JvJdotAttacher attacher) {
+	public static SimpleTransformListAttachment getSimpleTransformListAttachment(List<String> jsonListToAttach, JvJDotTransformer transformer, JvJDotAttacher attacher) {
 		return new SimpleTransformListAttachment(jvToScList(jsonListToAttach), transformer.getScTransformer(), attacher.getScAttacher());
 	}
-	public JvJdotSettingsBuilder withSimpleTransformListAttachment(List<String> jsonListToAttach, JvJdotTransformer transformer, JvJdotAttacher attacher) {
+	public JvJDotSettingsBuilder withSimpleTransformListAttachment(List<String> jsonListToAttach, JvJDotTransformer transformer, JvJDotAttacher attacher) {
 		return addAttachment(getSimpleTransformListAttachment(jsonListToAttach, transformer, attacher));
 	}
 	
-	public  static JsonArrayTransformAttachment getJsonArrayTransformAttachment(String jPathToArray, String arrayContainerJson, JvJdotTransformer transformer, JvJdotAttacher attacher) {
+	public  static JsonArrayTransformAttachment getJsonArrayTransformAttachment(String jPathToArray, String arrayContainerJson, JvJDotTransformer transformer, JvJDotAttacher attacher) {
 		return new JsonArrayTransformAttachment(jPathToArray, arrayContainerJson, transformer.getScTransformer(), attacher.getScAttacher());
 	}
-	public JvJdotSettingsBuilder withJsonArrayTransformAttachment(String jPathToArray, String arrayContainerJson, JvJdotTransformer transformer, JvJdotAttacher attacher) {
+	public JvJDotSettingsBuilder withJsonArrayTransformAttachment(String jPathToArray, String arrayContainerJson, JvJDotTransformer transformer, JvJDotAttacher attacher) {
 		return addAttachment(getJsonArrayTransformAttachment(jPathToArray, arrayContainerJson, transformer, attacher));
 	}
 	
-	public static NestedTransformAttachment getNestedTransformAttachment(String jsonToAttach, JvJdotTransformer transformer, JvJdotSettings settings, JvJdotAttacher attacher) {
+	public static NestedTransformAttachment getNestedTransformAttachment(String jsonToAttach, JvJDotTransformer transformer, JvJDotSettings settings, JvJDotAttacher attacher) {
 		return new NestedTransformAttachment(jsonToAttach, transformer.getScTransformer(), settings.attachments, attacher.getScAttacher());
 	}
-	public JvJdotSettingsBuilder withNestedTransformAttachment(String jsonToAttach, JvJdotTransformer transformer, JvJdotSettings settings, JvJdotAttacher attacher) {
+	public JvJDotSettingsBuilder withNestedTransformAttachment(String jsonToAttach, JvJDotTransformer transformer, JvJDotSettings settings, JvJDotAttacher attacher) {
 		return addAttachment(getNestedTransformAttachment(jsonToAttach, transformer, settings, attacher));
 	}
 	
-	public static NestedTransformListAttachment getNestedTransformListAttachment(List<String> jsonListToAttach, JvJdotTransformer transformer, JvJdotSettings settings, JvJdotAttacher attacher) {
+	public static NestedTransformListAttachment getNestedTransformListAttachment(List<String> jsonListToAttach, JvJDotTransformer transformer, JvJDotSettings settings, JvJDotAttacher attacher) {
 		return new NestedTransformListAttachment(jvToScList(jsonListToAttach), transformer.getScTransformer(), settings.attachments, attacher.getScAttacher());
 	}
-	public JvJdotSettingsBuilder withNestedTransformListAttachment(List<String> jsonListToAttach, JvJdotTransformer transformer, JvJdotSettings settings, JvJdotAttacher attacher) {
+	public JvJDotSettingsBuilder withNestedTransformListAttachment(List<String> jsonListToAttach, JvJDotTransformer transformer, JvJDotSettings settings, JvJDotAttacher attacher) {
 		return addAttachment(getNestedTransformListAttachment(jsonListToAttach, transformer, settings, attacher));
 	}
 	
-	public static JsonArrayNestedTransformAttachment getJsonArrayNestedTransformAttachment(String jPathToArray, String arrayContainerJson, JvJdotTransformer transformer, JvJdotSettings settings, JvJdotAttacher attacher) {
+	public static JsonArrayNestedTransformAttachment getJsonArrayNestedTransformAttachment(String jPathToArray, String arrayContainerJson, JvJDotTransformer transformer, JvJDotSettings settings, JvJDotAttacher attacher) {
 		return new JsonArrayNestedTransformAttachment(jPathToArray, arrayContainerJson, transformer.getScTransformer(), settings.attachments, attacher.getScAttacher());
 	}
-	public JvJdotSettingsBuilder withJsonArrayNestedTransformAttachment(String jPathToArray, String arrayContainerJson, JvJdotTransformer transformer, JvJdotSettings settings, JvJdotAttacher attacher) {
+	public JvJDotSettingsBuilder withJsonArrayNestedTransformAttachment(String jPathToArray, String arrayContainerJson, JvJDotTransformer transformer, JvJDotSettings settings, JvJDotAttacher attacher) {
 		return addAttachment(getJsonArrayNestedTransformAttachment(jPathToArray, arrayContainerJson, transformer, settings, attacher));
 	}
 }
