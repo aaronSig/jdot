@@ -33,13 +33,78 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     
     it("can access immediate fields") {
       val racename = accessor.getString("raceName")
-      racename.foreach { println(_) }
+      assert(racename == Some("Australian Grand Prix"))
     }
     
     it("can access json objects") {
       val circuit = accessor.getJsonString("circuit")
-      circuit.foreach { println(_) }
+      assert(circuit == Some("""{"name":"Albert Park Grand Prix Circuit","country":"Australia","city":"Melbourne"}"""))
     }
+    
+    it("can access json arrays") {
+      val results = accessor.getJsonString("results")
+      results.foreach { println(_) }
+    }
+    
+    it ("can access nested objects using javascript dot syntax") {
+      val raceCity = accessor.getString("circuit.city")
+      assert(raceCity == Some("Melbourne"))
+    }
+    
+    it ("can access array elements using javascript square bracket syntax") {
+      val winnerName = accessor.getString("results[0].driver.surname")
+      assert(winnerName == Some("Rosberg"))
+    }
+  }
+  
+  describe("Accessing json with embedded, data lead default values") {
+    
+    //Set up accessor with our example json
+    val accessor = JdotAccessor(ausF1Simple)
+    
+    it("can access values with a fallback default using round brackets") {
+      val racename = accessor.getString("raceName(Unknown Race)")
+      assert(racename == Some("Australian Grand Prix"))
+      
+      val racenameTypo = accessor.getString("raxeName(Unknown Race)")
+      assert(racenameTypo == Some("Unknown Race"))
+    }
+    
+    it("can be used to manage differing fields in an array of objects") {
+      //Winner has field "finishLap"
+      val winnerFinishLap = accessor.getString("results[0].finishLap(DNF)")
+      assert(winnerFinishLap == Some("Lead Lap"))
+      
+      //Seventeenth element of array does not have field "finishLap"
+      val seventeenthFinishLap = accessor.getString("results[16].finishLap(DNF)")
+      assert(seventeenthFinishLap == Some("DNF"))
+    }
+    
+    it("can be used multiple times in a path to intercept missing elements") {
+      //Winner has field "finishLap"
+      val winnerFinishLap = accessor.getString("results[0](No entry).finishLap(DNF)")
+      assert(winnerFinishLap == Some("Lead Lap"))
+      
+      //Seventeenth element of "results" array does not have field "finishLap"
+      val seventeenthFinishLap = accessor.getString("results[16](No entry).finishLap(DNF)")
+      assert(seventeenthFinishLap == Some("DNF"))
+      
+      //There is no 30th element of the "results" array
+      val thirtiethFinishLap = accessor.getString("results[29](No entry).finishLap(DNF)")
+      assert(thirtiethFinishLap == Some("No entry"))
+    }
+  }
+  
+  describe("Accessing just values (no json interaction) with round brackets") {
+    
+    //Set up accessor with our example json
+    val accessor = JdotAccessor(ausF1Simple)
+    
+    it("can be used to access a value defined purely in the path") {
+      val justValue = accessor.getString("(hello world)")
+      assert(justValue == Some("hello world"))
+    }
+    
   }
   
   
