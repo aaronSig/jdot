@@ -143,3 +143,98 @@ val fullDeclaration: JPathPair =
         JPath(JObjectPath("podiumDetail"), JArrayPath(0), JObjectPath("driverName"))
       )
 ```
+
+#### JDotAttacher
+Attachers allow you to add to (or merge into) an existing json document (in this case the transformed json from above). 
+
+```scala
+val attachPairs: Set[JPathPair] = Set(
+      ("start.date",      "date"),
+      ("start.time",      "time")  
+    )
+val attacher = JDotAttacher(attachPairs)
+val startJson = """{"time":"05:00:00Z", "date":"2016-03-20"}"""
+val attachedJson = attacher.attach(startJson, transformedJson)
+//{
+//  "race":{...},
+//  "winner":{...},
+//  "start":{"time":"05:00:00Z", "date":"2016-03-20"}
+//}
+```
+Attachers can also be used to merge into existing json objects:
+```scala
+val attachPairs: Set[JPathPair] = Set(
+        ("winner.streak",      "rosbergWinStreak") 
+    )
+val attacher = JDotAttacher(attachPairs)
+val streakJson = """{"rosbergWinStreak":4}"""
+val attachedJson = attacher.attach(streakJson, transformedJson)
+//{
+//  "race":{...},
+//  "winner":{"streak":4, "name":"Nico Rosberg", "code":"ROS", "team":"Mercedes"}
+//}
+```
+
+#### Empty JPaths
+Empty JPaths are also allowed. An empty JPath signifies to take the entire json document. This follows logically if you work backwards from a longer path:
+```scala
+//{
+//  "race":{...},
+//  "winner":{"name":"Nico Rosberg", "code":"ROS", "team":"Mercedes"}
+//}
+val accessor = JDotAccessor(transformedJson)
+
+val baseWinnerName = accessor.getJsonString("winner.name") 
+//"Nico Rosberg"
+
+val baseWinner = accessor.getJsonString("winner")
+//{"name":"Nico Rosberg", "code":"ROS", "team":"Mercedes"}
+
+val base = accessor.getJsonString("")
+//{
+//  "race":{...},
+//  "winner":{"name":"Nico Rosberg", "code":"ROS", "team":"Mercedes"}
+//}
+```
+When applied to attachers, an empty JPath on the right allows you to attach the whole json document:
+```scala
+val attachPairsEmptyRight: Set[JPathPair] = Set(
+        ("start",      "")
+      )
+val attacherEmptyRight = JDotAttacher(attachPairsEmptyRight)
+val attachedJsonEmptyRight = attacherEmptyRight.attach("""{"time":"05:00:00Z", "date":"2016-03-20"}""", ausF1ShortArray)
+//{
+//  "race":{...},
+//  "winner":{...},
+//  "start":{"time":"05:00:00Z", "date":"2016-03-20"}
+//}
+```
+Empty JPaths also make sense for builders. They declare that the associated value be merged into the base of the resulting json document:
+```scala
+val builder = JDotBuilder.default
+val buildPairs = Set(
+  ("",               """{"name":"Nico Rosberg", "team":"Mercedes"}"""),
+  ("position",       1)
+)
+val built: String = builder.build(buildPairs)
+//{"name":"Nico Rosberg", "position":1, "team":"Mercedes"}
+```
+Applying this to attachs, an empty JPath on the left declares that the accessed value be merged into the base target json:
+```scala
+val attachPairsEmptyLeft: Set[JPathPair] = Set(
+        ("",      "start")
+      )
+val attacherEmptyLeft = JDotAttacher(attachPairsEmptyLeft)
+val attachedJsonEmptyLeft = attacherEmptyLeft.attach("""{"start":{"time":"05:00:00Z", "date":"2016-03-20"}}""", ausF1ShortArray)
+//{
+//  "race":{...},
+//  "winner":{...},
+//  "date":"2016-03-20",
+//  "time":"05:00:00Z"
+//}
+```
+
+
+
+
+

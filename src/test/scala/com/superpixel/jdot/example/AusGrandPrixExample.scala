@@ -121,26 +121,146 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     
     val transformer = JDotTransformer(transformPairs)
     
-    val transformedJson = transformer.transform(ausF1ShortArray)
-    
-    println(transformedJson)
-    val expected = 
-      ("race" ->  ("country" -> "Australia") ~ ("city" -> "Melbourne") ~ ("name" -> "Australian Grand Prix") ~ ("season" -> "2016") ~ ("seasonRound" -> 1)) ~
-      ("winner" -> ("code" -> "ROS") ~ ("name" -> "Nico Rosberg") ~ ("team" -> "Mercedes"))
+    it ("can create a new format for existing json doc") {
+      val transformedJson = transformer.transform(ausF1ShortArray)
       
-    assert(expected == parse(transformedJson))
+      println(transformedJson)
+      val expected = 
+        ("race" ->  ("country" -> "Australia") ~ ("city" -> "Melbourne") ~ ("name" -> "Australian Grand Prix") ~ ("season" -> "2016") ~ ("seasonRound" -> 1)) ~
+        ("winner" -> ("code" -> "ROS") ~ ("name" -> "Nico Rosberg") ~ ("team" -> "Mercedes"))
+        
+      assert(expected == parse(transformedJson))
+    }
     
-    val shortDeclaration: JPathPair = ("race.country", "circuit.country")
+    it ("can be declared without syntactic sugar") {
+      val shortDeclaration: JPathPair = ("winner.name", "podiumDetail[0].driverName")
+      
+      val noSugarDeclaration: JPathPair = JPathPair(JPath.fromString("winner.name"), JPath.fromString("podiumDetail[0].driverName"))
+      
+      val fullDeclaration: JPathPair = 
+        JPathPair(
+          JPath(JObjectPath("winner"), JObjectPath("name")),
+          JPath(JObjectPath("podiumDetail"), JArrayPath(0), JObjectPath("driverName"))
+        )
+  //    assert(shortDeclaration == noSugarDeclaration)
+  //    assert(shortDeclaration == fullDeclaration)
+    }
+  }
+  
+  describe("Attaching json with simple JPath expressions") {
     
-    val noSugarDeclaration: JPathPair = JPathPair(JPath.fromString("race.country"), JPath.fromString("circuit.country"))
-//    assert(shortDeclaration == noSugarDeclaration)
+    val jsonJV = 
+        ("race" ->  ("country" -> "Australia") ~ ("city" -> "Melbourne") ~ ("name" -> "Australian Grand Prix") ~ ("season" -> "2016") ~ ("seasonRound" -> 1)) ~
+        ("winner" -> ("code" -> "ROS") ~ ("name" -> "Nico Rosberg") ~ ("team" -> "Mercedes"))
+    val json = compact(render(jsonJV))
     
-    val fullDeclaration: JPathPair = 
-      JPathPair(
-        JPath(JObjectPath("race"), JObjectPath("country")),
-        JPath(JObjectPath("circuit"), JObjectPath("country"))
+    it ("can attach to a new nested object") {
+      val attachPairs: Set[JPathPair] = Set(
+        ("start.date",      "date"),
+        ("start.time",      "time")  
       )
-//    assert(shortDeclaration == fullDeclaration)
+      
+      val attacher = JDotAttacher(attachPairs)
+      val attachedJson = attacher.attach("""{"time":"05:00:00Z", "date":"2016-03-20"}""", json)
+      
+      println(attachedJson)
+      val expected: JObject = parse(json) match {
+        case JObject(fieldArr) => {
+          val start:JValue = ("time" -> "05:00:00Z") ~ ("date" -> "2016-03-20")
+      	  JObject(JField("start", start) +: fieldArr)
+        }        
+        case _ => fail
+      }
+      assert(expected == parse(attachedJson))
+    }
+    
+    it ("can merge into an existing object") {
+      val attachPairs: Set[JPathPair] = Set(
+        ("winner.streak",      "rosbergStreak") 
+      )
+      
+      val attacher = JDotAttacher(attachPairs)
+      val attachedJson = attacher.attach("""{"rosbergStreak":4}""", json)
+      
+      println(attachedJson)
+      val expected: JObject = 
+        ("race" ->  ("country" -> "Australia") ~ ("city" -> "Melbourne") ~ ("name" -> "Australian Grand Prix") ~ ("season" -> "2016") ~ ("seasonRound" -> 1)) ~
+        ("winner" -> ("code" -> "ROS") ~ ("streak" -> 4) ~ ("name" -> "Nico Rosberg") ~ ("team" -> "Mercedes"))
+      assert(expected == parse(attachedJson))
+    }
+    
+  }
+  
+  describe("Empty JPaths are allowed") {
+    
+	  val jsonJV = 
+			  ("race" ->  ("country" -> "Australia") ~ ("city" -> "Melbourne") ~ ("name" -> "Australian Grand Prix") ~ ("season" -> "2016") ~ ("seasonRound" -> 1)) ~
+			  ("winner" -> ("code" -> "ROS") ~ ("name" -> "Nico Rosberg") ~ ("team" -> "Mercedes"))
+	  val json = compact(render(jsonJV))
+    
+    it ("can be used in accessors to get the entire object") {
+      
+      val accessor = JDotAccessor(json)
+
+      val baseWinnerName = accessor.getJsonString("winner.name") 
+      //"Nico Rosberg"
+      
+      val baseWinner = accessor.getJsonString("winner")
+      //{"name":"Nico Rosberg", "code":"ROS", "team":"Mercedes"}
+      
+      val base = accessor.getJsonString("").getOrElse("")
+      assert(parse(json) == parse(base))
+    }
+    
+    it ("can be used in attachers on the right") {
+      val attachPairsEmptyRight: Set[JPathPair] = Set(
+        ("start",      "")
+      )
+      val attacherEmptyRight = JDotAttacher(attachPairsEmptyRight)
+      val attachedJsonEmptyRight = attacherEmptyRight.attach("""{"time":"05:00:00Z", "date":"2016-03-20"}""", json)
+      
+      println(attachedJsonEmptyRight)
+      val expected: JObject = parse(json) match {
+        case JObject(fieldArr) => {
+          val start:JValue = ("time" -> "05:00:00Z") ~ ("date" -> "2016-03-20")
+          JObject(JField("start", start) +: fieldArr)
+        }        
+        case _ => fail
+      }
+      assert(expected == parse(attachedJsonEmptyRight))
+    }
+    
+    
+    it ("can be used in builders") {
+      val builder = JDotBuilder.default
+      val buildPairs: Set[(JPath, Any)] = Set(
+        ("",               """{"name":"Nico Rosberg", "team":"Mercedes"}"""),
+        ("position",       1)
+      )
+      val built: String = builder.build(buildPairs)
+      println(built)
+      val expected = ("name" -> "Nico Rosberg") ~ ("position" -> 1) ~ ("team" -> "Mercedes")
+      assert(expected == parse(built))
+    }
+    
+    
+    it ("can be used in attachers on the left") {
+      val attachPairsEmptyLeft: Set[JPathPair] = Set(
+        ("",      "start")
+      )
+      val attacherEmptyLeft = JDotAttacher(attachPairsEmptyLeft)
+      val attachedJsonEmptyLeft = attacherEmptyLeft.attach("""{"start":{"time":"05:00:00Z", "date":"2016-03-20"}}""", json)
+      
+      println(attachedJsonEmptyLeft)
+      val expected: JObject = parse(json) match {
+        case JObject(fieldArr) => {
+          JObject(JField("time", "05:00:00Z") +: JField("date", "2016-03-20") +: fieldArr)
+        }        
+        case _ => fail
+      }
+      assert(expected == parse(attachedJsonEmptyLeft))
+    }
+    
   }
   
   

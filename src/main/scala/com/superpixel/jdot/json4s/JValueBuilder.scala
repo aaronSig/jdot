@@ -36,7 +36,18 @@ class JValueBuilder extends JDotBuilder {
   
   override def build(pathVals: Set[(JPath, Any)]): String = {
     return compact(render(buildJValue(pathVals.map{
-      case (jp, s: String) => (jp, JString(s))
+      case (jp, s: String) => {
+        if (!s.isEmpty && (s(0) == '{' || s(0) == '[')) {
+          try {
+            (jp, parse(s))
+          } catch {
+            case _: ParserUtil.ParseException =>
+              (jp, JString(s))
+          } 
+        } else {
+          (jp, JString(s))
+        }
+      }
       case (jp, n: Number) => {
         n match {
           case i: java.lang.Integer => (jp, JInt(i.intValue()))
