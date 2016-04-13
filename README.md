@@ -1,12 +1,14 @@
-## Publish to local maven repository:
+# **J.dot**
+**A powerful, data controlled way to process json in Java or Scala.**
+
+##### Publish to local maven repository:
 * Ensure sbt is installed. sbt can be install with Homebrew `brew install sbt`
 * Run `sbt publish-m2` in this directory
 
-
-# **J&middot;Dot**
-
 ## Introduction
-J&middot;Dot is a json utility library for Scala/Java, which allows for **data-only transformations**. All operations are configurable and controlled by simple, easily persisted, data structures, mainly string sets and string dictionaries/maps. This allows for data lead access, building, transformations, object extraction and object mapping.
+J.dot is a json utility library for Scala/Java, which allows for **data-only transformations**. All operations are configurable and controlled by simple, easily persisted, data structures. J.dot allows you to avoid hard coding transformation logic.  
+A common use case for json based applications is turning json content into view-models. A common problem is that both content and view-models can change often. With J&middot;Dot any changes you need to make can be made in your datastore, avoiding the need to edit code and re-deploy.
+
 
 #### JPath expressions
 The basic building blocks of these operation are strings (called JPaths) that are used to pull/place values or json elements from/into a document. They are one-line expressions, which define a path through a json document, as well as some simple operations such as string format, if-else and number parsing. At their most basic they follow javascript dot/square-bracket syntax to access objects, arrays and fields.
@@ -39,14 +41,14 @@ Use of the library is best describe with some examples. These will demonstrate s
       "ERI", "RAI", "HAR", "GUT", "ALO", "KVY"
    ],
    "podiumDetail":[
-   	  {"driverName":"Nico Rosberg","team":"Mercedes","points":25},
-   	  {"driverName":"Lewis Hamilton","team":"Mercedes","points":18},
-   	  {"driverName":"Sebastian Vettel","team":"Ferrari","points":15}
+      {"driverName":"Nico Rosberg","team":"Mercedes","points":25},
+      {"driverName":"Lewis Hamilton","team":"Mercedes","points":18},
+      {"driverName":"Sebastian Vettel","team":"Ferrari","points":15}
    ]
 }
 ```
 #### JDotAccessor
-We can access the fields of this document using an accessor. First we set up a JDotAccessor with our json:
+We can access the fields of this document using an accessor and JPath strings. First we set up a JDotAccessor with our json:
 ```scala
 val json: String = ... //json as above
 val accessor = JDotAccessor(json)
@@ -112,7 +114,6 @@ val transformPairs: Set[JPathPair] = Set(  //Set[JPathPair] expands to Set[(JPat
     )
 val transformer = JDotTransformer(transformPairs)
 val transformedJson = transformer.transform(json)
-
 // {
 //  "race":{
 //    "name":"Australian Grand Prix",
@@ -233,7 +234,122 @@ val attachedJsonEmptyLeft = attacherEmptyLeft.attach("""{"start":{"time":"05:00:
 //  "time":"05:00:00Z"
 //}
 ```
+## Simple Java Examples
+To simplify use of the library from Java, adapter classes are provided. Below are some of the previous examples converted to Java:
+#### JvJDotTransformer
+We use the builder pattern to attain a transformer (due to the many parameters that a transformer can take, which will be described later).
+```java
+Map<String, String> transformPairs = new HashMap<>();
+transformPairs.put("race.country",        "circuit.country");
+transformPairs.put("race.city",           "circuit.city");
+transformPairs.put("race.name",           "raceName");
+transformPairs.put("race.season",         "season");
+transformPairs.put("race.seasonRound",    "round");
+transformPairs.put("winner.code",         "results[0]");
+transformPairs.put("winner.name",         "podiumDetail[0].driverName");
+transformPairs.put("winner.team",         "podiumDetail[0].team");
 
+JvJDotTransformer transformer = 
+    new JvJDotTransformerBuilder().withPathMapping(transformPairs)
+                                  .build();
+                                  
+String transformedJson = transformer.transform(json);
+// {
+//  "race":{"name":"Australian Grand Prix","season":"2016","seasonRound":1,"city":"Melbourne","country":"Australia"},
+//  "winner":{"name":"Nico Rosberg","code":"ROS","team":"Mercedes"}
+//}
+```
+#### JvJDotAttacher
+```java
+Map<String, String> attachPairs = new HashMap<>();
+attachPairs.put("start.date",    "date");
+attachPairs.put("start.time",    "time");
+
+JvJDotAttacher attacher = 
+  new JvJDotAttacherBuilder().withAttachmentMapping(attachPairs)
+                             .build();
+String attachedJson = attacher.attach("{\"time\":\"05:00:00Z\", \"date\":\"2016-03-20\"}", transformedJson);
+//{
+//  "race":{...},
+//  "winner":{...},
+//  "start":{"time":"05:00:00Z", "date":"2016-03-20"}
+//}
+```
+
+## More JPath Expressions
+
+So far we've only seen the simplest JPath expressions. Below are some examples using an accessor to show off what JPaths can do. For this we will use a new json document, which expands on the previous one: [exampleJson](https://raw.githubusercontent.com/superpixelhq/jdot/master/src/test/resources/2016-aus-grandprix-result-simple.json)
+
+#### Default Values
+Round brackets can be used in a JPath to define a default value. If the path doesn't exist then the default value will be returned instead.
+```scala
+val accessor = JDotAccessor(exampleJson)
+//field "raceName" exists
+accessor.getString("raceName(Unknown Race)")  //Some("Australian Grand Prix")
+//no field called "raXeName"
+accessor.getString("raXeName")                //None
+accessor.getString("raXeName(Unknown Race)")  //Some("Unknown Race")
+```
+One common use case is to manage optional fields in arrays (e.g. the `"finishLap"` field in the `"results"` array in our  [exampleJson](https://raw.githubusercontent.com/superpixelhq/jdot/master/src/test/resources/2016-aus-grandprix-result-simple.json)): 
+```scala
+//Winner has field "finishLap"
+accessor.getString("results[0].finishLap(DNF)")     //Some("Lead Lap")
+//17th element of "results" array does not have field "finishLap"
+accessor.getString("results[16].finishLap(DNF)")    //Some("DNF")
+```
+They can also be used in the middle of a path, to capture where the json is missing:
+```scala
+//Winner has field "finishLap"
+accessor.getString("results[0](No entry).finishLap(DNF)")       //Some("Lead Lap")
+//17th element of "results" array does not have field "finishLap"
+accessor.getString("results[16](No entry).finishLap(DNF)")      //Some("DNF")
+//There is no 30th element of the "results" array
+accessor.getString("results[29](No entry).finishLap(DNF)")      //Some("No entry")
+```
+
+#### Pure Values
+It is sometimes useful to just have a JPath return a value independent of the json, for example adding a static field during transformations. This is achieved with a path consisting of only a default value (round brackets) expression:
+```scala
+val transformPairs: Set[JPathPair] = Set(
+    ("sport",    "(F1)")    
+)
+val transformer = JDotTransformer(transformPairs)
+transformer.transform(ausF1Simple)
+// {"sport":"F1"}
+```
+
+#### String Format
+Using a String Format expression allows you to combine fields and literal values to form a single string. Expression start with a pipe (`"|"`) and then follow similar syntax to Scala's string interpolation. Everything after the pipe (`"|"`) will appear as is. Fields can be accessed by wrapping the access JPath in curly braces (`"{"`, `"}"`):
+```scala
+accessor.getString("|Round {round} of the {season} season.")
+//Some("Round 1 of the 2016 season.")
+accessor.getString("|And the winner is {results[0].driver.forename} {results[0].driver.surname}!")
+//Some("And the winner is Nico Rosberg!")
+```
+You can also start a String Format expression after a path. The path defines the base json object for the string format. This allows us to simplify the example above:
+```scala
+accessor.getString("results[0].driver|And the winner is {forename} {surname}!")
+//Some("And the winner is Nico Rosberg!")
+```
+Any JPath expression can be placed inside the curly braces (`"{"`, `"}"`), including another string format:
+```scala
+//Winner finished the race so has no dnfReason
+accessor.getString("results[0]|{driver.forename} {driver.surname} {status} due to {dnfReason(good driving!)}")
+//Some("Nico Rosberg Finished due to good driving!")
+
+//Seventeenth position DNF (did not finish) because of an engine problem
+accessor.getString("results[16]|{driver.forename} {driver.surname} {status} due to {dnfReason(good driving!)}")
+//Some("Marcus Ericsson DNF due to Engine")
+
+//String format inside a string format to build driver name
+accessor.getString("results[16]|{driver|{forename} {surname}} {status} due to {dnfReason(good driving!)}")
+//Some("Marcus Ericsson DNF due to Engine")
+```
+Some characters must be escaped if you want them to included in the resulting string:
+```scala
+accessor.getString("""results[0].driver|{forename} says: 'You must escape \(, \), \{, \} and \^'""")
+//Some("Nico says: 'You must escape (, ), {, } and ^'")
+```
 
 
 

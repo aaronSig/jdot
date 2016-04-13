@@ -9,12 +9,15 @@ import java.util.Scanner;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.superpixel.advokit.mapper.JvJDotAttacher;
+import com.superpixel.advokit.mapper.JvJDotAttacherBuilder;
 import com.superpixel.advokit.mapper.JvJDotTransformer;
 import com.superpixel.advokit.mapper.JvJDotTransformerBuilder;
 
 public class AusGrandPrixJavaExample {
 	
 	private static String ausF1ShortArray;
+	@SuppressWarnings("unused")
 	private static String ausF1Simple;
 	
 	@BeforeClass
@@ -26,7 +29,7 @@ public class AusGrandPrixJavaExample {
 	}
 	
 	@Test
-	public void transformerExample() {
+	public void transformerAndAttachExample() {
 		
 		Map<String, String> transformPairs = new HashMap<>();
 		transformPairs.put("race.country",        "circuit.country");
@@ -41,11 +44,25 @@ public class AusGrandPrixJavaExample {
 		JvJDotTransformer transformer = new JvJDotTransformerBuilder().withPathMapping(transformPairs).build();
 		String transformedJson = transformer.transform(ausF1ShortArray);
 		System.out.println(transformedJson);
-		// {
+		//{
 	    //	"race":{"name":"Australian Grand Prix","season":"2016","seasonRound":1,"city":"Melbourne","country":"Australia"},
 		//	"winner":{"name":"Nico Rosberg","code":"ROS","team":"Mercedes"}
 		//}
+		
+		Map<String, String> attachPairs = new HashMap<>();
+		attachPairs.put("start.date",    "date");
+		attachPairs.put("start.time",    "time");
+		
+		JvJDotAttacher attacher = new JvJDotAttacherBuilder().withAttachmentMapping(attachPairs).build();
+		String attachedJson = attacher.attach("{\"time\":\"05:00:00Z\", \"date\":\"2016-03-20\"}", transformedJson);
+		//{
+	    //	"race":{...},
+		//	"winner":{...},
+		//	"start":{"time":"05:00:00Z", "date":"2016-03-20"}
+		//}
+		System.out.println(attachedJson);
 	}
+	
 	
 
 	private static String fileToString(String filename) {

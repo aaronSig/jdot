@@ -264,7 +264,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
   }
   
   
-  describe("Accessing json with embedded, data lead default values") {
+  describe("Accessing json with embedded, default values") {
     
     //Set up accessor with our example json
     val accessor = JDotAccessor(ausF1Simple)
@@ -302,6 +302,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     }
   }
   
+  
   describe("Accessing just values (no json interaction) with round brackets") {
     
     //Set up accessor with our example json
@@ -312,6 +313,50 @@ class AusGrandPrixExample extends FunSpec with Matchers {
       assert(justValue == Some("hello world"))
     }
     
+    it("can be used in a transformer") {
+      val transformPairs: Set[JPathPair] = Set(
+        ("sport",    "(F1)")    
+      )
+      val transformer = JDotTransformer(transformPairs)
+      val transformed = transformer.transform(ausF1Simple)
+      assert(parse("""{"sport":"F1"}""") == parse(transformed))
+    }
+    
+  }
+  
+  describe("String format expressions") {
+    
+    //Set up accessor with our example json
+    val accessor = JDotAccessor(ausF1Simple)
+    
+    it ("can be used to create formatted strings") {
+      val raceIntro = accessor.getString("|Round {round} of the {season} season.")
+      assert(Some("Round 1 of the 2016 season.") == raceIntro)
+      val winnerText = accessor.getString("|And the winner is {results[0].driver.forename} {results[0].driver.surname}!")
+      assert(Some("And the winner is Nico Rosberg!") == winnerText)
+    }
+    
+    it ("can come after a path") {
+      val winnerText = accessor.getString("results[0].driver|And the winner is {forename} {surname}!")
+      assert(Some("And the winner is Nico Rosberg!") == winnerText)
+    }
+    
+    it ("can include any path between the curly braces (nested paths)") {
+      val winnerText = accessor.getString("results[0]|{driver.forename} {driver.surname} {status} due to {dnfReason(good driving!)}")
+      assert(Some("Nico Rosberg Finished due to good driving!") == winnerText)
+      
+      val seventeenthText = accessor.getString("results[16]|{driver.forename} {driver.surname} {status} due to {dnfReason(good driving!)}")
+      assert(Some("Marcus Ericsson DNF due to Engine") == seventeenthText)
+      
+      val seventeenthText2 = accessor.getString("results[16]|{driver|{forename} {surname}} {status} due to {dnfReason(good driving!)}")
+      assert(Some("Marcus Ericsson DNF due to Engine") == seventeenthText2)
+
+    }
+    
+    it("allows escaped characters") {
+      val escapeMessage = accessor.getString("""results[0].driver|{forename} says: 'You must escape \(, \), \{, \} and \^'""")
+      assert(Some("Nico says: 'You must escape (, ), {, } and ^'") == escapeMessage)
+    }
   }
   
   
