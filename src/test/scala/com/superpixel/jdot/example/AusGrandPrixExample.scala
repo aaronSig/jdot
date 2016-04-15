@@ -324,6 +324,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     
   }
   
+  
   describe("String format expressions") {
     
     //Set up accessor with our example json
@@ -353,10 +354,149 @@ class AusGrandPrixExample extends FunSpec with Matchers {
 
     }
     
-    it("allows escaped characters") {
+    it("allows escaping of certain characters") {
       val escapeMessage = accessor.getString("""results[0].driver|{forename} says: 'You must escape \(, \), \{, \} and \^'""")
       assert(Some("Nico says: 'You must escape (, ), {, } and ^'") == escapeMessage)
     }
+    
+    it("can include round brackets to provide clarity") {
+      val raceIntro2 = accessor.getString("|(Round {round} of the {season} season.)")
+      assert(Some("Round 1 of the 2016 season.") == raceIntro2)
+      
+      val raceIntro3 = accessor.getString("|((Round ){round}( of the ){season}( season.))")
+      assert(Some("Round 1 of the 2016 season.") == raceIntro3)
+      
+      val raceIntro4 = accessor.getString("|((Round ){round}( of {^} the ){season}( season.))")
+      assert(Some("Round 1 of {^} the 2016 season.") == raceIntro4)
+      
+      val seventeenthText2 = accessor.getString("results[16]|({driver|({forename} {surname})} {status} due to {dnfReason(good driving!)})")
+      assert(Some("Marcus Ericsson DNF due to Engine") == seventeenthText2)
+      
+      //"results[16]
+      //  |(
+      //    {driver|(
+      //              {forename} {surname}
+      //           )}
+      //    {status}
+      //    due to 
+      //    {dnfReason(good driving!)}
+      //  )
+    }
+  }
+  
+  
+  describe("Conditional Expressions") {
+    
+    //Set up accessor with our example json
+    val accessor = JDotAccessor(ausF1Simple)
+    
+    it ("can be used to define output on whether a field is present") {
+      //No datetime field so use date field
+      val raceDate = accessor.getString("~datetime?datetime:date")
+      assert(Some("2016-03-20") == raceDate)
+    }
+    
+    it ("can be used after a path") {
+      //if car has dnfreason then return it, if not return status
+      val finished = accessor.getString("results[0]~dnfReason?dnfReason:status")
+      assert(Some("Finished") == finished)
+      
+      val notFinished = accessor.getString("results[20]~dnfReason?dnfReason:status")
+      assert(Some("Collision") == notFinished)
+    }
+    
+    it ("can be used to check values relative to each other") {
+      //if finished with same position as grind then return team, otherwise return gridPosition
+      val gridEqual = accessor.getString("results[2]~position=gridPosition?team:position")
+      assert(Some("Ferrari") == gridEqual)
+
+      val gridNEqual = accessor.getString("results[10]~position=gridPosition?team:gridPosition")
+      assert(Some("13") == gridNEqual)
+    }
+    
+    it ("can be used to check values with value paths") {
+      //If driver had position equal to string "1" then return "Winner" otherwise "Not winner"
+    	val winner = accessor.getString("results[0]~position=(1)?(Winner):(Not winner)")
+    	assert(Some("Winner") == winner)
+    			
+    	val notWinner = accessor.getString("results[10]~position=(1)?(Winner):(Not winner)")
+    	assert(Some("Not winner") == notWinner)
+    }
+
+    it ("can contain nested paths") {
+      //if driver qualified on pole then return race country, otherwise return winning team
+      val forWinner = accessor.getString("~results[0].gridPosition=(1)?circuit.country:results[0].team")
+      assert(Some("Mercedes") == forWinner)
+      
+      val forSecond = accessor.getString("~results[1].gridPosition=(1)?circuit.country:results[1].team")
+      assert(Some("Australia") == forSecond)
+    }
+    
+    it ("can use curly braces for clarity") {
+      val raceDate2 = accessor.getString("~{datetime?datetime:date}")
+      assert(Some("2016-03-20") == raceDate2)
+      
+      val raceDate3 = accessor.getString("~{{datetime}?{datetime}:{date}}")
+      assert(Some("2016-03-20") == raceDate3)
+      
+      val forSecond2 = accessor.getString("~{{results[1].gridPosition}=(1)?{circuit.country}:{results[1].team}}")
+      assert(Some("Australia") == forSecond2)
+    }
+    
+    it ("can contain other conditionals") {
+      //If driver had position equal to string "1" then return "Winner"
+      //otherwise if point equals "0" then "Not in Top 10", otherwise "In Top 10"
+      
+      //clarifying the nested conditional
+      val winner = accessor.getString("results[0]~position=(1)?(Winner):~{points=(0)?(Not in Top 10):(In Top 10)}")
+      assert(Some("Winner") == winner)
+          
+      val top10 = accessor.getString("results[6]~position=(1)?(Winner):~{points=(0)?(Not in Top 10):(In Top 10)}")
+      assert(Some("In Top 10") == top10)
+      
+      val notInTop10 = accessor.getString("results[12]~position=(1)?(Winner):~{points=(0)?(Not in Top 10):(In Top 10)}")
+      assert(Some("Not in Top 10") == notInTop10)
+      
+      //clarifying the whole of the nested false path
+      val winner2 = accessor.getString("results[0]~position=(1)?(Winner):{~points=(0)?(Not in Top 10):(In Top 10)}")
+      assert(Some("Winner") == winner2)
+          
+      val top102 = accessor.getString("results[6]~position=(1)?(Winner):{~points=(0)?(Not in Top 10):(In Top 10)}")
+      assert(Some("In Top 10") == top102)
+      
+      val notInTop102 = accessor.getString("results[12]~position=(1)?(Winner):{~points=(0)?(Not in Top 10):(In Top 10)}")
+      assert(Some("Not in Top 10") == notInTop102)
+    }
+  }
+  
+  
+  describe("Transmutations") {
+    
+    //Set up accessor with our example json
+    val accessor = JDotAccessor(ausF1Simple)
+    
+    it ("can turn a string or number into a boolean") {
+      val boolJson = """{"trueField":"true", "falseField":0}"""
+      val boolAccessor = JDotAccessor(boolJson)
+      
+      val t = boolAccessor.getBoolean("trueField^b")
+      assert(Some(true) == t)
+      val f = boolAccessor.getBoolean("falseField^b")
+      assert(Some(false) == f)
+    }
+    
+    it ("can turn a string or boolean into a number") {
+      val numJson = """{"intField":"214", "floatField":"3.14", "boolField":true}"""
+      val numAccessor = JDotAccessor(numJson)
+      
+      val i = numAccessor.getNumber("intField^n")
+      assert(Some(214) == i)
+      val f = numAccessor.getNumber("floatField^n")
+      assert(Some(3.14) == f)
+      val b = numAccessor.getNumber("boolField^n")
+      assert(Some(1) == b)
+    }
+    
   }
   
   
@@ -368,7 +508,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     val jcTrans = JDotTransformer(
       Set(
         ("season",             "season"),
-        ("round",              "round"),
+        ("round",              "round^n"),
         ("raceName",           "raceName"),
         ("circuit.name",       "Circuit.circuitName"),
         ("circuit.city",       "Circuit.Location.locality"),

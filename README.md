@@ -319,7 +319,7 @@ transformer.transform(ausF1Simple)
 ```
 
 #### String Format
-Using a String Format expression allows you to combine fields and literal values to form a single string. Expression start with a pipe (`"|"`) and then follow similar syntax to Scala's string interpolation. Everything after the pipe (`"|"`) will appear as is. Fields can be accessed by wrapping the access JPath in curly braces (`"{"`, `"}"`):
+Using a String Format expression allows you to combine fields and literal values to form a single string. The expression starts with a `"|"` and then follows a similar syntax to Scala's string interpolation. Everything after the `"|"` will appear as is. Fields can be accessed by wrapping the access JPath in curly braces (`"{"`, `"}"`):
 ```scala
 accessor.getString("|Round {round} of the {season} season.")
 //Some("Round 1 of the 2016 season.")
@@ -350,7 +350,86 @@ Some characters must be escaped if you want them to included in the resulting st
 accessor.getString("""results[0].driver|{forename} says: 'You must escape \(, \), \{, \} and \^'""")
 //Some("Nico says: 'You must escape (, ), {, } and ^'")
 ```
+Round brackets (`"("`,`")"`) can be included to clarify String Format expressions. They also provide a way to escape characters as anything inside round brackets is treated as literal:
+```scala
+//Can clarify whole string format with format "|(...)"
+accessor.getString("|(Round {round} of the {season} season.)")
+//Some("Round 1 of the 2016 season.")
 
+//Can clarify each literal string individually
+accessor.getString("|((Round ){round}( of the ){season}( season.))")
+//Some("Round 1 of the 2016 season.")
 
+//Which allows us to save from escaping characters
+accessor.getString("|((Round ){round}( of {^} the ){season}( season.))")
+//Some("Round 1 of {^} the 2016 season.")
+
+//Here both string format expression are clarified with format "|(...)"
+accessor.getString("results[16]|({driver|({forename} {surname})} {status} due to {dnfReason(good driving!)})")
+//Some("Marcus Ericsson DNF due to Engine")
+```
+
+#### Conditional Expressions
+Conditional expression follow the syntax and logic of Java ternary operators. They can be used to check field existence or compare field values. The expression starts with a `"~"`. The field to test comes first. If you are testing existence then it is of the form `"`_`<jpath>`_`?"` (where _<jpath>_ is replaces by another JPath expression). If you are doing a comparison then: `"`_`<jpath1>`_`=`_`<jpath2>`_`?"`. Next comes the true/false values: `"`_`<trueJPath>`_`:`_`<falseJPath>`_`"`. So the full expression follows this format: `"~`_`<jpath1>`_`=`_`<jpath2>`_`?`_`<trueJPath>`_`:`_`<falseJPath>`_`"`.
+```scala
+//No datetime field so use date field
+accessor.getString("~datetime?datetime:date")       //Some("2016-03-20")
+
+//If car has dnfReason field then return it, if not then return status
+accessor.getString("results[0]~dnfReason?dnfReason:status")     //Some("Finished")
+accessor.getString("results[20]~dnfReason?dnfReason:status")    //Some("Collision")
+
+//if finished with same position as grind then return team, otherwise return gridPosition
+accessor.getString("results[2]~position=gridPosition?team:gridPosition")    //Some("Ferrari")
+accessor.getString("results[10]~position=gridPosition?team:gridPosition")   //Some("13")
+```
+The JPath in each of the four operator spots can be a full JPath. Pure value expression are particularly useful here:
+
+```scala
+//If driver had position equal to string "1" then return "Winner" otherwise "Not winner"
+accessor.getString("results[0]~position=(1)?(Winner):(Not winner)")     //Some("Winner")
+accessor.getString("results[10]~position=(1)?(Winner):(Not winner)")    //Some("Not winner")
+
+//if driver qualified on pole then return race country, otherwise return winning team
+accessor.getString("~results[0].gridPosition=(1)?circuit.country:results[0].team")  //Some("Mercedes")
+accessor.getString("~results[1].gridPosition=(1)?circuit.country:results[0].team")  //Some("Australia")
+```
+Curly braces (`"{"`, `"}"`) can be used to help clarify expressions:
+```scala
+//Can clarify the whole expression with format "~{...(=...)?...:...}"
+accessor.getString("~{datetime?datetime:date}")             //Some("2016-03-20")
+
+//Can clarify each nested path with format "~{{...}={...}?{...}:{...}}"
+accessor.getString("~{{datetime}?{datetime}:{date}}")       //Some("2016-03-20")
+
+//You can mix and match in this regard
+accessor.getString("~{datetime?{datetime}:date}")       //Some("2016-03-20")
+
+accessor.getString("~{{results[1].gridPosition}=(1)?{circuit.country}:{results[1].team}}")
+//Some("Australia")
+```
+This allows us to nest conditionals in other conditionals:
+```scala
+//If driver had position equal to string "1" then return "Winner"
+//otherwise if points field equals "0" then "Not in Top 10", otherwise "In Top 10"
+
+//Clarifying just the nested conditional ("{" after "~")
+accessor.getString("results[0]~position=(1)?(Winner):~{points=(0)?(Not in Top 10):(In Top 10)}")  
+//Some("Winner")
+accessor.getString("results[6]~position=(1)?(Winner):~{points=(0)?(Not in Top 10):(In Top 10)}")  
+//Some("In Top 10")
+accessor.getString("results[12]~position=(1)?(Winner):~{points=(0)?(Not in Top 10):(In Top 10)}") 
+//Some("Not in Top 10")
+
+//Clarifying the whole of the nested false path ("{" before "~")
+accessor.getString("results[0]~position=(1)?(Winner):{~points=(0)?(Not in Top 10):(In Top 10)}")  
+//Some("Winner")
+accessor.getString("results[6]~position=(1)?(Winner):{~points=(0)?(Not in Top 10):(In Top 10)}")  
+//Some("In Top 10")
+accessor.getString("results[12]~position=(1)?(Winner):{~points=(0)?(Not in Top 10):(In Top 10)}") 
+//Some("Not in Top 10")
+```
+In fact curly braces (`"{"`, `"}"`) can be used to clarify any nested JPath (as we saw with String Format expressions).    
+Similarly round brackets (`"("`,`")"`) can be used to clarify any part of path that is literal, similar to Default/Pure Values (which have to have them anyway) and String Format expressions.
 
 
