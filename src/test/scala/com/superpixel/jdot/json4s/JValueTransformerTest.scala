@@ -96,7 +96,7 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
   
   it should "be able to process arrays" in {
     val fieldMap = Set(
-      JPathPair(JPath(JObjectPath("firstHomeGoal")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("homeGoalMinutes"), JArrayPath(0), JDefaultValue("N/A"))),
+      JPathPair(JPath(JObjectPath("firstHomeGoal")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("homeGoalMinutes"), JArrayPath(0), JDefaultValue("N/A", None))),
       JPathPair(JPath(JObjectPath("awayGoals")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("awayGoalMinutes"))),
       JPathPair(JPath(JObjectPath("teams"), JArrayPath(0)), JPath(JObjectPath("metadata"), JObjectPath("homeTeamName"))),
       JPathPair(JPath(JObjectPath("teams"), JArrayPath(1)), JPath(JObjectPath("metadata"), JObjectPath("awayTeamName")))

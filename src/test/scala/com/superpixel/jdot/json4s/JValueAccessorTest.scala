@@ -79,7 +79,12 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
     val accessor = JValueAccessor(jsonVal)
     
     assertResult(JString("Hello World!")) {
-      val jPath = JPath(JPathValue("Hello World!"))
+      val jPath = JPath(JPathValue("Hello World!", None))
+      accessor.getValue(jPath)
+    }
+    
+    assertResult(JDouble(3.14)) {
+      val jPath = JPath(JPathValue("3.14", Some(JTransmute("n", None))))
       accessor.getValue(jPath)
     }
   }
@@ -116,28 +121,28 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
   it should "take default if found, after not finding path" in {
     val accessor = JValueAccessor(jsonVal)
     assertResult(JString("world")) {
-      accessor.getValue(JPath(JObjectPath("hello"), JDefaultValue("world")))
+      accessor.getValue(JPath(JObjectPath("hello"), JDefaultValue("world", None)))
     }
   }
   
   it should "take default and parse to correct JValue, after not finding path" in {
     val accessor = JValueAccessor(jsonVal)
-    assertResult(JString("3")) {
-      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("medium"), JDefaultValue("3")))
+    assertResult(JInt(3)) {
+      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("medium"), JDefaultValue("3", Some(JTransmute("n", None)))))
     }
   }
   
   it should "take default, after not finding path, and transmute to integer" in {
     val accessor = JValueAccessor(jsonVal)
     assertResult(JInt(3)) {
-      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("medium"), JDefaultValue("3"), JTransmute("n", None)))
+      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("medium"), JDefaultValue("3", None), JTransmute("n", None)))
     }
   }
   
   it should "take default for out of bounds array access" in {
     val accessor = JValueAccessor(jsonVal)
     assertResult(JString("d")) {
-      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("misc"), JArrayPath(3), JDefaultValue("d")))
+      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("misc"), JArrayPath(3), JDefaultValue("d", None)))
     }
   }
   
@@ -145,7 +150,7 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
     val accessor = JValueAccessor(jsonVal, linkLamb)
     
     assertResult(JString("example-url")) {
-      val jPath = JPath(JObjectPath("referenceSingle"), JObjectPath("sys"), JObjectPath("id"), JPathLink, JObjectPath("file"), JObjectPath("url"), JDefaultValue("example-url"))
+      val jPath = JPath(JObjectPath("referenceSingle"), JObjectPath("sys"), JObjectPath("id"), JPathLink, JObjectPath("file"), JObjectPath("url"), JDefaultValue("example-url", None))
       accessor.getValue(jPath)
     }
   }
@@ -153,16 +158,16 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
   it should "take midway default values if path not found before hand" in {
     val accessor = JValueAccessor(jsonVal)
     assertResult(JBool(true)) {
-      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("gender"), JDefaultValue("false"), JObjectPath("male"), JDefaultValue("false")))
+      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("gender"), JDefaultValue("false", None), JObjectPath("male"), JDefaultValue("false", None)))
     }
     assertResult(JString("true")) {
-      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("gender"), JDefaultValue("false"), JObjectPath("unknown"), JDefaultValue("true")))
+      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("gender"), JDefaultValue("false", None), JObjectPath("unknown"), JDefaultValue("true", None)))
     }
     assertResult(JString("true")) {
-      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("hender"), JDefaultValue("true"), JObjectPath("female"), JDefaultValue("false")))
+      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("hender"), JDefaultValue("true", None), JObjectPath("female"), JDefaultValue("false", None)))
     }
     assertResult(JBool(false)) {
-      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("hender"), JDefaultValue("true"), JObjectPath("female"), JDefaultValue("false"), JTransmute("b", Some("!"))))
+      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("hender"), JDefaultValue("true", None), JObjectPath("female"), JDefaultValue("false", None), JTransmute("b", Some("!"))))
     }
   }
   
@@ -217,7 +222,7 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
                     JPath(JObjectPath("gender"), JObjectPath("female")),
                     JPath(JObjectPath("misc"), JArrayPath(0)),
                     JPath(JObjectPath("small")),
-                    JPath(JObjectPath("misc"), JArrayPath(5), JDefaultValue("defaulted")))))
+                    JPath(JObjectPath("misc"), JArrayPath(5), JDefaultValue("defaulted", None)))))
       accessor.getValue(jPath)
     }
   }

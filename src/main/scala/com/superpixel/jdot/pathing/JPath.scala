@@ -133,14 +133,14 @@ object JPath {
     override val accepts = Path
     override val outputs = Value
     override val patterns = Seq(
-      ("""\((""" + literalStr + """)?\)""").r    
+      ("""\((""" + literalStr + """(""" + TransmuteExpression.patterns.head.toString() + """)?)?\)""").r    
     )
   }
   case object DefaultValueExpression extends ExpressionType {
     override val accepts = Path
     override val outputs = Path
     override val patterns = Seq(
-      ("""\((""" + literalStr + """)?\)""").r    
+      ("""\((""" + literalStr + """(""" + TransmuteExpression.patterns.head.toString() + """)?)?\)""").r    
     )
   }
   case object StringFormatExpression extends ExpressionType {
@@ -220,8 +220,9 @@ object JPath {
   case object LiteralMode extends ExpressionMode {
     override val brackets = Some(("""(""", """)"""))
     override val starters = Some(Set("""|""", """<"""))
+    override val delimiters = Some(Set("""^"""))
     override val starterDelimeters = 
-      Some(Map("""|""" -> Set("""{""", """}""", """^""")))
+      Some(Map("""|""" -> Set("""{""", """}""")))
     override val canMoveToModes: Seq[ExpressionMode] = Seq(NestMode, SpecialMode)
   }
   /***
@@ -680,7 +681,7 @@ object JPath {
             }
           }
         }
-        throw new JPathException("String path of invalid format at " + exprSeq, exprSeq.mkString)
+        throw new JPathException("String path of invalid format.", exprSeq.mkString("[", " ", "]"))
       }
     }
     
@@ -738,19 +739,13 @@ object JPath {
         case (StartAccessExpression, exprSeq) +: Nil => 
           innerJPConstr(Nil, parseAccessExpression(exprSeq) +: acc)
           
-        case (LiteralExpression, exprSeq) +: Nil =>
-          exprSeq filter {!_.isInstanceOf[Delimiter]} match {
-            case Literal(lit) +: Nil => innerJPConstr(Nil, JPathValue(lit) +: acc)
-            case Nil => innerJPConstr(Nil, JPathValue("") +: acc)
-            case _ => throw new JPathException(s"Cannot understand LiteralExpression: $exprSeq", pathString)
-          }
+        case (LiteralExpression, exprSeq) +: Nil => parseValueExpression(exprSeq) match {
+          case (value, transmute) => innerJPConstr(Nil, JPathValue(value, transmute) +: acc)
+        }
         
-        case (DefaultValueExpression, exprSeq) +: tl =>
-          exprSeq filter {!_.isInstanceOf[Delimiter]} match {
-            case Literal(lit) +: Nil => innerJPConstr(tl, JDefaultValue(lit) +: acc)
-            case Nil => innerJPConstr(tl, JDefaultValue("") +: acc)
-            case _ => throw new JPathException(s"Cannot understand DefaultValueExpression: $exprSeq", pathString)
-          }
+        case (DefaultValueExpression, exprSeq) +: tl => parseValueExpression(exprSeq) match {
+          case (value, transmute) => innerJPConstr(tl, JDefaultValue(value, transmute) +: acc)
+        }
         
         case (StringFormatExpression, exprSeq) +: tl =>
           innerJPConstr(tl, parseStringFormatExpression(exprSeq) +: acc)
@@ -769,6 +764,17 @@ object JPath {
           
         case _ => throw new JPathException("JPath semantic error.", pathString)
       }
+    }
+    
+    def parseValueExpression(exprSeq: Seq[ExpressionElement]): (String, Option[JTransmute]) = exprSeq match {
+      case Seq(Delimiter("("), Literal(value), Delimiter(")")) => (value, None)
+      case Seq(Delimiter("("), Delimiter(")")) => ("", None)
+      case Delimiter("(") +: Literal(value) +: tl => tl.reverse match {
+        case Delimiter(")") +: revTransmuteExpr =>
+          (value, Some(parseTransmuteExpression(revTransmuteExpr.reverse)))
+        case _ => throw new JPathException(s"Cannot understand Default/Pure Value expression due to missing end bracket: $exprSeq", pathString)
+      }
+      case _ => throw new JPathException(s"Cannot understand Default/Pure Value expression: $exprSeq", pathString)
     }
     
     /***

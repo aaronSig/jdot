@@ -47,40 +47,50 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   }
   
   it should "be able to interpret literal expression" in {
-    assertResult(JPath(JPathValue("one"))) {
+    assertResult(JPath(JPathValue("one", None))) {
       JPath.fromString("(one)")
     }
   }
   
   it should "be able to interpret literal expression with transmute" in {
-    assertResult(JPath(JPathValue("1"), JTransmute("i", None))) {
+    assertResult(JPath(JPathValue("1", None), JTransmute("i", None))) {
       JPath.fromString("(1)^i")
     }
   }
+  
+  it should "be able to interpret an embedded transmute expression" in {
+    assertResult(JPath(JPathValue("1", Some(JTransmute("i", None))))) {
+      JPath.fromString("(1^i)")
+    }
+    assertResult(JPath(JPathValue("true", Some(JTransmute("b", Some("!")))))) {
+      JPath.fromString("(true^b<!)")
+    }
+  }
+  
   it should "be able to interpret blank literal expression with transmute" in {
-    assertResult(JPath(JPathValue(""))) {
+    assertResult(JPath(JPathValue("", None))) {
       JPath.fromString("()")
     }
   }
   
   it should "be able to interpret default values" in {
     assertResult(
-        JPath(JObjectPath("one"), JObjectPath("zwei"), JDefaultValue("abc"))) {
+        JPath(JObjectPath("one"), JObjectPath("zwei"), JDefaultValue("abc", None))) {
       JPath.fromString("one.zwei(abc)")
     }
     assertResult(
-        JPath(JObjectPath("one"), JDefaultValue("abc"), JObjectPath("zwei"))) {
+        JPath(JObjectPath("one"), JDefaultValue("abc", None), JObjectPath("zwei"))) {
       JPath.fromString("one(abc).zwei")
     }
   }
   
   it should "be able to interpret blank default values" in {
     assertResult(
-        JPath(JObjectPath("one"), JObjectPath("zwei"), JDefaultValue(""))) {
+        JPath(JObjectPath("one"), JObjectPath("zwei"), JDefaultValue("", None))) {
       JPath.fromString("one.zwei()")
     }
     assertResult(
-        JPath(JObjectPath("one"), JDefaultValue(""), JObjectPath("zwei"))) {
+        JPath(JObjectPath("one"), JDefaultValue("", None), JObjectPath("zwei"))) {
       JPath.fromString("one().zwei")
     }
   }
@@ -95,7 +105,7 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
         JPath.fromString("one[zwei].trois[4]>.cinque")
       }
     assertResult(
-      JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"), JDefaultValue("abc"), JArrayPath(4), JPathLink, JObjectPath("cinque"))) {
+      JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"), JDefaultValue("abc", None), JArrayPath(4), JPathLink, JObjectPath("cinque"))) {
         JPath.fromString("one[zwei].trois(abc)[4]>.cinque")
       }
   }
@@ -118,8 +128,8 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       JPath(JObjectPath("one"), JObjectPath("two"), 
           JStringFormat(
               Seq(FormatLiteral("web.start?id="), ReplaceHolder),
-              Seq(JPath(JObjectPath("three"), JDefaultValue("1.234")))))) {
-        JPath.fromString("one.two|web.start?id={three(1.234)}")
+              Seq(JPath(JObjectPath("three"), JDefaultValue("1.234", Some(JTransmute("n", None)))))))) {
+        JPath.fromString("one.two|web.start?id={three(1.234^n)}")
       }
   }
   
@@ -192,17 +202,17 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
             Some(JPath(JObjectPath("three"))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral(" equals "), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
-                    JPath(JObjectPath("three"), JDefaultValue("3")))
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2", Some(JTransmute("n", None)))),
+                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
-                    JPath(JObjectPath("two"), JDefaultValue("2")))
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3", Some(JTransmute("n", None)))),
+                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
             ))), JTransmute("s", None)
       )    
     ){
-     JPath.fromString("one~{two=three?|{two(2)} equals {three(3)}:|({three(3)}ne{two(2)})}^s")
+     JPath.fromString("one~{two=three?|{two(2^n)} equals {three(3)}:|({three(3^n)}ne{two(2)})}^s")
     }
   }
   
@@ -213,17 +223,17 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
             Some(JPath(JObjectPath("three"))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral(" equals "), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
-                    JPath(JObjectPath("three"), JDefaultValue("3")))
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2", Some(JTransmute("f", Some(".2"))))),
+                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
-                    JPath(JObjectPath("two"), JDefaultValue("2")))
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3", Some(JTransmute("f", Some(".2"))))),
+                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
             ))), JTransmute("s", None)
       )    
     ){
-     JPath.fromString("one~{two=three?|{two(2)} equals {three(3)}:|{three(3)}ne{two(2)}}^s")
+     JPath.fromString("one~{two=three?|{two(2^f<(.2))} equals {three(3)}:|{three(3^f<(.2))}ne{two(2)}}^s")
     }
   }
   
@@ -235,13 +245,13 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
             Some(JPath(JObjectPath("three"))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral(" equals "), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
-                    JPath(JObjectPath("three"), JDefaultValue("3")))
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2", None)),
+                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
-                    JPath(JObjectPath("two"), JDefaultValue("2")))
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3", None)),
+                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
             )))
       )    
     ){
@@ -256,13 +266,13 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
             Some(JPath(JObjectPath("three"))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral(" :equals: "), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
-                    JPath(JObjectPath("three"), JDefaultValue("3")))
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2", None)),
+                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
-                    JPath(JObjectPath("two"), JDefaultValue("2")))
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3", None)),
+                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
             )))
       )    
     ){
@@ -277,13 +287,13 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
             Some(JPath(JObjectPath("three"))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("( :equals: )"), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
-                    JPath(JObjectPath("three"), JDefaultValue("3")))
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2", None)),
+                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
-                    JPath(JObjectPath("two"), JDefaultValue("2")))
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3", None)),
+                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
             )))
       )    
     ){
@@ -298,13 +308,13 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
             Some(JPath(JObjectPath("three"))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("( :equals: )"), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2")),
-                    JPath(JObjectPath("three"), JDefaultValue("3")))
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2", None)),
+                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3")),
-                    JPath(JObjectPath("two"), JDefaultValue("2")))
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3", None)),
+                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
             )))
       )    
     ){

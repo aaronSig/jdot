@@ -66,7 +66,5 @@ object JValueAccessor {
   private val notFoundLamb = (jVal: JValue, jPath: JPathElement) => {
     (JNothing, Continue)
   }
-  private val endLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], JValue] = 
-    (JValueTraverser.jDefaultValueNoComplexEnd andThen { case s: String => JString(s) }) orElse 
-    { case (jVal, _) => jVal }
+  private val endLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], JValue] = JValueTraverser.standardEndLamb 
 }

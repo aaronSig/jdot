@@ -6,8 +6,12 @@ import org.json4s.native.JsonMethods._
 
 object JValueTraverser {
 
-  val jDefaultValueNoComplexEnd: PartialFunction[Tuple2[JValue, Option[JPathElement]], String] = {
-    case (_:JObject | _:JArray , Some(JDefaultValue(dVal))) => dVal
+  val standardEndLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], JValue] = {
+    case (_:JObject | _:JArray , Some(JDefaultValue(dVal, transmute))) => transmute match {
+      case None => JString(dVal)
+      case Some(JTransmute(func, arg)) => JValueTransmuter.transmute(JString(dVal), func, arg)
+    }
+    case (jVal, _) => jVal
   }
   
   type TraverseFn[T] = (JValue,JPath) => Option[T] 
@@ -55,16 +59,16 @@ object JValueTraverser {
               case JString(s) => linkLamb(s)
               case JInt(d) =>  linkLamb(d.toString)
               case _ => prev match {
-                case Some(JDefaultValue(dVal)) => linkLamb(dVal)
+                case Some(JDefaultValue(dVal, transmute)) => linkLamb(simpleJValueToString(getJValueFromJValueExpression(dVal, transmute)))
                 case _ => None
               }
             }, pathSeq.head, tl)
             
-        case JPathValue(str: String) +: tl =>
-          routeValueOption(Some(JString(str)), pathSeq.head, tl)
+        case JPathValue(str, transmute) +: tl =>
+          routeValueOption(Some(getJValueFromJValueExpression(str, transmute)), pathSeq.head, tl)
         
-        case JDefaultValue(dVal) +: tl => value match {
-          case JNothing | JNull => routeValueOption(Some(JString(dVal)), pathSeq.head, tl.dropWhile {
+        case JDefaultValue(dVal, transmute) +: tl => value match {
+          case JNothing | JNull => routeValueOption(Some(getJValueFromJValueExpression(dVal, transmute)), pathSeq.head, tl.dropWhile {
             case _:JObjectPath | _:JArrayPath  => true
             case _:JConditional => true
             case _ => false
@@ -122,15 +126,14 @@ object JValueTraverser {
     traverseRecu(jVal, jPath) 
   }
   
+  private def getJValueFromJValueExpression(pVal: String, transmute: Option[JTransmute]): JValue = transmute match {
+      case None => JString(pVal)
+      case Some(JTransmute(func, arg)) => JValueTransmuter.transmute(JString(pVal), func, arg)
+  }
+  
   private def innerStringFormatJPathEndLamb(jVal: JValue, jPath: JPath): PartialFunction[Tuple2[JValue, Option[JPathElement]], String] = 
-    jDefaultValueNoComplexEnd orElse {
-      case (_:JObject | _:JArray, _)  => throw new JsonTraversalException(s"JPath in String formatting ended in an Array or an Object, it must end in a stringable value: $jPath", jVal)
-      case (JString(str), _) => str
-      case (JDouble(db), _) => db.toString
-      case (JDecimal(bd), _) => bd.toString
-      case (JInt(int), _) => int.toString
-      case (JLong(l), _) => l.toString
-      case (JBool(bool), _) => bool.toString
+    standardEndLamb andThen {
+      case jVal => simpleJValueToString(jVal, "")
     }
   
   private val innerConditionJPathEndLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], Boolean] = {
@@ -145,9 +148,16 @@ object JValueTraverser {
     case (JNothing | JNull, _) => false
   }
   
-  val standardEndLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], JValue] = 
-    (jDefaultValueNoComplexEnd andThen { case s: String => JString(s) }) orElse 
-    { case (jVal, _) => jVal }
+  private def simpleJValueToString(jVal: JValue, nothingString: String = ""): String = jVal match {
+    case _:JObject | _:JArray  => throw new JsonTraversalException(s"Json could not be turned into a string as it was an object or array", jVal)
+    case JNothing | JNull => ""
+    case JString(str) => str
+    case JDouble(db) => db.toString
+    case JDecimal(bd) => bd.toString
+    case JInt(int) => int.toString
+    case JLong(l) => l.toString
+    case JBool(bool) => bool.toString
+  }
   
   private def accessJArrayValue(jVal: JValue, key: Int): Option[JValue] = jVal match {
     case JObject(fieldLs) => fieldLs.find { jFld => jFld._1 == key.toString } .map(_._2)

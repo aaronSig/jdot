@@ -16,8 +16,11 @@ class JValueBuilder extends JDotBuilder {
         buildLinearPath(tl, JArray(List.tabulate(key+1){
             n:Int => if (n==key) acc else JNothing
         }))
-      case JDefaultValue(s) +: tl => acc match {
-        case JNothing | JNull => buildLinearPath(tl, JString(s))
+      case JDefaultValue(s, transmute) +: tl => acc match {
+        case JNothing | JNull => transmute match {
+          case None => buildLinearPath(tl, JString(s))
+          case Some(JTransmute(func, arg)) => buildLinearPath(tl, JValueTransmuter.transmute(JString(s), func, arg))
+        }
         case _ => buildLinearPath(tl, acc)
       }
       case jpe +: _ => 
