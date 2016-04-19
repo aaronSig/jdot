@@ -474,7 +474,7 @@ val transformed = transformer.transform(json)
 //  "floatStringField": "1.61"  }
 ```
 
-Below are some example of printf style Transmutations. '^f' format floats strings, `^i` and `^d` (identical) format integer strings, `^%` formats into a percentage string, `^ord` formats into a number with ordinal suffix, and `^s` takes arguments which perform basic string transformations (e.g. substring, uppercase):
+Below are some example of printf style Transmutations. `^f` format floats strings, `^i` and `^d` (identical) format integer strings, `^%` formats into a percentage string, `^ord` formats into a number with ordinal suffix, and `^s` takes arguments which perform basic string transformations (e.g. substring, uppercase):
 ```scala
 val json = """{  "longFloatField":   3.14159265,
                  "shortFloatField":  0.34,
