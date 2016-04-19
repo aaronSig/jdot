@@ -470,10 +470,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
   }
   
   
-  describe("Transmutations") {
-    
-    //Set up accessor with our example json
-    val accessor = JDotAccessor(ausF1Simple)
+  describe("Simple Transmutations") {
     
     it ("can turn a string or number into a boolean") {
       val boolJson = """{"trueField":"true", "falseField":0}"""
@@ -497,9 +494,65 @@ class AusGrandPrixExample extends FunSpec with Matchers {
       assert(Some(1) == b)
     }
     
+    it ("can turn a number or boolean into a string") {
+      val strJson = """{"intField":3, "boolField":false}"""
+      val strAccessor = JDotAccessor(strJson)
+      
+      val iStr = strAccessor.getString("intField^s")
+      assert(Some("3") == iStr)
+      val bStr = strAccessor.getString("boolField^s")
+      assert(Some("false") == bStr)
+    }
+    
+    it ("can take arguments") {
+      val json = """{"floatStrField":"3.14", "boolStrField":"false"}"""
+      val accessor = JDotAccessor(json)
+      
+      val i = accessor.getNumber("floatStrField^n<(i)")
+      assert(Some(3) == i)
+      val b = accessor.getBoolean("boolStrField^b<(!)")
+      assert(Some(true) == b)
+    }
+    
+    it ("is mainly useful in transformations") {
+      val json = """{ "falseStrField":  "false", 
+                      "zeroField":       0,
+                      "intStrField":    "214.0", 
+                      "floatStrField":  "3.14", 
+                      "boolField":      false,
+                      "intField":       3, 
+                      "floatField":     1.61}"""
+     
+      val transformer = JDotTransformer.apply(Set(
+        ("falseField",       "falseStrField^b"),
+        ("trueField",        "zeroField^b<(!)"),
+        ("intField",         "intStrField^n<(i)"),
+        ("floatField",    "floatStrField^n"),
+        ("zeroField",        "boolField^n"),
+        ("intStringField",   "intField^s"),
+        ("floatStringField", "floatField^s")
+      ))
+      
+      val transformed = transformer.transform(json)
+      
+      val expected = """{ "falseField":       false, 
+                          "trueField":        true,
+                          "intField":         214, 
+                          "floatField":       3.14, 
+                          "zeroField":        0,
+                          "intStringField":   "3", 
+                          "floatStringField": "1.61"}"""
+      
+      assert(parse(expected) == parse(transformed))
+    }
   }
   
-  
+  describe("Simple Formatted String transmutations") {
+    //f, i, d, ord, s with args
+    
+    
+    
+  }
   
   
   describe("Simplified ausF1 json") {

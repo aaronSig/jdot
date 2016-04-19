@@ -393,6 +393,7 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     assertResult(JDouble(0.75d)) {
       JValueTransmuter.transmute(JInt(25), "ratio", Some("!100"))
     }
+    
     assertResult(JDouble(0.1d)) {
       JValueTransmuter.transmute(JInt(1), "ratio", Some("10"))
     }
