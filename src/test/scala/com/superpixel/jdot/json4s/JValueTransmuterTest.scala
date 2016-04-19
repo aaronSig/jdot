@@ -252,6 +252,20 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     }
   }
   
+  it should "apply substring with negative numbers" in {
+    assertResult(JString("ld")) {
+      JValueTransmuter.transmute(JString("Hello world"), "s", Some("-2."))
+    }
+    
+    assertResult(JString("Hello w")) {
+      JValueTransmuter.transmute(JString("Hello world"), "s", Some(".-4"))
+    }
+    
+    assertResult(JString("lo w")) {
+      JValueTransmuter.transmute(JString("Hello world"), "s", Some("-8.-4"))
+    }
+  }
+  
   it should "apply printf arguments" in {
     assertResult(JString("Hello  ")) {
       JValueTransmuter.transmute(JString("Hello"), "s", Some("-7"))

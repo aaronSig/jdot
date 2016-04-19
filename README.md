@@ -429,7 +429,99 @@ accessor.getString("results[6]~position=(1)?(Winner):{~points=(0)?(Not in Top 10
 accessor.getString("results[12]~position=(1)?(Winner):{~points=(0)?(Not in Top 10):(In Top 10)}") 
 //Some("Not in Top 10")
 ```
-In fact curly braces (`"{"`, `"}"`) can be used to clarify any nested JPath (as we saw with String Format expressions).    
+In fact, curly braces (`"{"`, `"}"`) can be used to clarify any nested JPath (as we saw with String Format expressions).    
 Similarly round brackets (`"("`,`")"`) can be used to clarify any part of path that is literal, similar to Default/Pure Values (which have to have them anyway) and String Format expressions.
 
+#### Transmutation expressions
 
+Transmutation expressions allow you to change the returning value. You can specify a specific json type or format the value. Think type casting meets C-style _printf_ operations. For example, you can use transmutations to: change a numeric string into a number, format a float to a string with 2 decimal places, format a date string, and turn a number value into a formatted currency string.
+
+The expressions take the following form `"`_`jpath`_`^`_`transmuteType`_`<(`_`argument`_`)"`. The _transmuteType_ denotes what operation to perform and the _argument_ is a single literal string which can augment this operation. For example to parse a value into an integer the following JPath would be used: `"path.to.numberString^n<(i)"` where `^n` denotes that we are transmuting into a number and `<(i)` denotes that the number should be an integer.
+
+Below are some examples of simple, casting style transmutations that change json value types (boolean, number, string). `^b` transmutes into a boolean, `^n` transmutes into a number, and `^s` transmutes into a string:
+```scala
+val json = """{   "falseStrField":  "false", 
+                  "oneField":       1,
+                  "intStrField":    "214", 
+                  "floatStrField":  "3.14", 
+                  "boolField":      false,
+                  "intField":       3, 
+                  "floatField":     1.61    }"""
+     
+val transformer = JDotTransformer(Set(
+    ("falseField",       "falseStrField^b"),        //Transmutes string to boolean
+    ("trueField",        "oneField^b"),             //Transmutes number to boolean
+    ("notTrueField",     "oneField^b<(!)"),         //Transmutes number to boolean
+                                                    // argument "!" performs a NOT on the result
+    ("intField",         "intStrField^n"),          //Transmutes numeric string to number
+    ("floatField",       "floatStrField^n"),        //Transmutes numeric string to number
+    ("floatToIntField",  "floatStrField^n<(i)"),    //Transmutes numeric string to number
+                                                    // argument "i" ensures result is an integer
+    ("zeroField",        "boolField^n"),            //Transmutes boolean to number
+    ("intStringField",   "intField^s"),             //Transmutes number to string
+    ("floatStringField", "floatField^s")            //Transmutes number to string
+))
+      
+val transformed = transformer.transform(json)
+//{ "falseField":       false, 
+//  "trueField":        true,
+//  "notTrueField":     false,
+//  "intField":         214, 
+//  "floatField":       3.14,
+//  "floatToIntField":  3, 
+//  "zeroField":        0,
+//  "intStringField":   "3", 
+//  "floatStringField": "1.61"  }
+```
+
+Below are some example of printf style Transmutations. '^f' format floats strings, `^i` and `^d` (identical) format integer strings, `^%` formats into a percentage string, `^ord` formats into a number with ordinal suffix, and `^s` takes arguments which perform basic string transformations (e.g. substring, uppercase):
+```scala
+val json = """{  "longFloatField":   3.14159265,
+                 "shortFloatField":  0.34,
+                 "lowIntField":      5,
+                 "highIntField":     5321,
+                 "lcString":         "transmute",
+                 "ucString":         "JDOT"
+                 "name":             "joe dottington"  }"""
+    
+val transformer = JDotTransformer(Set(
+    ("twoDP",                 "longFloatField^f<(.2)"),     //printf format float ("%f"), 
+                                                            // argument ".2" specifies 2 decimal places
+    ("extraZeroes",           "shortFloatField^f<(06.3)"),  //printf format float ("%f"),  
+                                                            // argument "06.3" specifies lead with zeroes,
+                                                            // 6 character total length, 3 decimal places
+    ("percentage",            "shortFloatField^%"),         //transmutes float between 0 and 1 to percentage
+    ("formattedInt",          "lowIntField^i<(+03)"),       //printf format integer ("%d"),
+                                                            // argument "+03" specifies show sign,
+                                                            // lead with zeroes, 3 character length
+    ("intWithCommas",         "highIntField^d<(,)"),        //printf format integer ("%d"),
+                                                            // argument "," specifies add clarity commas 
+    ("ordinal",               "highIntField^ord"),          //transmutes int to append ordinal suffix
+    ("ordinalFullString",     "lowIntField^ord<(full)"),    // argument "full" transmutes to full 
+                                                            // ordinal word (up to 12)
+    ("uppercase",             "lcString^s<(u)"),            //argument "u" performs uppercase function
+    ("substring",             "lcString^s<(1.4)"),          //argument "1.4" performs substring function
+                                                            // from (inc) index 1 to (exc) index 4
+    ("capitalised",           "lcString^s<(1u)"),           //argument "1u" uppercase first character
+    ("lowercase",             "ucString^s<(l)"),            //argument "l" performs lowercase function
+    ("minusSubstring",        "ucString^s<(.-3)"),          //argument ".-3" performs substring function
+                                                            // from start to (exc) index = length - 3
+    ("surname",               "name^s<(4.:1u)")             //colon in "^s" argument allows chaining:
+                                                            // applies "4." then "1u"
+))
+    
+val transformed = transformer.transform(json)
+//{   "twoDP":               "3.14",
+//    "extraZeroes":         "00.340",
+//    "percentage":          "34%",
+//    "formattedInt":        "+05",
+//    "intWithCommas":       "5,321",
+//    "ordinal":             "5321st",
+//    "ordinalFullString":   "Fifth",
+//    "uppercase":           "TRANSMUTE",
+//    "substring":           "ran",
+//    "capitalised":         "Transmute",
+//    "lowercase":           "jdot",
+//    "minusSubstring":      "J",
+//    "surname":             "Dottington"  }
+```

@@ -546,7 +546,7 @@ object JValueTransmuter {
     
   }
   
-  val substringRegex = """(\d*)\.(\d*)""".r
+  val substringRegex = """(\-?\d*)\.(\-?\d*)""".r
   /***
      * Takes string/number/boolean/array/object and converts to string
      * 
@@ -568,10 +568,11 @@ object JValueTransmuter {
       case "l" +: tl => argApply(tl, string.toLowerCase())
       case "1u" +: tl => argApply(tl, string.capitalize)
       case substringRegex(left, right) +: tl => {
+        println(s"LEFT: $left RIGHT: $right")
         (left, right) match {
-          case ("", d) => argApply(tl, string.take(d.toInt))
-          case (d, "") => argApply(tl, string.drop(d.toInt))
-          case (d1, d2) => argApply(tl, string.substring(d1.toInt, d2.toInt))
+          case ("", d) => argApply(tl, stringTake(string, d.toInt))
+          case (d, "") => argApply(tl, stringDrop(string, d.toInt))
+          case (d1, d2) => argApply(tl, substringExtra(string, d1.toInt, d2.toInt))
           case _ => argApply(tl, string)
         }
       }
@@ -600,6 +601,46 @@ object JValueTransmuter {
       }
     })
   }
+  
+  private def stringTake(str: String, index: Int): String = index match {
+    case i if i < 0 =>
+      if (str.length()+i > 0) {
+        str.take(str.length()+i)
+      } else {
+        ""
+      }
+    case i => str.take(i)
+  }
+  
+  private def stringDrop(str: String, index: Int): String = index match {
+    case i if i < 0 => 
+      if (str.length()+i > 0) {
+        str.drop(str.length()+i)
+      } else {
+        str
+      }
+    case i => str.drop(i)
+  }
+  
+  private def substringExtra(str: String, sInc: Int, eExc:Int): String = {
+    def substringSafe(s: Int, e: Int, l: Int):String = {
+      val sSafe = if (s < 0) 0 else if (s >= l) l-1 else s
+      val eSafe = if (e < 0) 0 else if (e > l) l else e
+      str.substring(sSafe, eSafe)
+    }
+    
+    val len = str.length
+    (sInc, eExc) match {
+      case (s,e) if s > 0 && e > 0 => substringSafe(s, e, len)
+      case (s,e) if s < 0 && e < 0 => substringSafe(len+s, len+e, len)
+      case (s,e) if s < 0 => substringSafe(len+s, e, len)
+      case (s,e) => substringSafe(s, len+e, len)
+    }
+    
+  
+    
+  }
+  
   
   /***
      * Takes string/number/boolean to number value

@@ -470,7 +470,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
   }
   
   
-  describe("Simple Transmutations") {
+  describe("Simple casting Transmutations") {
     
     it ("can turn a string or number into a boolean") {
       val boolJson = """{"trueField":"true", "falseField":0}"""
@@ -515,19 +515,23 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     }
     
     it ("is mainly useful in transformations") {
+      //b, n, s
+      
       val json = """{ "falseStrField":  "false", 
-                      "zeroField":       0,
-                      "intStrField":    "214.0", 
+                      "oneField":       1,
+                      "intStrField":    "214", 
                       "floatStrField":  "3.14", 
                       "boolField":      false,
                       "intField":       3, 
                       "floatField":     1.61}"""
      
-      val transformer = JDotTransformer.apply(Set(
+      val transformer = JDotTransformer(Set(
         ("falseField",       "falseStrField^b"),
-        ("trueField",        "zeroField^b<(!)"),
-        ("intField",         "intStrField^n<(i)"),
-        ("floatField",    "floatStrField^n"),
+        ("trueField",        "oneField^b"),
+        ("notTrueField",     "oneField^b<(!)"),
+        ("intField",         "intStrField^n"),
+        ("floatField",       "floatStrField^n"),
+        ("floatToIntField",  "floatStrField^n<(i)"),
         ("zeroField",        "boolField^n"),
         ("intStringField",   "intField^s"),
         ("floatStringField", "floatField^s")
@@ -537,8 +541,10 @@ class AusGrandPrixExample extends FunSpec with Matchers {
       
       val expected = """{ "falseField":       false, 
                           "trueField":        true,
+                          "notTrueField":     false,
                           "intField":         214, 
-                          "floatField":       3.14, 
+                          "floatField":       3.14,
+                          "floatToIntField":  3, 
                           "zeroField":        0,
                           "intStringField":   "3", 
                           "floatStringField": "1.61"}"""
@@ -548,10 +554,48 @@ class AusGrandPrixExample extends FunSpec with Matchers {
   }
   
   describe("Simple Formatted String transmutations") {
-    //f, i, d, ord, s with args
+    //f, i, d, ord, % and s with args
+    val json = """{  "longFloatField":   3.14159265,
+                     "shortFloatField":  0.34,
+                     "lowIntField":      5,
+                     "highIntField":     5321,
+                     "lcString":         "transmute",
+                     "ucString":         "JDOT"
+                     "name":             "joe dottington"  }"""
     
+    val transformer = JDotTransformer(Set(
+      ("twoDP",                 "longFloatField^f<(.2)"),
+      ("extraZeroes",           "shortFloatField^f<(06.3)"),
+      ("percentage",            "shortFloatField^%"),
+      ("formattedInt",          "lowIntField^i<(+03)"),
+      ("intWithCommas",         "highIntField^d<(,)"),
+      ("ordinal",               "highIntField^ord"),
+      ("ordinalFullString",     "lowIntField^ord<(full)"),
+      ("uppercase",             "lcString^s<(u)"),
+      ("substring",             "lcString^s<(1.4)"),
+      ("capitalised",           "lcString^s<(1u)"),
+      ("lowercase",             "ucString^s<(l)"),
+      ("minusSubstring",        "ucString^s<(.-3)"),
+      ("surname",               "name^s<(4.:1u)")  
+    ))
     
+    val transformed = transformer.transform(json)
     
+    val expected = """{  "twoDP":               "3.14",
+                         "extraZeroes":         "00.340",
+                         "percentage":          "34%",
+                         "formattedInt":        "+05",
+                         "intWithCommas":       "5,321",
+                         "ordinal":             "5321st",
+                         "ordinalFullString":   "Fifth",
+                         "uppercase":           "TRANSMUTE",
+                         "substring":           "ran",
+                         "capitalised":         "Transmute",
+                         "lowercase":           "jdot",
+                         "minusSubstring":      "J",
+                         "surname":             "Dottington"  }"""
+    
+    assert(parse(expected) == parse(transformed))
   }
   
   
