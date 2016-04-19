@@ -9,10 +9,10 @@ import java.util.Scanner;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.superpixel.advokit.mapper.JvJDotAttacher;
-import com.superpixel.advokit.mapper.JvJDotAttacherBuilder;
-import com.superpixel.advokit.mapper.JvJDotTransformer;
-import com.superpixel.advokit.mapper.JvJDotTransformerBuilder;
+import com.superpixel.jdot.JvJDotAttacher;
+import com.superpixel.jdot.JvJDotAttacherBuilder;
+import com.superpixel.jdot.JvJDotTransformer;
+import com.superpixel.jdot.JvJDotTransformerBuilder;
 
 public class AusGrandPrixJavaExample {
 	

@@ -1,4 +1,4 @@
-package com.superpixel.advokit.mapper;
+package com.superpixel.jdot;
 
 import static org.junit.Assert.assertEquals;
 
@@ -15,10 +15,12 @@ import java.util.Scanner;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.superpixel.advokit.mapper.fixtures.GoalsHolder;
-import com.superpixel.advokit.mapper.fixtures.MatchPairJava;
-import com.superpixel.advokit.mapper.fixtures.MatchFixtureJava;
-import com.superpixel.advokit.mapper.fixtures.SimpleMatchJava;
+import com.superpixel.jdot.JvJDotMapper;
+import com.superpixel.jdot.JvJDotMapperBuilder;
+import com.superpixel.jdot.fixtures.GoalsHolder;
+import com.superpixel.jdot.fixtures.MatchFixtureJava;
+import com.superpixel.jdot.fixtures.MatchPairJava;
+import com.superpixel.jdot.fixtures.SimpleMatchJava;
 
 public class JvJDotMapperBuilderTest {
 	

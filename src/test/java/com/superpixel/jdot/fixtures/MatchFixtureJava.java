@@ -1,4 +1,4 @@
-package com.superpixel.advokit.mapper.fixtures;
+package com.superpixel.jdot.fixtures;
 
 public class MatchFixtureJava implements MatchJava {
 

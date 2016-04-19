@@ -3,7 +3,7 @@ organization := "com.superpixel"
 
 name := "jdot"
 
-version := "0.0.1-SHAPSHOT"
+version := "0.0.2-SHAPSHOT"
 isSnapshot := true
 
 scalaVersion := "2.11.4"

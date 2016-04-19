@@ -1,4 +1,4 @@
-package com.superpixel.advokit.mapper.fixtures;
+package com.superpixel.jdot.fixtures;
 
 import java.util.List;
 

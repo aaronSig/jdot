@@ -1,4 +1,4 @@
-package com.superpixel.advokit.mapper;
+package com.superpixel.jdot;
 
 import java.util.Map;
 import java.util.Optional;

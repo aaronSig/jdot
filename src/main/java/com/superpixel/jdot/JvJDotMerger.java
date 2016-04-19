@@ -1,4 +1,4 @@
-package com.superpixel.advokit.mapper;
+package com.superpixel.jdot;
 
 import com.superpixel.jdot.json4s.JValueMerger;
 

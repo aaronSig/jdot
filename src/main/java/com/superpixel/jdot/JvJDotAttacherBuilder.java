@@ -1,4 +1,4 @@
-package com.superpixel.advokit.mapper;
+package com.superpixel.jdot;
 
 import static com.superpixel.jdot.util.ScalaConverters.jvStringMapToJPathPairSet;
 
