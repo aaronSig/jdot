@@ -10,6 +10,10 @@ import com.superpixel.jdot.JDotTransformer;
 public class JvJDotTransformer {
 
 	private JDotTransformer scTransformer;
+	
+	static public JvJDotTransformerBuilder builder() {
+		return new JvJDotTransformerBuilder();
+	}
 
 	public JvJDotTransformer(JDotTransformer scTransformer) {
 		this.scTransformer = scTransformer;

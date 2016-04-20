@@ -598,6 +598,38 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     assert(parse(expected) == parse(transformed))
   }
   
+  describe("Currency formatting transmutations") {
+    val json = """{  "euros": 15,
+                     "pounds": 5.10,
+                     "dollars": 19.99,
+                     "cents": 3020,
+                     "large": 1500.00 }"""
+    
+    val transformer = JDotTransformer(Set(
+      ("irelandEuros",           "euros^cur<en-IE"),
+      ("frenchEuros",            "euros^cur<fr-FR"),
+      ("gbpPounds",              "pounds^cur<GBP"),
+      ("dkkLarge",               "large^cur<da-DK"),
+      ("usdDollars",             "dollars^cur<USD"),
+      ("symbolDollars",          "dollars^cur<$"),
+      ("centsToDollars",         "cents^cur<_en-US"),
+      ("poundsNoPennies",        "large^cur<0£")  
+    ))
+    
+    val transformed = transformer.transform(json)
+    
+    val expected = """{  "irelandEuros":        "€15.00",
+                         "frenchEuros":         "15,00 €",
+                         "gbpPounds":           "£5.10",
+                         "dkkLarge":            "kr 1.500,00",
+                         "usdDollars":          "USD19.99",
+                         "symbolDollars":       "$19.99",
+                         "centsToDollars":      "$30.20",
+                         "poundsNoPennies":     "£1,500"  }"""
+
+    assert(parse(expected) == parse(transformed))
+  }
+  
   
   describe("Simplified ausF1 json") {
 

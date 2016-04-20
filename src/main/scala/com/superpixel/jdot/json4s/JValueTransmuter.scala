@@ -81,7 +81,7 @@ object JValueTransmuter {
      * ARGUMENTS:
      *   All arguments are passed to Scala String.format method with type %d
      */
-    case "i" => toInt(value, argument) //intFormater, follows printf rules for 'd'
+    case "i" => toFormattedInt(value, argument) //intFormater, follows printf rules for 'd'
     
     /***
      * Takes string/number/boolean/array/object and converts to string representing a integer
@@ -92,7 +92,7 @@ object JValueTransmuter {
      * ARGUMENTS:
      *   All arguments are passed to Scala String.format method with type %d
      */
-    case "d" => toInt(value, argument) //intFormater, follows printf rules for 'd'
+    case "d" => toFormattedInt(value, argument) //intFormater, follows printf rules for 'd'
     
     /***
      * Takes string/number/boolean and converts to string representing a ratio (double between 0 and 1)
@@ -123,7 +123,7 @@ object JValueTransmuter {
      * Takes string/number/boolean and converts to formatted date string
      * 
      * String -> Accepts ISO standard date
-     * Number -> Treats number as epoch
+     * Number -> Treats number as timestamp (seconds since 1970-01-01)
      * Boolean -> Always gives now date
      * 
      * ARGUMENTS:
@@ -132,6 +132,10 @@ object JValueTransmuter {
      *   Format String: Date format string, following Joda times date formatting rules.
      *                  Includes new "do" symbol, which give an ordinal day of the month e.g. input="2016-03-02" arg="do MMMM" output="2nd March"
      *                  
+     *   Epoch: (keyword) "epoch" -> returns milliseconds since 1970-01-01                  
+     *
+     *   Timestamp: (keyword) "timestamp" -> return seconds since 1970-01-01
+     *
      *   Pretty Date: (keyword) "pretty" or "pretty_" -> Formats to PrettyTime string e.g. "4 day form now"
      *                                                   Underscore just give duration e.g. "4 days"
      *                                                   Can also take addition ":day"/":week"/":month" suffix, which defines the largest time type
@@ -400,10 +404,15 @@ object JValueTransmuter {
     iOpt.map { _.abs } match {
       case None => toOrdinal(toNumber(value, None), argument)
       case Some(i: Int) => argument.map{ _.toLowerCase } match {
-        case None | Some("suffix") => JString(i.toString + ordSuffix(i % 10)) 
-        case Some("full") if (i >= 0 && i < ordFullString.length) =>
-          JString(ordFullString(i))
-        case _ => JString(i.toString + ordSuffix(i % 10))
+        case None => JString(i.toString + ordSuffix(i % 10))
+        case Some("full") => 
+          if (i >= 0 && i < ordFullString.length)
+            JString(ordFullString(i))
+          else
+            JString(i.toString + ordSuffix(i % 10))
+        case arg => toFormattedInt(JInt(i), arg) match {
+          case JString(formI) => JString(formI + ordSuffix(i % 10))
+        }
       }
     }
   }
@@ -496,7 +505,7 @@ object JValueTransmuter {
      * ARGUMENTS:
      *   All arguments are passed to Scala String.format method with type %d
      */
-  private def toInt(value: JValue, argument: Option[String]): JValue = {
+  private def toFormattedInt(value: JValue, argument: Option[String]): JString = {
     val iOpt: Option[Int] = value match {
       case JBool(bool) => Some(if (bool) 1 else 0)
       case JInt(int) => Some(int.toInt)
@@ -506,7 +515,7 @@ object JValueTransmuter {
       case _ => None
     }
     iOpt match {
-      case None => toInt(toNumber(value, None), argument)
+      case None => toFormattedInt(toNumber(value, None), argument)
       case Some(i: Int) => try {
           val formatString: String = s"%${argument.getOrElse("")}d"
           JString(formatString.format(i))

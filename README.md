@@ -249,9 +249,9 @@ transformPairs.put("winner.code",         "results[0]");
 transformPairs.put("winner.name",         "podiumDetail[0].driverName");
 transformPairs.put("winner.team",         "podiumDetail[0].team");
 
-JvJDotTransformer transformer = 
-    new JvJDotTransformerBuilder().withPathMapping(transformPairs)
-                                  .build();
+JvJDotTransformer transformer = JvJDotTransformer.builder()
+                                                .withPathMapping(transformPairs)
+                                                .build();
                                   
 String transformedJson = transformer.transform(json);
 // {
@@ -265,9 +265,9 @@ Map<String, String> attachPairs = new HashMap<>();
 attachPairs.put("start.date",    "date");
 attachPairs.put("start.time",    "time");
 
-JvJDotAttacher attacher = 
-  new JvJDotAttacherBuilder().withAttachmentMapping(attachPairs)
-                             .build();
+JvJDotAttacher attacher = JvJDotAttacher.builder()
+                                        .withAttachmentMapping(attachPairs)
+                                      .build();
 String attachedJson = attacher.attach("{\"time\":\"05:00:00Z\", \"date\":\"2016-03-20\"}", transformedJson);
 //{
 //  "race":{...},
@@ -474,7 +474,7 @@ val transformed = transformer.transform(json)
 //  "floatStringField": "1.61"  }
 ```
 
-Below are some example of printf style Transmutations. `^f` format floats strings, `^i` and `^d` (identical) format integer strings, `^%` formats into a percentage string, `^ord` formats into a number with ordinal suffix, and `^s` takes arguments which perform basic string transformations (e.g. substring, uppercase):
+Below are some example of printf style Transmutations. `^f` formats floats strings, `^i` and `^d` (identical) format integer strings, `^%` formats into a percentage string, `^ord` formats into a number with ordinal suffix, and `^s` takes arguments which perform basic string transformations (e.g. substring, uppercase):
 ```scala
 val json = """{  "longFloatField":   3.14159265,
                  "shortFloatField":  0.34,
@@ -497,15 +497,15 @@ val transformer = JDotTransformer(Set(
     ("intWithCommas",         "highIntField^d<(,)"),        //printf format integer ("%d"),
                                                             // argument "," specifies add clarity commas 
     ("ordinal",               "highIntField^ord"),          //transmutes int to append ordinal suffix
-    ("ordinalFullString",     "lowIntField^ord<(full)"),    // argument "full" transmutes to full 
+    ("ordinalFullString",     "lowIntField^ord<(full)"),    //argument "full" transmutes to full 
                                                             // ordinal word (up to 12)
     ("uppercase",             "lcString^s<(u)"),            //argument "u" performs uppercase function
     ("substring",             "lcString^s<(1.4)"),          //argument "1.4" performs substring function
                                                             // from (inc) index 1 to (exc) index 4
-    ("capitalised",           "lcString^s<(1u)"),           //argument "1u" uppercase first character
+    ("capitalised",           "lcString^s<(1u)"),           //argument "1u" uppercases the first character
     ("lowercase",             "ucString^s<(l)"),            //argument "l" performs lowercase function
     ("minusSubstring",        "ucString^s<(.-3)"),          //argument ".-3" performs substring function
-                                                            // from start to (exc) index = length - 3
+                                                            // which takes up to the last 3 characters
     ("surname",               "name^s<(4.:1u)")             //colon in "^s" argument allows chaining:
                                                             // applies "4." then "1u"
 ))
@@ -524,4 +524,31 @@ val transformed = transformer.transform(json)
 //    "lowercase":           "jdot",
 //    "minusSubstring":      "J",
 //    "surname":             "Dottington"  }
+```
+
+You can also use Transmutations for date and currency formatting, using the `^date` and `^cur` types. Currency formatting transmutations accept a number and take a locale string, currency code or currency symbol (£, $, €, ¥ supported) as an argument and outputs a formatted currency string:
+```scala
+val json = """{  "small": 19.99,
+                 "subunits": 3020,
+                 "large": 1500.00 }"""
+    
+val transformer = JDotTransformer(Set(
+    ("irelandEuros",           "small^cur<en-IE"),          //Formats for english speaking Irish locale
+    ("frenchEuros",            "small^cur<fr-FR"),          //Formats for French locale
+    ("dkkLarge",               "large^cur<da-DK"),          //Formats for Danish locale
+    ("usdDollars",             "small^cur<USD"),            //Formats for USD currency
+    ("symbolDollars",          "small^cur<$"),              //Formats with "$" symbol
+    ("centsToDollars",         "subunits^cur<_en-US"),      //Adding "_" to argument ensures value
+                                                            // is treated as subunits, instead of units
+    ("gbpNoPennies",           "large^cur<0GBP")            //Adding "0" to argument removes subunits
+))                                                          // from output (think decimal places)
+    
+val transformed = transformer.transform(json)
+//{   "irelandEuros":        "€19.99",
+//    "frenchEuros":         "19,99 €",
+//    "dkkLarge":            "kr 1.500,00",
+//    "usdDollars":          "USD19.99",
+//    "symbolDollars":       "$19.99",
+//    "centsToDollars":      "$30.20",
+//    "gbpNoPennies":        "£1,500"  }
 ```

@@ -10,9 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.superpixel.jdot.JvJDotAttacher;
-import com.superpixel.jdot.JvJDotAttacherBuilder;
 import com.superpixel.jdot.JvJDotTransformer;
-import com.superpixel.jdot.JvJDotTransformerBuilder;
 
 public class AusGrandPrixJavaExample {
 	
@@ -41,7 +39,9 @@ public class AusGrandPrixJavaExample {
 		transformPairs.put("winner.name",         "podiumDetail[0].driverName");
 		transformPairs.put("winner.team",         "podiumDetail[0].team");
 		
-		JvJDotTransformer transformer = new JvJDotTransformerBuilder().withPathMapping(transformPairs).build();
+		JvJDotTransformer transformer = JvJDotTransformer.builder()
+														 .withPathMapping(transformPairs)
+														 .build();
 		String transformedJson = transformer.transform(ausF1ShortArray);
 		System.out.println(transformedJson);
 		//{
@@ -53,7 +53,9 @@ public class AusGrandPrixJavaExample {
 		attachPairs.put("start.date",    "date");
 		attachPairs.put("start.time",    "time");
 		
-		JvJDotAttacher attacher = new JvJDotAttacherBuilder().withAttachmentMapping(attachPairs).build();
+		JvJDotAttacher attacher = JvJDotAttacher.builder()
+												.withAttachmentMapping(attachPairs)
+												.build();
 		String attachedJson = attacher.attach("{\"time\":\"05:00:00Z\", \"date\":\"2016-03-20\"}", transformedJson);
 		//{
 	    //	"race":{...},

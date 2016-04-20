@@ -8,8 +8,12 @@ import com.superpixel.jdot.JDotAttacher;
 
 
 public class JvJDotAttacher {
-
+	
 	private JDotAttacher scAttacher;
+
+	static public JvJDotAttacherBuilder builder() {
+		return new JvJDotAttacherBuilder();
+	}
 
 	public JvJDotAttacher(JDotAttacher scAttacher) {
 		this.scAttacher = scAttacher;

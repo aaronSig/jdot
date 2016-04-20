@@ -12,6 +12,10 @@ public class JvJDotSettings {
 	MergingJson mergingJson;
 	scala.collection.immutable.List<Attachment> attachments;
 	
+	static public JvJDotSettingsBuilder builder() {
+		return new JvJDotSettingsBuilder();
+	}
+	
 	JvJDotSettings(Inclusions inclusions, MergingJson mergingJson,
 			List<Attachment> attachments) {
 		super();

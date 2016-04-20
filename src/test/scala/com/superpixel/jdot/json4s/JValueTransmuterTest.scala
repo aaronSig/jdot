@@ -478,7 +478,7 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     }
   }
   
-  it should "date format an epoch" in {
+  it should "date format a timestamp" in {
     
     assertResult(JString("2016-02-28T00:00:00.000Z")) {
       JValueTransmuter.transmute(JLong(1456617600l), "date", None)
@@ -629,6 +629,12 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     }
     
   } 
+  
+  it should "produce formatted ints when taken printf %d args" in {
+    assertResult(JString("14,802nd")) {
+      JValueTransmuter.transmute(JInt(14802), "ord", Some(","))
+    }
+  }
   
   "JValueTransmute cur" should "produce formatted currency from locale tag" in {
     assertResult(JString("£10.00")) {

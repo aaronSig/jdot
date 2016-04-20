@@ -7,6 +7,10 @@ public class JvJDotMapper<T> {
 
 	private JDotMapper<T> scMapper;
 	
+	static public JvJDotMapperBuilder builder() {
+		return new JvJDotMapperBuilder();
+	}
+	
 	public JvJDotMapper(JDotMapper<T> scMapper) {
 		this.scMapper = scMapper;
 	}
