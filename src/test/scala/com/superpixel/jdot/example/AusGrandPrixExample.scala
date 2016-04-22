@@ -630,6 +630,17 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     assert(parse(expected) == parse(transformed))
   }
   
+  describe("Date formatting transmutations") {
+    val json = """{  "date":      "2016-03-20"
+                     "time":      "05:00:00Z"
+                     "datetime":  "2016-03-20T05:00:00Z" }"""
+    
+    val transformer = JDotTransformer(Set(
+      ("simpleDate",    "")
+      
+    ))
+  }
+  
   
   describe("Simplified ausF1 json") {
 

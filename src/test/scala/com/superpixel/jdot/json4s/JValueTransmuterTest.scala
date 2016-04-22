@@ -472,6 +472,9 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     assertResult(JString("2016:02:28")) {
       JValueTransmuter.transmute(JString("2016-02-28T12:31:17.721Z"), "date", Some("yyyy:MM:dd"))
     }
+    assertResult(JString("2015:05:15")) {
+      JValueTransmuter.transmute(JString("2015-05-15T00:00+03:30"), "date", Some("yyyy:MM:dd"))
+    }
     
     assertResult(JString("February 28 2016")) {
       JValueTransmuter.transmute(JString("2016-02-28T12:31:17.721Z"), "date", Some("MMMM dd yyyy"))

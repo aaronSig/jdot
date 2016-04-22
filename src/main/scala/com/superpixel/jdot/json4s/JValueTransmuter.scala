@@ -577,7 +577,6 @@ object JValueTransmuter {
       case "l" +: tl => argApply(tl, string.toLowerCase())
       case "1u" +: tl => argApply(tl, string.capitalize)
       case substringRegex(left, right) +: tl => {
-        println(s"LEFT: $left RIGHT: $right")
         (left, right) match {
           case ("", d) => argApply(tl, stringTake(string, d.toInt))
           case (d, "") => argApply(tl, stringDrop(string, d.toInt))
