@@ -9,6 +9,9 @@
 J.dot is a json utility library for Scala/Java, which allows for **data-only transformations**. All operations are configurable and controlled by simple, easily persisted, data structures. J.dot allows you to avoid hard coding transformation logic.  
 A common use case for json based applications is translating json content into view-models. A common problem is that both content and view-models can change often. With J.dot, any alerations you need to make to your translation logic can be made in your datastore, avoiding the need to edit code and re-deploy.
 
+#### JPath expressions
+The basic building blocks of these operation are strings (called JPaths) that are used to pull/place values or json elements from/into a document. They are one-line expressions, which define a path through a json document, as well as some simple operations such as string format, if-else and number parsing. At their most basic they follow javascript dot/square-bracket syntax to access objects, arrays and fields.
+
 #### J.dot operations
 * Accessing fields of a json document using JPath-strings.
 * Building json documents from JPath-string to value pairs.
@@ -17,16 +20,6 @@ A common use case for json based applications is translating json content into v
 * Populating a Scala/Java object directly from a json document.
 * Mapping a json document onto a Scala/Java document, using a set of JPath-string pairs.
 
-#### JPath expressions
-The basic building blocks of these operation are strings (called JPaths) that are used to pull/place values or json elements from/into a document. They are one-line expressions, which define a path through a json document, as well as some simple operations such as string format, if-else and number parsing. At their most basic they follow javascript dot/square-bracket syntax to access objects, arrays and fields.
-
-#### J.dot operations
-* Accessing fields of a json document using JPath strings.
-* Building json documents from JPath string to value pairs.
-* Creating a json document from another, defined by a set of JPath string pairs (or a dictionary/map).
-* Attaching (or merging) one json document onto another.
-* Populating a Scala/Java object directly from a json document.
-* Mapping a json document onto a Scala/Java document, using a set of JPath string pairs.
 
 ## Simple Examples
 Use of the library is best describe with some examples. These will demonstrate simple usage of the JPath expressions in accessing, building, transforming and attaching. The examples will be in Scala (through still relevant for Java users). These simple examples will use the following json:
