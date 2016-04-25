@@ -7,22 +7,29 @@
 
 ## Introduction
 J.dot is a json utility library for Scala/Java, which allows for **data-only transformations**. All operations are configurable and controlled by simple, easily persisted, data structures. J.dot allows you to avoid hard coding transformation logic.  
-A common use case for json based applications is turning json content into view-models. A common problem is that both content and view-models can change often. With J&middot;Dot any changes you need to make can be made in your datastore, avoiding the need to edit code and re-deploy.
+A common use case for json based applications is translating json content into view-models. A common problem is that both content and view-models can change often. With J.dot, any alerations you need to make to your translation logic can be made in your datastore, avoiding the need to edit code and re-deploy.
 
+#### J.dot operations
+* Accessing fields of a json document using JPath-strings.
+* Building json documents from JPath-string to value pairs.
+* Creating a json document from another, defined by a set of JPath-string pairs (or a dictionary/map).
+* Attaching (or merging) one json document onto another.
+* Populating a Scala/Java object directly from a json document.
+* Mapping a json document onto a Scala/Java document, using a set of JPath-string pairs.
 
 #### JPath expressions
 The basic building blocks of these operation are strings (called JPaths) that are used to pull/place values or json elements from/into a document. They are one-line expressions, which define a path through a json document, as well as some simple operations such as string format, if-else and number parsing. At their most basic they follow javascript dot/square-bracket syntax to access objects, arrays and fields.
 
-#### JDot Operation classes
-* **JDotAccessor**: for accessing fields of a json document using JPath strings.
-* **JDotBuilder**: for building json documents from JPath string to value pairs.
-* **JDotTransformer**: for creating a json document from another, defined by a set of JPath string pairs (or a dictionary/map).
-* **JDotAttacher**: for attaching (or merging) one json document onto another.
-* **JDotExtractor**: for populating a Scala/Java object directly from a json document.
-* **JDotMapper**: for mapping a json document onto a Scala/Java document, using a set of JPath string pairs.
+#### J.dot operations
+* Accessing fields of a json document using JPath strings.
+* Building json documents from JPath string to value pairs.
+* Creating a json document from another, defined by a set of JPath string pairs (or a dictionary/map).
+* Attaching (or merging) one json document onto another.
+* Populating a Scala/Java object directly from a json document.
+* Mapping a json document onto a Scala/Java document, using a set of JPath string pairs.
 
 ## Simple Examples
-Use of the library is best describe with some examples. These will demonstrate simple usage of the JPath expressions in accessing, building, transforming and attaching. The examples will be in Scala (through still relevant for Java users) and all will use the following json:
+Use of the library is best describe with some examples. These will demonstrate simple usage of the JPath expressions in accessing, building, transforming and attaching. The examples will be in Scala (through still relevant for Java users). These simple examples will use the following json:
 
 ```json
 {
@@ -551,4 +558,36 @@ val transformed = transformer.transform(json)
 //    "symbolDollars":       "$19.99",
 //    "centsToDollars":      "$30.20",
 //    "gbpNoPennies":        "£1,500"  }
+```
+
+Date formatting accepts an ISO 8601 date string, a timestamp integer (seconds since 1970-01-01), or a keyword (such as _"now"_) and takes a date format (e.g. _" as an argument (or a keyword, such as _"pretty"_ or _"epoch"_). It outputs a string based on that format. For date format rules please look [here](http://www.joda.org/joda-time/key_format.html).
+
+```scala
+val json = """{  "justDate":  "2016-02-28"
+                 "time":      "T05:00:00Z"
+                 "datetime":  "2016-04-20T05:00:00Z" 
+                 "timestamp": 1456617600  }"""
+    
+// Date of example: 2016-04-25
+val transformer = JDotTransformer(Set(
+    ("simpleDate",      "justDate^date<(dd MMM yyyy)"),         //Formats to date format
+    ("ordinalDate",     "justDate^date<(do 'of' MMMM)"),        //'do' renders an ordinal day of month
+    ("simpleTime",      "time^date<(hh)"),                      //Formats to time format
+    ("simpleDatetime",  "datetime^date<(hh:mm, dd MMM yy)"),    //Can take any form of ISO 8601
+    ("prettyTime",      "datetime^date<(pretty)"),              //Supports pretty time with 'pretty' argument
+    ("now",             "(now)^date<(yyyy-MM-dd)"),             //Using a pure value JPath "(now)"
+                                                                // to render current datetime.
+    ("fromTimestamp",   "timestamp^date<(yyyy:MM:dd)"),         //Takes a number as a timestamp
+    ("toTimestamp",     "justDate^date<(timestamp)")            //Can turn a date string into a timestamp
+))
+
+val transformed = transformer.transform(json)
+//{   "simpleDate":        "28 Feb 2016",
+//    "ordinalDate":       "28th of February",
+//    "simpleTime":        "05",
+//    "simpleDatetime":    "05:00, 20 Apr 16",
+//    "prettyTime":        "5 days ago",
+//    "now":               "2016-04-25",
+//    "fromTimestamp":     "2016:02:28",
+//    "toTimestamp":       1456617600  }
 ```

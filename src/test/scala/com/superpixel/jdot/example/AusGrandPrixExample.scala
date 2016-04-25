@@ -631,14 +631,34 @@ class AusGrandPrixExample extends FunSpec with Matchers {
   }
   
   describe("Date formatting transmutations") {
-    val json = """{  "date":      "2016-03-20"
-                     "time":      "05:00:00Z"
-                     "datetime":  "2016-03-20T05:00:00Z" }"""
+    val json = """{  "justDate":  "2016-02-28"
+                     "time":      "T05:00:00Z"
+                     "datetime":  "2016-04-20T05:00:00Z" 
+                     "timestamp": 1456617600  }"""
     
     val transformer = JDotTransformer(Set(
-      ("simpleDate",    "")
-      
+      ("simpleDate",      "justDate^date<(dd MMM yyyy)"),
+      ("ordinalDate",     "justDate^date<(do 'of' MMMM)"),
+      ("simpleTime",      "time^date<(hh)"),
+      ("simpleDatetime",  "datetime^date<(hh:mm, dd MMM yy)"),
+      ("fromTimestamp",   "timestamp^date<(yyyy:MM:dd)"),
+      ("toTimestamp",     "justDate^date<(timestamp)")
+//    ("prettyTime",      "datetime^date<(pretty)"),
+//    ("now",             "(now)^date<(yyyy-MM-dd)"),
     ))
+    
+    val transformed = transformer.transform(json)
+    
+    val expected = """{  "simpleDate":        "28 Feb 2016",
+                         "ordinalDate":       "28th of February",
+                         "simpleTime":        "05",
+                         "simpleDatetime":    "05:00, 20 Apr 16",
+                         "fromTimestamp":     "2016:02:28",
+                         "toTimestamp":       1456617600  }"""
+//                       "prettyTime":        "5 days ago",
+//                       "now":               "2016-04-25",
+
+    assert(parse(expected) == parse(transformed))
   }
   
   
