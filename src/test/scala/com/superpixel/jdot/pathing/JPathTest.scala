@@ -18,6 +18,14 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       }
   }
   
+  it should "be able to interpret dot syntax with spaces in json key" in {
+
+    assertResult(
+      JPath(JObjectPath("one key"), JObjectPath("zwei key"), JObjectPath("trois key"))) {
+        JPath.fromString("one key.zwei key.trois key")
+      }
+  }
+  
   it should "be able to interpred escaped json keys" in {
     assertResult(
       JPath(JObjectPath("on.e"), JObjectPath("zw>ei"), JObjectPath("tr[ois"))) {
@@ -382,6 +390,21 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       )    
     ){
      JPath.fromString("|(Hey {name}!{|(This is a hat: (^))^s<U})^s<l")
+    }
+  }
+  
+  it should "be able to interpret tricky 10" in {
+    assertResult(
+      JPath(JStringFormat(
+                Seq(FormatLiteral("Hey "), ReplaceHolder, FormatLiteral("!"), ReplaceHolder),
+                Seq(JPath(JObjectPath("name")), 
+                    JPath(JStringFormat(
+                        Seq(FormatLiteral("This is a hat: (^)")), Seq())
+                    , JTransmute("s", Some("U")))))
+            , JTransmute("s", Some("l"))
+      )    
+    ){
+     JPath.fromString("""|(Hey {name}!{|(This is a hat: \(\^\))^s<U})^s<l""")
     }
   }
 

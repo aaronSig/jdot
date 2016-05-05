@@ -772,6 +772,8 @@ object JValueTransmuter {
 }
 
 
+
+
 class JsonTransmutingException(val message: String, val jVal: JValue, val e: Throwable = null) 
   extends RuntimeException(s"$message. For Json:\n " + (if (jVal == JNothing) "nothing" else pretty(render(jVal))), e)
 
