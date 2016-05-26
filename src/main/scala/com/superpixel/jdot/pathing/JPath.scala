@@ -119,7 +119,10 @@ object JPath {
     override val outputs = Path
     override val patterns = Seq(
       ("""\.""" + keyStr).r,
-      ("""\[""" + keyStr + """\]""").r
+      ("""\.\{""" + nestedPathStr + """\}""").r,
+      ("""\.\(""" + literalStr + """\)""").r,
+      ("""\[""" + keyStr + """\]""").r,
+      ("""\[\{""" + nestedPathStr + """\}\]""").r
     )
   }
   case object LinkExpression extends ExpressionType {
@@ -783,6 +786,12 @@ object JPath {
     def parseAccessExpression(exprSeq: Seq[ExpressionElement]): JPathElement = exprSeq match {
       case Seq(Delimiter("["), JsonKey(IS_NUMERIC_REGEX(idx)), Delimiter("]")) => 
         JArrayPath(idx.toInt)
+      case Seq(Delimiter("["), Delimiter("{"), NestedPath(innerSeq), Delimiter("}"), Delimiter("]")) => 
+        JArrayPathFromValue(new JPath(innerJPConstr(transformToExpressions(innerSeq))))
+      case Seq(Delimiter("."), Delimiter("{"), NestedPath(innerSeq), Delimiter("}")) =>
+        JObjectPathFromValue(new JPath(innerJPConstr(transformToExpressions(innerSeq))))
+      case Seq(Delimiter("."), Delimiter("("), Literal(key), Delimiter(")")) =>
+        JObjectPath(key)
       case _ =>  
         exprSeq filter {!_.isInstanceOf[Delimiter]} match {
           case JsonKey(key) +: Nil => JObjectPath(key)

@@ -35,11 +35,18 @@
             "c"
         ]
     },
+    "innerRefKey": "23SP9943",
     "referenceSingle": {
         "sys": {
             "type": "Link",
             "linkType": "Entry",
             "id": "651CQ8rLoIYCeY6G0QG22q"
         }
+    },
+    "innerRefObj": {
+    	"23SP9943": {
+    		"name" : "Fred",
+    		"age" : 45
+    	}
     }
 }

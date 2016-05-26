@@ -9,7 +9,11 @@ case object JPathLink extends JPathElement
 
 case class JObjectPath(key: String) extends JPathElement
 
+case class JObjectPathFromValue(valuePath: JPath) extends JPathElement
+
 case class JArrayPath(idx: Int) extends JPathElement
+
+case class JArrayPathFromValue(valuePath: JPath) extends JPathElement
 
 case class JPathValue(value: String, transmutation: Option[JTransmute]) extends JPathElement
 

@@ -61,6 +61,26 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
       accessor.getValue(jPath)
     }
   }
+
+  it should "extract from object path from value" in {
+	  val accessor = JValueAccessor(jsonVal)
+			  
+			  assertResult(JString("Fred")) {
+		  val jPath = JPath(JObjectPath("innerRefObj"), JObjectPathFromValue(
+				  JPath(JObjectPath("innerRefKey"))  
+				  ), JObjectPath("name"))
+				  
+				  accessor.getValue(jPath)
+	  }
+	  
+	  assertResult(JBool(true)) {
+		  val jPath = JPath(JObjectPath("jsonObj"), 
+				  JObjectPath("gender"), 
+				  JObjectPathFromValue(
+						  JPath(JObjectPath("symbolList"), JArrayPath(4))))
+						  accessor.getValue(jPath)
+	  }
+  }
   
   it should "extract from array path" in {
     val accessor = JValueAccessor(jsonVal)
@@ -71,6 +91,15 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
     }
     assertResult(JString("b")) {
       val jPath = JPath(JObjectPath("jsonObj"), JObjectPath("misc"), JArrayPath(1))
+      accessor.getValue(jPath)
+    }
+  }
+  
+  it should "extract from array path from value" in {
+    val accessor = JValueAccessor(jsonVal)
+
+    assertResult(JString("young")) {
+      val jPath = JPath(JObjectPath("symbolList"), JArrayPathFromValue(JPath(JObjectPath("jsonObj"), JObjectPath("small"))))
       accessor.getValue(jPath)
     }
   }

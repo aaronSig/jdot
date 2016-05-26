@@ -51,7 +51,19 @@ object JValueTraverser {
         
         case JObjectPath(key) +: tl => routeValueOption(accessJObjectValue(value, key), pathSeq.head, tl)
         
-        case JArrayPath(key) +: tl => routeValueOption(accessJArrayValue(value, key), pathSeq.head, tl)
+        case JObjectPathFromValue(valuePath) +: tl => 
+          traverse(linkLamb, notFoundLamb, jValueToJsonKeyEndLamb)(jVal, valuePath) match {
+            case Some(key) => routeValueOption(accessJObjectValue(value, key), pathSeq.head, tl)
+            case None => routeValueOption(None, pathSeq.head, tl)
+          }
+        
+        case JArrayPath(idx) +: tl => routeValueOption(accessJArrayValue(value, idx), pathSeq.head, tl)
+        
+        case JArrayPathFromValue(valuePath) +: tl => 
+          traverse(linkLamb, notFoundLamb, jValueToArrayIndexEndLamb)(jVal, valuePath) match {
+            case Some(idx) => routeValueOption(accessJArrayValue(value, idx), pathSeq.head, tl)
+            case None => routeValueOption(None, pathSeq.head, tl)
+          }
         
         case JPathLink +: tl => 
           routeValueOption(
@@ -150,13 +162,31 @@ object JValueTraverser {
   
   private def simpleJValueToString(jVal: JValue, nothingString: String = ""): String = jVal match {
     case _:JObject | _:JArray  => throw new JsonTraversalException(s"Json could not be turned into a string as it was an object or array", jVal)
-    case JNothing | JNull => ""
+    case JNothing | JNull => nothingString
     case JString(str) => str
     case JDouble(db) => db.toString
     case JDecimal(bd) => bd.toString
     case JInt(int) => int.toString
     case JLong(l) => l.toString
     case JBool(bool) => bool.toString
+  }
+  
+  private val jValueToJsonKeyEndLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], String] = {
+    case (JString(str), _) => str
+    case (JDouble(db), _) => db.toString
+    case (JDecimal(bd), _) => bd.toString
+    case (JInt(int), _) => int.toString
+    case (JLong(l), _) => l.toString
+    case (JBool(bool), _) => bool.toString
+  }
+  
+  val IS_NUMERIC_REGEX = """([0-9]+)""".r
+  private val jValueToArrayIndexEndLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], Int] =  {
+    case (JString(IS_NUMERIC_REGEX(idx)), _) => idx.toInt
+    case (JDouble(db), _) => db.toInt
+    case (JDecimal(bd), _) => bd.toInt
+    case (JInt(int), _) => int.toInt
+    case (JLong(l), _) => l.toInt
   }
   
   private def accessJArrayValue(jVal: JValue, key: Int): Option[JValue] = jVal match {

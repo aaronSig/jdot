@@ -33,6 +33,22 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       }
   }
   
+  it should "be able to interpret a nested path as a json key" in {
+    assertResult(
+      JPath(JObjectPath("one"), JObjectPathFromValue(
+        JPath(JObjectPath("ein"), JObjectPath("zwei"), JObjectPath("drei"))  
+      ), JObjectPath("trois"))) {
+        JPath.fromString("one.{ein.zwei.drei}.trois")
+      }
+  }
+  
+  it should "be able to interpret a literal path as a json key" in {
+    assertResult(
+      JPath(JObjectPath("one"), JObjectPath("No. 2 in German Language"), JObjectPath("trois"))) {
+        JPath.fromString("one.(No. 2 in German Language).trois")
+      }
+  }
+  
   it should "be able to interpret square bracket syntax" in {
     assertResult(
       JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"))) {
@@ -44,6 +60,15 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     assertResult(
       JPath(JObjectPath("one"), JArrayPath(2), JArrayPath(3))) {
         JPath.fromString("one[2][3]")
+      }
+  }
+  
+  it should "be able to interpret a nested path as a array index" in {
+    assertResult(
+      JPath(JObjectPath("one"), JArrayPathFromValue(
+        JPath(JObjectPath("ein"), JObjectPath("zwei"), JObjectPath("drei"))  
+      ), JObjectPath("trois"))) {
+        JPath.fromString("one[{ein.zwei.drei}].trois")
       }
   }
   
