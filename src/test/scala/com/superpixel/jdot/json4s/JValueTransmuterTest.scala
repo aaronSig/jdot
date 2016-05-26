@@ -250,6 +250,10 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
     assertResult(JString("hello")) {
       JValueTransmuter.transmute(JString("heLlo"), "s", Some("l"))
     }
+    
+    assertResult(JString("4 5")) {
+      JValueTransmuter.transmute(JString("  4 5   "), "s", Some("t"))
+    }
   }
   
   it should "apply substring with negative numbers" in {
@@ -557,9 +561,10 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
       JValueTransmuter.transmute(JString(str), "date", Some("pretty:day"))
     }
     
-    assertResult(JString("17 weeks from now")) {
+    assertResult(true) {
       val str = DateTime.now().plusMonths(4).toString();
-      JValueTransmuter.transmute(JString(str), "date", Some("pretty:week"))
+      val jVal = JValueTransmuter.transmute(JString(str), "date", Some("pretty:week"))
+      (jVal == JString("17 weeks from now") || jVal == JString("18 weeks from now"))
     }
     
     assertResult(JString("12 months ago")) {
@@ -579,9 +584,10 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
       JValueTransmuter.transmute(JString(str), "date", Some("pretty_:day"))
     }
     
-    assertResult(JString("17 weeks")) {
+    assertResult(true) {
       val str = DateTime.now().plusMonths(4).toString();
-      JValueTransmuter.transmute(JString(str), "date", Some("pretty_:week"))
+       val jVal = JValueTransmuter.transmute(JString(str), "date", Some("pretty_:week"))
+      (jVal == JString("17 weeks") || jVal == JString("18 weeks"))
     }
     
     assertResult(JString("12 months")) {
@@ -754,5 +760,6 @@ class JValueTransmuterTest extends FlatSpec with Matchers with MockFactory with 
         JValueTransmuter.transmute(JDouble(100000), "cur", Some("_0jp-JP"))
     }
   }
+ 
 }
   

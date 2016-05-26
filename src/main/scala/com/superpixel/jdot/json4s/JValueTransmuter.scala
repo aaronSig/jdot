@@ -568,6 +568,8 @@ object JValueTransmuter {
      *  Substring: "x.y" where x and y are noString or numeric -> substring operation starting at x, ending (exclusive) at y
      *                blank values denote start and end of string. Minus numbers are supported
      *  Case: "u"/"l"/"1u" -> perform uppercase/lowercase/first character uppercase respectively
+     *  Trim: "t" -> trims whitespaces from beginning and end of string
+     *
      *  Any other arguments are passed to Scala's String.format method, with type %s  
      */
   private def toString(value: JValue, argument: Option[String]): JString = {
@@ -576,6 +578,7 @@ object JValueTransmuter {
       case "u" +: tl => argApply(tl, string.toUpperCase())
       case "l" +: tl => argApply(tl, string.toLowerCase())
       case "1u" +: tl => argApply(tl, string.capitalize)
+      case "t" +: tl => argApply(tl, string.trim)
       case substringRegex(left, right) +: tl => {
         (left, right) match {
           case ("", d) => argApply(tl, stringTake(string, d.toInt))
