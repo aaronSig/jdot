@@ -164,7 +164,8 @@ object JPath {
     override val accepts = Value
     override val outputs = Value
     override val patterns = Seq(
-      ("""\^""" + """([a-z\%]+)""" + """(\<""" + literalStr + """)?""").r
+      ("""\^""" + """([a-z\%]+)""" + """(\<""" + literalStr + """)?""").r,
+      ("""\^""" + """([a-z\%]+)""" + """(\<\{""" + nestedPathStr + """\})""").r
     )
   }
   
@@ -225,7 +226,8 @@ object JPath {
     override val starters = Some(Set("""|""", """<"""))
     override val delimiters = Some(Set("""^"""))
     override val starterDelimeters = 
-      Some(Map("""|""" -> Set("""{""", """}""")))
+      Some(Map("""|""" -> Set("""{""", """}"""),
+               """<""" -> Set("""{""", """}""")))
     override val canMoveToModes: Seq[ExpressionMode] = Seq(NestMode, SpecialMode)
   }
   /***
@@ -849,7 +851,10 @@ object JPath {
     def parseTransmuteExpression(exprSeq: Seq[ExpressionElement]): JTransmute = exprSeq match {
       case Delimiter("^") +: Special(spec) +: Delimiter("<") +: Literal(argLit)
         +: tl  =>
-          JTransmute(spec, Some(argLit))
+          JTransmute(spec, Some(LiteralArgument(argLit)))
+      case Delimiter("^") +: Special(spec) +: Delimiter("<") +: Delimiter("{") +: NestedPath(argPath) +: Delimiter("}")
+        +: tl  =>
+          JTransmute(spec, Some(NestedArgument(new JPath(innerJPConstr(transformToExpressions(argPath))))))
       case Delimiter("^") +: Special(spec)
         +: tl  =>
           JTransmute(spec, None)

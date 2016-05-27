@@ -95,7 +95,7 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     assertResult(JPath(JPathValue("1", Some(JTransmute("i", None))))) {
       JPath.fromString("(1^i)")
     }
-    assertResult(JPath(JPathValue("true", Some(JTransmute("b", Some("!")))))) {
+    assertResult(JPath(JPathValue("true", Some(JTransmute("b", Some(LiteralArgument("!"))))))) {
       JPath.fromString("(true^b<!)")
     }
   }
@@ -223,8 +223,16 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   }
   
   it should "be able to interpret transmutation expressions with argument" in {
-    assertResult(JPath(JObjectPath("one"), JTransmute("f", Some("2.2")))) {
+    assertResult(JPath(JObjectPath("one"), JTransmute("f", Some(LiteralArgument("2.2"))))) {
       JPath.fromString("one^f<2.2")
+    }
+  }
+  
+  it should "be able to interpret transmutation expressions with nested path argument" in {
+    assertResult(JPath(JObjectPath("one"), JTransmute("f", Some(NestedArgument(
+        JPath(JObjectPath("one"), JObjectPath("two"), JObjectPath("three"))
+      ))))) {
+      JPath.fromString("one^f<{one.two.three}")
     }
   }
   
@@ -256,12 +264,12 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
             Some(JPath(JObjectPath("three"))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral(" equals "), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2", Some(JTransmute("f", Some(".2"))))),
+                Seq(JPath(JObjectPath("two"), JDefaultValue("2", Some(JTransmute("f", Some(LiteralArgument(".2")))))),
                     JPath(JObjectPath("three"), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3", Some(JTransmute("f", Some(".2"))))),
+                Seq(JPath(JObjectPath("three"), JDefaultValue("3", Some(JTransmute("f", Some(LiteralArgument(".2")))))),
                     JPath(JObjectPath("two"), JDefaultValue("2", None)))
             ))), JTransmute("s", None)
       )    
@@ -360,7 +368,7 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       JPath(JObjectPath("one"), JStringFormat(
                 Seq(FormatLiteral("23"), ReplaceHolder, FormatLiteral("56")),
                 Seq(JPath(JObjectPath("two")))
-            ), JTransmute("f", Some("2.2"))
+            ), JTransmute("f", Some(LiteralArgument("2.2")))
       )    
     ){
      JPath.fromString("one|23{two}56^f<2.2")
@@ -372,7 +380,7 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
       JPath(JObjectPath("one"), JStringFormat(
                 Seq(FormatLiteral("23"), ReplaceHolder, FormatLiteral("56")),
                 Seq(JPath(JObjectPath("two")))
-            ), JTransmute("f", Some("2.2"))
+            ), JTransmute("f", Some(LiteralArgument("2.2")))
       )    
     ){
      JPath.fromString("one|(23{two}56)^f<(2.2)")
@@ -410,8 +418,8 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
                 Seq(JPath(JObjectPath("name")), 
                     JPath(JStringFormat(
                         Seq(FormatLiteral("This is a hat: ^")), Seq())
-                    , JTransmute("s", Some("U")))))
-            , JTransmute("s", Some("l"))
+                    , JTransmute("s", Some(LiteralArgument("U"))))))
+            , JTransmute("s", Some(LiteralArgument("l")))
       )    
     ){
      JPath.fromString("|(Hey {name}!{|(This is a hat: (^))^s<U})^s<l")
@@ -425,11 +433,26 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
                 Seq(JPath(JObjectPath("name")), 
                     JPath(JStringFormat(
                         Seq(FormatLiteral("This is a hat: (^)")), Seq())
-                    , JTransmute("s", Some("U")))))
-            , JTransmute("s", Some("l"))
+                    , JTransmute("s", Some(LiteralArgument("U"))))))
+            , JTransmute("s", Some(LiteralArgument("l")))
       )    
     ){
      JPath.fromString("""|(Hey {name}!{|(This is a hat: \(\^\))^s<U})^s<l""")
+    }
+  }
+  
+  it should "be able to interpret tricky 11" in {
+    assertResult(
+      JPath(JStringFormat(
+                Seq(FormatLiteral("Hey "), ReplaceHolder, FormatLiteral("!"), ReplaceHolder),
+                Seq(JPath(JObjectPath("name")), 
+                    JPath(JStringFormat(
+                        Seq(FormatLiteral("This is a hat: ^")), Seq())
+                    , JTransmute("s", Some(NestedArgument(JPath(JObjectPath("argField"), JObjectPath("arg"))))))))
+            , JTransmute("s", Some(LiteralArgument("l")))
+      )    
+    ){
+     JPath.fromString("|(Hey {name}!{|(This is a hat: (^))^s<{argField.arg}})^s<l")
     }
   }
 

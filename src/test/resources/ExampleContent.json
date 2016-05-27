@@ -25,6 +25,7 @@
     "jsonObj": {
         "big": 5,
         "small": 2,
+        "price": 15.07,
         "gender": {
             "male": true,
             "female": false
@@ -35,6 +36,8 @@
             "c"
         ]
     },
+    "dateFormat": "yyyy-MM-dd",
+    "currency": "GBP",
     "innerRefKey": "23SP9943",
     "referenceSingle": {
         "sys": {

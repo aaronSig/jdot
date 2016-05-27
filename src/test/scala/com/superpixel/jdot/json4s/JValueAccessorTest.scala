@@ -135,7 +135,24 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
   it should "date format" in {
     val accessor = JValueAccessor(jsonVal)
     assertResult(JString("2015:12:25")) {
-      val jPath = JPath(JObjectPath("date"), JTransmute("date", Some("yyyy:MM:dd")))
+      val jPath = JPath(JObjectPath("date"), JTransmute("date", Some(LiteralArgument("yyyy:MM:dd"))))
+      accessor.getValue(jPath)
+    }
+  }
+  
+  it should "interpret a nested transmute argument" in {
+    val accessor = JValueAccessor(jsonVal)
+    assertResult(JString("2015-12-25")) {
+      val jPath = JPath(JObjectPath("date"), JTransmute("date", Some(NestedArgument(JPath(JObjectPath("dateFormat"))))))
+      accessor.getValue(jPath)
+    }
+    
+    assertResult(JString("£15")) {
+      val jPath = JPath(JObjectPath("jsonObj"), JObjectPath("price"), JTransmute("cur", Some(NestedArgument(JPath(
+        JStringFormat(
+              Seq(FormatLiteral("0"), ReplaceHolder),
+              Seq(JPath(JObjectPath("currency"))))    
+      )))))
       accessor.getValue(jPath)
     }
   }
@@ -196,7 +213,7 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
       accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("hender"), JDefaultValue("true", None), JObjectPath("female"), JDefaultValue("false", None)))
     }
     assertResult(JBool(false)) {
-      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("hender"), JDefaultValue("true", None), JObjectPath("female"), JDefaultValue("false", None), JTransmute("b", Some("!"))))
+      accessor.getValue(JPath(JObjectPath("jsonObj"), JObjectPath("hender"), JDefaultValue("true", None), JObjectPath("female"), JDefaultValue("false", None), JTransmute("b", Some(LiteralArgument("!")))))
     }
   }
   

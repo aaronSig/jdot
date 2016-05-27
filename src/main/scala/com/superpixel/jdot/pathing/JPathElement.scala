@@ -21,6 +21,12 @@ case class JDefaultValue(value: String, transmutation: Option[JTransmute]) exten
 
 case class JStringFormat(formatSeq: Seq[StringFormat], valuePaths: Seq[JPath]) extends JPathElement
 
+
 case class JConditional(conditionPath: JPath, testPath: Option[JPath], truePath: JPath, falsePath: JPath) extends JPathElement
 
-case class JTransmute(transmuteType: String, argument: Option[String]) extends JPathElement
+
+case class JTransmute(transmuteType: String, argument: Option[TransmuteArgument]) extends JPathElement
+
+sealed trait TransmuteArgument;
+case class LiteralArgument(str: String) extends TransmuteArgument;
+case class NestedArgument(path: JPath) extends TransmuteArgument;

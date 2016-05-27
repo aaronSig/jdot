@@ -19,7 +19,11 @@ class JValueBuilder extends JDotBuilder {
       case JDefaultValue(s, transmute) +: tl => acc match {
         case JNothing | JNull => transmute match {
           case None => buildLinearPath(tl, JString(s))
-          case Some(JTransmute(func, arg)) => buildLinearPath(tl, JValueTransmuter.transmute(JString(s), func, arg))
+          case Some(JTransmute(func, arg)) => arg match {
+            case None => buildLinearPath(tl, JValueTransmuter.transmute(JString(s), func, None))
+            case Some(LiteralArgument(argStr)) => buildLinearPath(tl, JValueTransmuter.transmute(JString(s), func, Some(argStr)))
+            case Some(NestedArgument(_)) => throw new JsonBuildingException(s"JPaths cannot contain nested path arguments for transmutations elements in a building context: ${JDefaultValue(s, transmute)}")
+          }
         }
         case _ => buildLinearPath(tl, acc)
       }

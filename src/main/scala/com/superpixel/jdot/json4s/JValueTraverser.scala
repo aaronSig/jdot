@@ -9,7 +9,8 @@ object JValueTraverser {
   val standardEndLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], JValue] = {
     case (_:JObject | _:JArray , Some(JDefaultValue(dVal, transmute))) => transmute match {
       case None => JString(dVal)
-      case Some(JTransmute(func, arg)) => JValueTransmuter.transmute(JString(dVal), func, arg)
+      case Some(JTransmute(func, Some(LiteralArgument(arg)))) => JValueTransmuter.transmute(JString(dVal), func, Some(arg))
+      case Some(JTransmute(func, _)) => JValueTransmuter.transmute(JString(dVal), func, None)
     }
     case (jVal, _) => jVal
   }
@@ -46,6 +47,22 @@ object JValueTraverser {
           } 
       }
       
+      def applyTransmutation(currentValue: JValue, transmuteType: String, argument: Option[TransmuteArgument]): JValue = {
+        val arg: Option[String] = argument match {
+          case Some(NestedArgument(argPath)) => {
+            traverse(linkLamb, notFoundLamb, jValueToTransmuteArgument)(jVal, argPath)
+          }
+          case Some(LiteralArgument(arg)) => Some(arg)
+          case None => None
+        }
+        try {
+          JValueTransmuter.transmute(currentValue, transmuteType, arg)
+        } catch {
+          case e: JsonTransmutingException =>
+            throw new JsonTraversalException(e.message, e.jVal)
+        }
+      }
+      
       pathSeq match {
         case Nil => endLamb.lift(value, prev)
         
@@ -71,20 +88,34 @@ object JValueTraverser {
               case JString(s) => linkLamb(s)
               case JInt(d) =>  linkLamb(d.toString)
               case _ => prev match {
-                case Some(JDefaultValue(dVal, transmute)) => linkLamb(simpleJValueToString(getJValueFromJValueExpression(dVal, transmute)))
+                case Some(JDefaultValue(dVal, None)) => linkLamb(dVal)
+                case Some(JDefaultValue(dVal, Some(JTransmute(transType, arg)))) =>
+                  linkLamb(simpleJValueToString(applyTransmutation(JString(dVal), transType, arg)))
                 case _ => None
               }
             }, pathSeq.head, tl)
             
-        case JPathValue(str, transmute) +: tl =>
-          routeValueOption(Some(getJValueFromJValueExpression(str, transmute)), pathSeq.head, tl)
+        case JPathValue(str, transmute) +: tl => transmute match {
+          case None => routeValueOption(Some(JString(str)), pathSeq.head, tl)
+          case Some(JTransmute(transType, arg)) => 
+            routeValueOption(Some(applyTransmutation(JString(str), transType, arg)), pathSeq.head, tl)
+        }
+          
         
+          
         case JDefaultValue(dVal, transmute) +: tl => value match {
-          case JNothing | JNull => routeValueOption(Some(getJValueFromJValueExpression(dVal, transmute)), pathSeq.head, tl.dropWhile {
-            case _:JObjectPath | _:JArrayPath  => true
-            case _:JConditional => true
-            case _ => false
-          })
+          case JNothing | JNull => {
+            val newValue = transmute match {
+              case Some(JTransmute(transType, arg)) => 
+                applyTransmutation(JString(dVal), transType, arg)
+              case None => JString(dVal)
+            }
+            routeValueOption(Some(newValue), pathSeq.head, tl.dropWhile {
+              case _:JObjectPath | _:JArrayPath  => true
+              case _:JConditional => true
+              case _ => false
+            })
+          }
           case jV => routeValueOption(Some(jV), pathSeq.head, tl)
         }
         
@@ -124,23 +155,26 @@ object JValueTraverser {
           }
         }
         
-        case JTransmute(transmuteType, argument) +: tl => 
+        case JTransmute(transmuteType, argument) +: tl => {
+          val arg: Option[String] = argument match {
+            case Some(NestedArgument(argPath)) => {
+              traverse(linkLamb, notFoundLamb, jValueToTransmuteArgument)(jVal, argPath)
+            }
+            case Some(LiteralArgument(arg)) => Some(arg)
+            case None => None
+          }
           try {
-            routeValueOption(Some(JValueTransmuter.transmute(value, transmuteType, argument)), pathSeq.head, tl)
+            routeValueOption(Some(JValueTransmuter.transmute(value, transmuteType, arg)), pathSeq.head, tl)
           } catch {
             case e: JsonTransmutingException =>
               throw new JsonTraversalException(e.message, e.jVal)
           }
-        
+        }
       }
+      
     }
     
     traverseRecu(jVal, jPath) 
-  }
-  
-  private def getJValueFromJValueExpression(pVal: String, transmute: Option[JTransmute]): JValue = transmute match {
-      case None => JString(pVal)
-      case Some(JTransmute(func, arg)) => JValueTransmuter.transmute(JString(pVal), func, arg)
   }
   
   private def innerStringFormatJPathEndLamb(jVal: JValue, jPath: JPath): PartialFunction[Tuple2[JValue, Option[JPathElement]], String] = 
@@ -169,6 +203,15 @@ object JValueTraverser {
     case JInt(int) => int.toString
     case JLong(l) => l.toString
     case JBool(bool) => bool.toString
+  }
+  
+  private val jValueToTransmuteArgument: PartialFunction[Tuple2[JValue, Option[JPathElement]], String] = {
+    case (JString(str), _) => str
+    case (JDouble(db), _) => db.toString
+    case (JDecimal(bd), _) => bd.toString
+    case (JInt(int), _) => int.toString
+    case (JLong(l), _) => l.toString
+    case (JBool(bool), _) => bool.toString
   }
   
   private val jValueToJsonKeyEndLamb: PartialFunction[Tuple2[JValue, Option[JPathElement]], String] = {
