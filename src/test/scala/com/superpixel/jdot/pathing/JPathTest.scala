@@ -13,7 +13,7 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   "JPath fromString" should "be able to interpret dot syntax" in {
 
     assertResult(
-      JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"))) {
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("zwei")), JObjectPath(LiteralKey("trois")))) {
         JPath.fromString("one.zwei.trois")
       }
   }
@@ -21,60 +21,60 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   it should "be able to interpret dot syntax with spaces in json key" in {
 
     assertResult(
-      JPath(JObjectPath("one key"), JObjectPath("zwei key"), JObjectPath("trois key"))) {
+      JPath(JObjectPath(LiteralKey("one key")), JObjectPath(LiteralKey("zwei key")), JObjectPath(LiteralKey("trois key")))) {
         JPath.fromString("one key.zwei key.trois key")
       }
   }
   
   it should "be able to interpred escaped json keys" in {
     assertResult(
-      JPath(JObjectPath("on.e"), JObjectPath("zw>ei"), JObjectPath("tr[ois"))) {
+      JPath(JObjectPath(LiteralKey("on.e")), JObjectPath(LiteralKey("zw>ei")), JObjectPath(LiteralKey("tr[ois")))) {
         JPath.fromString("""on\.e.zw\>ei.tr\[ois""")
       }
   }
   
   it should "be able to interpret a nested path as a json key" in {
     assertResult(
-      JPath(JObjectPath("one"), JObjectPathFromValue(
-        JPath(JObjectPath("ein"), JObjectPath("zwei"), JObjectPath("drei"))  
-      ), JObjectPath("trois"))) {
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(KeyFromPath(
+        JPath(JObjectPath(LiteralKey("ein")), JObjectPath(LiteralKey("zwei")), JObjectPath(LiteralKey("drei"))))  
+      ), JObjectPath(LiteralKey("trois")))) {
         JPath.fromString("one.{ein.zwei.drei}.trois")
       }
   }
   
   it should "be able to interpret a literal path as a json key" in {
     assertResult(
-      JPath(JObjectPath("one"), JObjectPath("No. 2 in German Language"), JObjectPath("trois"))) {
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("No. 2 in German Language")), JObjectPath(LiteralKey("trois")))) {
         JPath.fromString("one.(No. 2 in German Language).trois")
       }
   }
   
   it should "be able to interpret square bracket syntax" in {
     assertResult(
-      JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"))) {
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("zwei")), JObjectPath(LiteralKey("trois")))) {
         JPath.fromString("one[zwei][trois]")
       }
   }
   
   it should "be able to interpret square bracket array syntax" in {
     assertResult(
-      JPath(JObjectPath("one"), JArrayPath(2), JArrayPath(3))) {
+      JPath(JObjectPath(LiteralKey("one")), JArrayPath(LiteralIndex(2)), JArrayPath(LiteralIndex(3)))) {
         JPath.fromString("one[2][3]")
       }
   }
   
   it should "be able to interpret a nested path as a array index" in {
     assertResult(
-      JPath(JObjectPath("one"), JArrayPathFromValue(
-        JPath(JObjectPath("ein"), JObjectPath("zwei"), JObjectPath("drei"))  
-      ), JObjectPath("trois"))) {
+      JPath(JObjectPath(LiteralKey("one")), JArrayPath(IndexFromPath(
+        JPath(JObjectPath(LiteralKey("ein")), JObjectPath(LiteralKey("zwei")), JObjectPath(LiteralKey("drei"))))
+      ), JObjectPath(LiteralKey("trois")))) {
         JPath.fromString("one[{ein.zwei.drei}].trois")
       }
   }
   
   it should "be able to interpret square brackets array syntax at start" in {
     assertResult(
-      JPath(JArrayPath(1), JObjectPath("zwei"), JObjectPath("trois"))) {
+      JPath(JArrayPath(LiteralIndex(1)), JObjectPath(LiteralKey("zwei")), JObjectPath(LiteralKey("trois")))) {
         JPath.fromString("[1].zwei[trois]")
       }
   }
@@ -108,49 +108,49 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret default values" in {
     assertResult(
-        JPath(JObjectPath("one"), JObjectPath("zwei"), JDefaultValue("abc", None))) {
+        JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("zwei")), JDefaultValue("abc", None))) {
       JPath.fromString("one.zwei(abc)")
     }
     assertResult(
-        JPath(JObjectPath("one"), JDefaultValue("abc", None), JObjectPath("zwei"))) {
+        JPath(JObjectPath(LiteralKey("one")), JDefaultValue("abc", None), JObjectPath(LiteralKey("zwei")))) {
       JPath.fromString("one(abc).zwei")
     }
   }
   
   it should "be able to interpret blank default values" in {
     assertResult(
-        JPath(JObjectPath("one"), JObjectPath("zwei"), JDefaultValue("", None))) {
+        JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("zwei")), JDefaultValue("", None))) {
       JPath.fromString("one.zwei()")
     }
     assertResult(
-        JPath(JObjectPath("one"), JDefaultValue("", None), JObjectPath("zwei"))) {
+        JPath(JObjectPath(LiteralKey("one")), JDefaultValue("", None), JObjectPath(LiteralKey("zwei")))) {
       JPath.fromString("one().zwei")
     }
   }
   
   it should "be able to interpret a mixture syntax" in {
     assertResult(
-      JPath(JObjectPath("one"), JObjectPath("zwei"), JArrayPath(3), JObjectPath("quatro"))) {
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("zwei")), JArrayPath(LiteralIndex(3)), JObjectPath(LiteralKey("quatro")))) {
         JPath.fromString("one.zwei[3][quatro]")
       }
     assertResult(
-      JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"), JArrayPath(4), JPathLink, JObjectPath("cinque"))) {
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("zwei")), JObjectPath(LiteralKey("trois")), JArrayPath(LiteralIndex(4)), JPathLink, JObjectPath(LiteralKey("cinque")))) {
         JPath.fromString("one[zwei].trois[4]>.cinque")
       }
     assertResult(
-      JPath(JObjectPath("one"), JObjectPath("zwei"), JObjectPath("trois"), JDefaultValue("abc", None), JArrayPath(4), JPathLink, JObjectPath("cinque"))) {
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("zwei")), JObjectPath(LiteralKey("trois")), JDefaultValue("abc", None), JArrayPath(LiteralIndex(4)), JPathLink, JObjectPath(LiteralKey("cinque")))) {
         JPath.fromString("one[zwei].trois(abc)[4]>.cinque")
       }
   }
   
   it should "be able to interpret string format syntax" in {
     assertResult(
-      JPath(JObjectPath("one"), JArrayPath(2), JObjectPath("trois"), 
+      JPath(JObjectPath(LiteralKey("one")), JArrayPath(LiteralIndex(2)), JObjectPath(LiteralKey("trois")), 
           JStringFormat(
               Seq(FormatLiteral("qu"), ReplaceHolder, FormatLiteral("arto"), ReplaceHolder, ReplaceHolder, FormatLiteral("five")),
-              Seq(JPath(JObjectPath("vier"), JObjectPath("funf"), JPathLink, JObjectPath("id")),
-                  JPath(JObjectPath("quatro")),
-                  JPath(JObjectPath("four"), JArrayPath(4)))))) {
+              Seq(JPath(JObjectPath(LiteralKey("vier")), JObjectPath(LiteralKey("funf")), JPathLink, JObjectPath(LiteralKey("id"))),
+                  JPath(JObjectPath(LiteralKey("quatro"))),
+                  JPath(JObjectPath(LiteralKey("four")), JArrayPath(LiteralIndex(4))))))) {
         JPath.fromString("one[2].trois|qu{vier.funf>.id}arto{quatro}{four[4]}five")
       }
   }
@@ -158,42 +158,42 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret string format syntax, treating select parts as literals" in {
     assertResult(
-      JPath(JObjectPath("one"), JObjectPath("two"), 
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("two")), 
           JStringFormat(
               Seq(FormatLiteral("web.start?id="), ReplaceHolder),
-              Seq(JPath(JObjectPath("three"), JDefaultValue("1.234", Some(JTransmute("n", None)))))))) {
+              Seq(JPath(JObjectPath(LiteralKey("three")), JDefaultValue("1.234", Some(JTransmute("n", None)))))))) {
         JPath.fromString("one.two|web.start?id={three(1.234^n)}")
       }
   }
   
   it should "be able to interpret triky string format syntax, where literal is a delim" in {
     assertResult(
-      JPath(JObjectPath("one"), JObjectPath("two"), 
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("two")), 
           JStringFormat(
               Seq(FormatLiteral("comp="), ReplaceHolder, FormatLiteral("."), ReplaceHolder),
-              Seq(JPath(JObjectPath("three")),
-                  JPath(JObjectPath("four")))))) {
+              Seq(JPath(JObjectPath(LiteralKey("three"))),
+                  JPath(JObjectPath(LiteralKey("four"))))))) {
         JPath.fromString("one.two|comp={three}.{four}")
       }
   }
   
   it should "be able to interpret triky string format syntax, where literal is a delim and with clarifying brackets" in {
     assertResult(
-      JPath(JObjectPath("one"), JObjectPath("two"), 
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("two")), 
           JStringFormat(
               Seq(FormatLiteral("comp="), ReplaceHolder, FormatLiteral("."), ReplaceHolder),
-              Seq(JPath(JObjectPath("three")),
-                  JPath(JObjectPath("four")))))) {
+              Seq(JPath(JObjectPath(LiteralKey("three"))),
+                  JPath(JObjectPath(LiteralKey("four"))))))) {
         JPath.fromString("one.two|(comp={three}.{four})")
       }
   }
   
   it should "be able to interpret conditional syntax" in {
     assertResult(
-      JPath(JObjectPath("one"), JArrayPath(2), JConditional(
-        JPath(JObjectPath("three"), JObjectPath("four"), JPathLink, JObjectPath("five")), None,
-        JPath(JObjectPath("three"), JObjectPath("four"), JPathLink, JObjectPath("five"), JObjectPath("six")),
-        JPath(JObjectPath("notThree"))
+      JPath(JObjectPath(LiteralKey("one")), JArrayPath(LiteralIndex(2)), JConditional(
+        JPath(JObjectPath(LiteralKey("three")), JObjectPath(LiteralKey("four")), JPathLink, JObjectPath(LiteralKey("five"))), None,
+        JPath(JObjectPath(LiteralKey("three")), JObjectPath(LiteralKey("four")), JPathLink, JObjectPath(LiteralKey("five")), JObjectPath(LiteralKey("six"))),
+        JPath(JObjectPath(LiteralKey("notThree")))
       ))) {
       JPath.fromString("one[2]~three.four>.five?three.four>.five.six:notThree")
     }
@@ -201,10 +201,10 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret conditional syntax with clarifying brackets" in {
     assertResult(
-      JPath(JObjectPath("one"), JArrayPath(2), JConditional(
-        JPath(JObjectPath("three"), JObjectPath("four"), JPathLink, JObjectPath("five")), None,
-        JPath(JObjectPath("three"), JObjectPath("four"), JPathLink, JObjectPath("five"), JObjectPath("six")),
-        JPath(JObjectPath("notThree"))
+      JPath(JObjectPath(LiteralKey("one")), JArrayPath(LiteralIndex(2)), JConditional(
+        JPath(JObjectPath(LiteralKey("three")), JObjectPath(LiteralKey("four")), JPathLink, JObjectPath(LiteralKey("five"))), None,
+        JPath(JObjectPath(LiteralKey("three")), JObjectPath(LiteralKey("four")), JPathLink, JObjectPath(LiteralKey("five")), JObjectPath(LiteralKey("six"))),
+        JPath(JObjectPath(LiteralKey("notThree")))
       ))) {
       JPath.fromString("one[2]~{{three.four>.five}?{three.four>.five.six}:notThree}")
     }
@@ -217,20 +217,20 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   }
   
   it should "be able to interpret transmutation expressions" in {
-    assertResult(JPath(JObjectPath("one"), JTransmute("n", None))) {
+    assertResult(JPath(JObjectPath(LiteralKey("one")), JTransmute("n", None))) {
       JPath.fromString("one^n")
     }
   }
   
   it should "be able to interpret transmutation expressions with argument" in {
-    assertResult(JPath(JObjectPath("one"), JTransmute("f", Some(LiteralArgument("2.2"))))) {
+    assertResult(JPath(JObjectPath(LiteralKey("one")), JTransmute("f", Some(LiteralArgument("2.2"))))) {
       JPath.fromString("one^f<2.2")
     }
   }
   
   it should "be able to interpret transmutation expressions with nested path argument" in {
-    assertResult(JPath(JObjectPath("one"), JTransmute("f", Some(NestedArgument(
-        JPath(JObjectPath("one"), JObjectPath("two"), JObjectPath("three"))
+    assertResult(JPath(JObjectPath(LiteralKey("one")), JTransmute("f", Some(NestedArgument(
+        JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey("two")), JObjectPath(LiteralKey("three")))
       ))))) {
       JPath.fromString("one^f<{one.two.three}")
     }
@@ -238,18 +238,18 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret tricky 1" in {
     assertResult(
-      JPath(JObjectPath("one"), JConditional(
-            JPath(JObjectPath("two")),
-            Some(JPath(JObjectPath("three"))),
+      JPath(JObjectPath(LiteralKey("one")), JConditional(
+            JPath(JObjectPath(LiteralKey("two"))),
+            Some(JPath(JObjectPath(LiteralKey("three")))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral(" equals "), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2", Some(JTransmute("n", None)))),
-                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
+                Seq(JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", Some(JTransmute("n", None)))),
+                    JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3", Some(JTransmute("n", None)))),
-                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
+                Seq(JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", Some(JTransmute("n", None)))),
+                    JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", None)))
             ))), JTransmute("s", None)
       )    
     ){
@@ -259,18 +259,18 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret tricky 2" in {
     assertResult(
-      JPath(JObjectPath("one"), JConditional(
-            JPath(JObjectPath("two")),
-            Some(JPath(JObjectPath("three"))),
+      JPath(JObjectPath(LiteralKey("one")), JConditional(
+            JPath(JObjectPath(LiteralKey("two"))),
+            Some(JPath(JObjectPath(LiteralKey("three")))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral(" equals "), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2", Some(JTransmute("f", Some(LiteralArgument(".2")))))),
-                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
+                Seq(JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", Some(JTransmute("f", Some(LiteralArgument(".2")))))),
+                    JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3", Some(JTransmute("f", Some(LiteralArgument(".2")))))),
-                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
+                Seq(JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", Some(JTransmute("f", Some(LiteralArgument(".2")))))),
+                    JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", None)))
             ))), JTransmute("s", None)
       )    
     ){
@@ -281,18 +281,18 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   it should "be able to interpret tricky 3" in {
     
      assertResult(
-      JPath(JObjectPath("one"), JConditional(
-            JPath(JObjectPath("two")),
-            Some(JPath(JObjectPath("three"))),
+      JPath(JObjectPath(LiteralKey("one")), JConditional(
+            JPath(JObjectPath(LiteralKey("two"))),
+            Some(JPath(JObjectPath(LiteralKey("three")))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral(" equals "), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2", None)),
-                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
+                Seq(JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", None)),
+                    JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3", None)),
-                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
+                Seq(JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", None)),
+                    JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", None)))
             )))
       )    
     ){
@@ -302,18 +302,18 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret tricky 4" in {
     assertResult(
-      JPath(JObjectPath("one"), JConditional(
-            JPath(JObjectPath("two")),
-            Some(JPath(JObjectPath("three"))),
+      JPath(JObjectPath(LiteralKey("one")), JConditional(
+            JPath(JObjectPath(LiteralKey("two"))),
+            Some(JPath(JObjectPath(LiteralKey("three")))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral(" :equals: "), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2", None)),
-                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
+                Seq(JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", None)),
+                    JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3", None)),
-                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
+                Seq(JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", None)),
+                    JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", None)))
             )))
       )    
     ){
@@ -323,18 +323,18 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret tricky 4.5" in {
     assertResult(
-      JPath(JObjectPath("one"), JConditional(
-            JPath(JObjectPath("two")),
-            Some(JPath(JObjectPath("three"))),
+      JPath(JObjectPath(LiteralKey("one")), JConditional(
+            JPath(JObjectPath(LiteralKey("two"))),
+            Some(JPath(JObjectPath(LiteralKey("three")))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("( :equals: )"), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2", None)),
-                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
+                Seq(JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", None)),
+                    JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3", None)),
-                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
+                Seq(JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", None)),
+                    JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", None)))
             )))
       )    
     ){
@@ -344,18 +344,18 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret tricky 4.75" in {
     assertResult(
-      JPath(JObjectPath("one"), JConditional(
-            JPath(JObjectPath("two")),
-            Some(JPath(JObjectPath("three"))),
+      JPath(JObjectPath(LiteralKey("one")), JConditional(
+            JPath(JObjectPath(LiteralKey("two"))),
+            Some(JPath(JObjectPath(LiteralKey("three")))),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("( :equals: )"), ReplaceHolder),
-                Seq(JPath(JObjectPath("two"), JDefaultValue("2", None)),
-                    JPath(JObjectPath("three"), JDefaultValue("3", None)))
+                Seq(JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", None)),
+                    JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", None)))
             )),
             JPath(JStringFormat(
                 Seq(ReplaceHolder, FormatLiteral("ne"), ReplaceHolder),
-                Seq(JPath(JObjectPath("three"), JDefaultValue("3", None)),
-                    JPath(JObjectPath("two"), JDefaultValue("2", None)))
+                Seq(JPath(JObjectPath(LiteralKey("three")), JDefaultValue("3", None)),
+                    JPath(JObjectPath(LiteralKey("two")), JDefaultValue("2", None)))
             )))
       )    
     ){
@@ -365,9 +365,9 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret tricky 5" in {
     assertResult(
-      JPath(JObjectPath("one"), JStringFormat(
+      JPath(JObjectPath(LiteralKey("one")), JStringFormat(
                 Seq(FormatLiteral("23"), ReplaceHolder, FormatLiteral("56")),
-                Seq(JPath(JObjectPath("two")))
+                Seq(JPath(JObjectPath(LiteralKey("two"))))
             ), JTransmute("f", Some(LiteralArgument("2.2")))
       )    
     ){
@@ -377,9 +377,9 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret tricky 6" in {
     assertResult(
-      JPath(JObjectPath("one"), JStringFormat(
+      JPath(JObjectPath(LiteralKey("one")), JStringFormat(
                 Seq(FormatLiteral("23"), ReplaceHolder, FormatLiteral("56")),
-                Seq(JPath(JObjectPath("two")))
+                Seq(JPath(JObjectPath(LiteralKey("two"))))
             ), JTransmute("f", Some(LiteralArgument("2.2")))
       )    
     ){
@@ -389,9 +389,9 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret tricky 7" in {
     assertResult(
-      JPath(JObjectPath("one"), JStringFormat(
+      JPath(JObjectPath(LiteralKey("one")), JStringFormat(
                 Seq(FormatLiteral("23"), ReplaceHolder, FormatLiteral("51")),
-                Seq(JPath(JObjectPath("two")))
+                Seq(JPath(JObjectPath(LiteralKey("two"))))
             ), JTransmute("ord", None)
       )    
     ){
@@ -401,9 +401,9 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
   
   it should "be able to interpret tricky 8" in {
     assertResult(
-      JPath(JObjectPath("one"), JStringFormat(
+      JPath(JObjectPath(LiteralKey("one")), JStringFormat(
                 Seq(FormatLiteral("23"), ReplaceHolder, FormatLiteral("51")),
-                Seq(JPath(JObjectPath("two")))
+                Seq(JPath(JObjectPath(LiteralKey("two"))))
             ), JTransmute("%", None)
       )    
     ){
@@ -415,7 +415,7 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     assertResult(
       JPath(JStringFormat(
                 Seq(FormatLiteral("Hey "), ReplaceHolder, FormatLiteral("!"), ReplaceHolder),
-                Seq(JPath(JObjectPath("name")), 
+                Seq(JPath(JObjectPath(LiteralKey("name"))), 
                     JPath(JStringFormat(
                         Seq(FormatLiteral("This is a hat: ^")), Seq())
                     , JTransmute("s", Some(LiteralArgument("U"))))))
@@ -430,7 +430,7 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     assertResult(
       JPath(JStringFormat(
                 Seq(FormatLiteral("Hey "), ReplaceHolder, FormatLiteral("!"), ReplaceHolder),
-                Seq(JPath(JObjectPath("name")), 
+                Seq(JPath(JObjectPath(LiteralKey("name"))), 
                     JPath(JStringFormat(
                         Seq(FormatLiteral("This is a hat: (^)")), Seq())
                     , JTransmute("s", Some(LiteralArgument("U"))))))
@@ -445,10 +445,10 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     assertResult(
       JPath(JStringFormat(
                 Seq(FormatLiteral("Hey "), ReplaceHolder, FormatLiteral("!"), ReplaceHolder),
-                Seq(JPath(JObjectPath("name")), 
+                Seq(JPath(JObjectPath(LiteralKey("name"))), 
                     JPath(JStringFormat(
                         Seq(FormatLiteral("This is a hat: ^")), Seq())
-                    , JTransmute("s", Some(NestedArgument(JPath(JObjectPath("argField"), JObjectPath("arg"))))))))
+                    , JTransmute("s", Some(NestedArgument(JPath(JObjectPath(LiteralKey("argField")), JObjectPath(LiteralKey("arg")))))))))
             , JTransmute("s", Some(LiteralArgument("l")))
       )    
     ){

@@ -30,7 +30,7 @@ class JValueAttacherTest extends FlatSpec with Matchers with MockFactory {
     
     val attachTo: JObject = ("hello" -> "world") ~ ("when" -> "now")
     
-    val attacherPairs = Set(JPathPair(JPath(JObjectPath("join")), JPath(JObjectPath("three"))))
+    val attacherPairs = Set(JPathPair(JPath(JObjectPath(LiteralKey("join"))), JPath(JObjectPath(LiteralKey("three")))))
 
     val attacher = JValueAttacher(attacherPairs);
     
@@ -70,7 +70,7 @@ class JValueAttacherTest extends FlatSpec with Matchers with MockFactory {
     
     val attachTo: JObject = ("hello" -> "world") ~ ("when" -> "now")
     
-    val attacherPairs = Set(JPathPair(JPath(JObjectPath("children")), JPath()))
+    val attacherPairs = Set(JPathPair(JPath(JObjectPath(LiteralKey("children"))), JPath()))
     
     val attacher = JValueAttacher(attacherPairs);
     
@@ -99,7 +99,7 @@ class JValueAttacherTest extends FlatSpec with Matchers with MockFactory {
     
     val attachTo: JObject = ("hello" -> "world") ~ ("when" -> "now")
     
-    val attacherPairs = Set(JPathPair(JPath(JObjectPath("match1")), JPath(JArrayPath(0))), JPathPair(JPath(JObjectPath("match2")), JPath(JArrayPath(1))))
+    val attacherPairs = Set(JPathPair(JPath(JObjectPath(LiteralKey("match1"))), JPath(JArrayPath(LiteralIndex(0)))), JPathPair(JPath(JObjectPath(LiteralKey("match2"))), JPath(JArrayPath(LiteralIndex(1)))))
     
     val attacher = JValueAttacher(attacherPairs);
     

@@ -59,10 +59,10 @@ class JValueMapperTest extends FlatSpec with Matchers with MockFactory with Befo
   "JValueMapper map" should "map to a simple class based on fieldMap" in {
     
       val fieldMap = Set(
-        JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
-        JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
-        JPathPair(JPath(JObjectPath("score")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("score"))),
-        JPathPair(JPath(JObjectPath("winningTeam")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("winnerCode")))
+        JPathPair(JPath(JObjectPath(LiteralKey("game"))), JPath(JObjectPath(LiteralKey("name")))),
+        JPathPair(JPath(JObjectPath(LiteralKey("venue"))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("venue")))),
+        JPathPair(JPath(JObjectPath(LiteralKey("score"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("score")))),
+        JPathPair(JPath(JObjectPath(LiteralKey("winningTeam"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("winnerCode"))))
       )
       
       val expected = List(

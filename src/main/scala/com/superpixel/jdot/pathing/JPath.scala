@@ -787,16 +787,16 @@ object JPath {
      */
     def parseAccessExpression(exprSeq: Seq[ExpressionElement]): JPathElement = exprSeq match {
       case Seq(Delimiter("["), JsonKey(IS_NUMERIC_REGEX(idx)), Delimiter("]")) => 
-        JArrayPath(idx.toInt)
+        JArrayPath(LiteralIndex(idx.toInt))
       case Seq(Delimiter("["), Delimiter("{"), NestedPath(innerSeq), Delimiter("}"), Delimiter("]")) => 
-        JArrayPathFromValue(new JPath(innerJPConstr(transformToExpressions(innerSeq))))
+        JArrayPath(IndexFromPath(new JPath(innerJPConstr(transformToExpressions(innerSeq)))))
       case Seq(Delimiter("."), Delimiter("{"), NestedPath(innerSeq), Delimiter("}")) =>
-        JObjectPathFromValue(new JPath(innerJPConstr(transformToExpressions(innerSeq))))
+        JObjectPath(KeyFromPath(new JPath(innerJPConstr(transformToExpressions(innerSeq)))))
       case Seq(Delimiter("."), Delimiter("("), Literal(key), Delimiter(")")) =>
-        JObjectPath(key)
+        JObjectPath(LiteralKey(key))
       case _ =>  
         exprSeq filter {!_.isInstanceOf[Delimiter]} match {
-          case JsonKey(key) +: Nil => JObjectPath(key)
+          case JsonKey(key) +: Nil => JObjectPath(LiteralKey(key))
           case _ => throw new JPathException(s"Cannot find Json Key expression element in access expression: $exprSeq", pathString)
         }
     }

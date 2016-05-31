@@ -7,13 +7,19 @@ sealed trait JPathElement;
 
 case object JPathLink extends JPathElement
 
-case class JObjectPath(key: String) extends JPathElement
+case class JObjectPath(objKey: ObjectKey) extends JPathElement
 
-case class JObjectPathFromValue(valuePath: JPath) extends JPathElement
+sealed trait ObjectKey;
+case class LiteralKey(key: String) extends ObjectKey;
+case class KeyFromPath(keyPath: JPath) extends ObjectKey;
 
-case class JArrayPath(idx: Int) extends JPathElement
 
-case class JArrayPathFromValue(valuePath: JPath) extends JPathElement
+case class JArrayPath(arrIdx: ArrayIndex) extends JPathElement
+
+sealed trait ArrayIndex;
+case class LiteralIndex(idx: Int) extends ArrayIndex;
+case class IndexFromPath(idxPath: JPath) extends ArrayIndex;
+
 
 case class JPathValue(value: String, transmutation: Option[JTransmute]) extends JPathElement
 

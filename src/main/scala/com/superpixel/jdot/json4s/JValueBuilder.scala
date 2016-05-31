@@ -10,12 +10,18 @@ class JValueBuilder extends JDotBuilder {
   def buildJValue(pathVals: Set[(JPath, JValue)]): JValue = {
     def buildLinearPath(revPath: Seq[JPathElement], acc: JValue): JValue = revPath match {
       case Nil => acc
-      case JObjectPath(key) +: tl => 
-        buildLinearPath(tl, JObject(List(JField(key, acc))))
-      case JArrayPath(key) +: tl =>
-        buildLinearPath(tl, JArray(List.tabulate(key+1){
-            n:Int => if (n==key) acc else JNothing
-        }))
+      case JObjectPath(objKey) +: tl => objKey match {
+        case LiteralKey(key) => buildLinearPath(tl, JObject(List(JField(key, acc))))
+        case KeyFromPath(_) => throw new JsonBuildingException(s"JPaths cannot contain nested path arguments for object path elements in a building context: ${JObjectPath(objKey)}")
+      }
+        
+      case JArrayPath(arrIdx) +: tl => arrIdx match {
+        case LiteralIndex(idx) => 
+          buildLinearPath(tl, JArray(List.tabulate(idx+1){
+          	n:Int => if (n==idx) acc else JNothing
+          }))
+        case IndexFromPath(_) => throw new JsonBuildingException(s"JPaths cannot contain nested path arguments for array index elements in a building context: ${JArrayPath(arrIdx)}")
+      }
       case JDefaultValue(s, transmute) +: tl => acc match {
         case JNothing | JNull => transmute match {
           case None => buildLinearPath(tl, JString(s))

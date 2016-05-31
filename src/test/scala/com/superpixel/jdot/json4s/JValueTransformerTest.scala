@@ -62,10 +62,10 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
   
   "JValueTransformer transformJValue" should "transform to simple object based on fieldMap" in {
     val fieldMap = Set(
-      JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
-      JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
-      JPathPair(JPath(JObjectPath("score")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("score"))),
-      JPathPair(JPath(JObjectPath("winningTeam")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("winnerCode")))
+      JPathPair(JPath(JObjectPath(LiteralKey("game"))), JPath(JObjectPath(LiteralKey("name")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("venue"))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("venue")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("score"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("score")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("winningTeam"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("winnerCode"))))
     )
     
     val expected: List[JValue] = List(
@@ -96,10 +96,10 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
   
   it should "be able to process arrays" in {
     val fieldMap = Set(
-      JPathPair(JPath(JObjectPath("firstHomeGoal")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("homeGoalMinutes"), JArrayPath(0), JDefaultValue("N/A", None))),
-      JPathPair(JPath(JObjectPath("awayGoals")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("awayGoalMinutes"))),
-      JPathPair(JPath(JObjectPath("teams"), JArrayPath(0)), JPath(JObjectPath("metadata"), JObjectPath("homeTeamName"))),
-      JPathPair(JPath(JObjectPath("teams"), JArrayPath(1)), JPath(JObjectPath("metadata"), JObjectPath("awayTeamName")))
+      JPathPair(JPath(JObjectPath(LiteralKey("firstHomeGoal"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("homeGoalMinutes")), JArrayPath(LiteralIndex(0)), JDefaultValue("N/A", None))),
+      JPathPair(JPath(JObjectPath(LiteralKey("awayGoals"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("awayGoalMinutes")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("teams")), JArrayPath(LiteralIndex(0))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("homeTeamName")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("teams")), JArrayPath(LiteralIndex(1))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("awayTeamName"))))
     )
     
     val expected: List[JValue] = List(
@@ -134,10 +134,10 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
     val defaultOutJson = """{"firstHomeGoal":"N/A"}"""
     
     val fieldMap = Set(
-      JPathPair(JPath(JObjectPath("firstHomeGoal")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("homeGoalMinutes"), JArrayPath(0))),
-      JPathPair(JPath(JObjectPath("awayGoals")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("awayGoalMinutes"))),
-      JPathPair(JPath(JObjectPath("teams"), JArrayPath(0)), JPath(JObjectPath("metadata"), JObjectPath("homeTeamName"))),
-      JPathPair(JPath(JObjectPath("teams"), JArrayPath(1)), JPath(JObjectPath("metadata"), JObjectPath("awayTeamName")))
+      JPathPair(JPath(JObjectPath(LiteralKey("firstHomeGoal"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("homeGoalMinutes")), JArrayPath(LiteralIndex(0)))),
+      JPathPair(JPath(JObjectPath(LiteralKey("awayGoals"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("awayGoalMinutes")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("teams")), JArrayPath(LiteralIndex(0))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("homeTeamName")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("teams")), JArrayPath(LiteralIndex(1))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("awayTeamName"))))
     )
     
     val expected: List[JValue] = List(
@@ -169,11 +169,11 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
   
   it should "follow links to inclusions" in {
     val fieldMap = Set(
-      JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
-      JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
-      JPathPair(JPath(JObjectPath("score")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("score"))),
-      JPathPair(JPath(JObjectPath("winningTeam")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("winnerCode"))),
-      JPathPair(JPath(JObjectPath("awayPositionAfter")), JPath(JObjectPath("metadata"), JObjectPath("awayTeamCode"), JPathLink, JObjectPath("leaguePosition")))
+      JPathPair(JPath(JObjectPath(LiteralKey("game"))), JPath(JObjectPath(LiteralKey("name")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("venue"))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("venue")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("score"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("score")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("winningTeam"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("winnerCode")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("awayPositionAfter"))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("awayTeamCode")), JPathLink, JObjectPath(LiteralKey("leaguePosition"))))
     )
     
     val expected: List[JValue] = List(
@@ -204,11 +204,11 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
   
   it should "follow links to passed inclusions first" in {
     val fieldMap = Set(
-      JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
-      JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
-      JPathPair(JPath(JObjectPath("score")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("score"))),
-      JPathPair(JPath(JObjectPath("winningTeam")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("winnerCode"))),
-      JPathPair(JPath(JObjectPath("awayPositionAfter")), JPath(JObjectPath("metadata"), JObjectPath("awayTeamCode"), JPathLink, JObjectPath("leaguePosition")))
+      JPathPair(JPath(JObjectPath(LiteralKey("game"))), JPath(JObjectPath(LiteralKey("name")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("venue"))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("venue")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("score"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("score")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("winningTeam"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("winnerCode")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("awayPositionAfter"))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("awayTeamCode")), JPathLink, JObjectPath(LiteralKey("leaguePosition"))))
     )
     
     val expected: List[JValue] = List(
@@ -270,10 +270,10 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
     val jsonOutDefault = """{"venue": "unknown"}"""
     
      val fieldMap = Set(
-      JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
-      JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
-      JPathPair(JPath(JObjectPath("score")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("score"))),
-      JPathPair(JPath(JObjectPath("winningTeam")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("winnerCode")))
+      JPathPair(JPath(JObjectPath(LiteralKey("game"))), JPath(JObjectPath(LiteralKey("name")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("venue"))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("venue")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("score"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("score")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("winningTeam"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("winnerCode"))))
     )
     
     val expected: List[JValue] = List(
@@ -348,10 +348,10 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
     )
     
     val fieldMap = Set(
-      JPathPair(JPath(JObjectPath("game")), JPath(JObjectPath("name"))),
-      JPathPair(JPath(JObjectPath("venue")), JPath(JObjectPath("metadata"), JObjectPath("venue"))),
-      JPathPair(JPath(JObjectPath("score")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("score"))),
-      JPathPair(JPath(JObjectPath("winningTeam")), JPath(JObjectPath("eventResult"), JObjectPath("metadata"), JObjectPath("winnerCode")))
+      JPathPair(JPath(JObjectPath(LiteralKey("game"))), JPath(JObjectPath(LiteralKey("name")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("venue"))), JPath(JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("venue")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("score"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("score")))),
+      JPathPair(JPath(JObjectPath(LiteralKey("winningTeam"))), JPath(JObjectPath(LiteralKey("eventResult")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("winnerCode"))))
     )
     
     val expected: List[JValue] = List(

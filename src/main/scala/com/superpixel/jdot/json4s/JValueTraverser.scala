@@ -66,21 +66,21 @@ object JValueTraverser {
       pathSeq match {
         case Nil => endLamb.lift(value, prev)
         
-        case JObjectPath(key) +: tl => routeValueOption(accessJObjectValue(value, key), pathSeq.head, tl)
-        
-        case JObjectPathFromValue(valuePath) +: tl => 
-          traverse(linkLamb, notFoundLamb, jValueToJsonKeyEndLamb)(jVal, valuePath) match {
-            case Some(key) => routeValueOption(accessJObjectValue(value, key), pathSeq.head, tl)
+        case JObjectPath(objKey) +: tl => objKey match {
+          case LiteralKey(keyStr) => routeValueOption(accessJObjectValue(value, keyStr), pathSeq.head, tl)
+          case KeyFromPath(keyPath) => traverse(linkLamb, notFoundLamb, jValueToJsonKeyEndLamb)(jVal, keyPath) match {
+            case Some(keyStr) => routeValueOption(accessJObjectValue(value, keyStr), pathSeq.head, tl)
             case None => routeValueOption(None, pathSeq.head, tl)
           }
+        }
         
-        case JArrayPath(idx) +: tl => routeValueOption(accessJArrayValue(value, idx), pathSeq.head, tl)
-        
-        case JArrayPathFromValue(valuePath) +: tl => 
-          traverse(linkLamb, notFoundLamb, jValueToArrayIndexEndLamb)(jVal, valuePath) match {
+        case JArrayPath(arrIdx) +: tl => arrIdx match {
+          case LiteralIndex(idx) => routeValueOption(accessJArrayValue(value, idx), pathSeq.head, tl)
+          case IndexFromPath(idxPath) => traverse(linkLamb, notFoundLamb, jValueToArrayIndexEndLamb)(jVal, idxPath) match {
             case Some(idx) => routeValueOption(accessJArrayValue(value, idx), pathSeq.head, tl)
             case None => routeValueOption(None, pathSeq.head, tl)
           }
+        }
         
         case JPathLink +: tl => 
           routeValueOption(

@@ -139,8 +139,8 @@ class AusGrandPrixExample extends FunSpec with Matchers {
       
       val fullDeclaration: JPathPair = 
         JPathPair(
-          JPath(JObjectPath("winner"), JObjectPath("name")),
-          JPath(JObjectPath("podiumDetail"), JArrayPath(0), JObjectPath("driverName"))
+          JPath(JObjectPath(LiteralKey("winner")), JObjectPath(LiteralKey("name"))),
+          JPath(JObjectPath(LiteralKey("podiumDetail")), JArrayPath(LiteralIndex(0)), JObjectPath(LiteralKey("driverName")))
         )
   //    assert(shortDeclaration == noSugarDeclaration)
   //    assert(shortDeclaration == fullDeclaration)
