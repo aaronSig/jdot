@@ -227,15 +227,19 @@ object JValueTransmuter {
         }
         case Some(iso4217(currencyCode)) => {
           val cur = Currency.getInstance(currencyCode);
-          val nf = NumberFormat.getCurrencyInstance
+          val nf = NumberFormat.getCurrencyInstance(Locale.UK)
           if (whole) nf.setMaximumFractionDigits(0)
           nf.setCurrency(cur)
           (inSubunits, cur.getDefaultFractionDigits) match {
             case (true, e) if e > 0 => {
               val ratio = Math.pow(10, -e)
-              nf.format(db*ratio)
+              val ret = nf.format(db*ratio)
+              ret
             }
-            case _ => nf.format(db)
+            case _ => {
+              val ret = nf.format(db)
+              ret
+            }
           }
         }
         case Some(symbol(sym)) => {

@@ -49,6 +49,24 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
     }
   }
   
+  it should "do this" in {
+    {
+      val thisJson: JValue = ("discounted" -> true) ~
+                             ("special_price" -> 1.3) ~
+                             ("price" -> 4.5)
+      val accessor = JValueAccessor(thisJson)
+      val jPath = JPath.fromString("~discounted?{special_price^cur<(EUR)}:{price^cur<(EUR)}")
+      println(accessor.getValue(jPath));
+    }
+    {
+      val thisJson: JValue = ("discounted" -> false) ~
+                             ("price" -> 4.5)
+      val accessor = JValueAccessor(thisJson)
+      val jPath = JPath.fromString("~discounted?{special_price^cur<(EUR)}:{price^cur<(EUR)}")
+      println(accessor.getValue(jPath));
+    }
+  }
+  
   it should "extract from object path" in {
     val accessor = JValueAccessor(jsonVal)
     

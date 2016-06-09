@@ -608,6 +608,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     val transformer = JDotTransformer(Set(
       ("irelandEuros",           "euros^cur<en-IE"),
       ("frenchEuros",            "euros^cur<fr-FR"),
+      ("euros",                  "euros^cur<EUR"),
       ("gbpPounds",              "pounds^cur<GBP"),
       ("dkkLarge",               "large^cur<da-DK"),
       ("usdDollars",             "dollars^cur<USD"),
@@ -620,6 +621,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     
     val expected = """{  "irelandEuros":        "€15.00",
                          "frenchEuros":         "15,00 €",
+                         "euros":               "€15.00",
                          "gbpPounds":           "£5.10",
                          "dkkLarge":            "kr 1.500,00",
                          "usdDollars":          "USD19.99",
@@ -628,6 +630,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
                          "poundsNoPennies":     "£1,500"  }"""
 
     assert(parse(expected) == parse(transformed))
+    println(transformed)
   }
   
   describe("Date formatting transmutations") {
