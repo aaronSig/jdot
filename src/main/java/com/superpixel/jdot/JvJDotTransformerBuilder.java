@@ -23,6 +23,7 @@ public class JvJDotTransformerBuilder {
   private Optional<String[]> preMergingJson = Optional.empty();
   private Optional<String[]> postMergingJson = Optional.empty();
   
+  
   /***
    * Format Destination -> Source.
    * Destinations paths are keys with source paths as values.
@@ -46,6 +47,7 @@ public class JvJDotTransformerBuilder {
     this.pathMapping = pathMapping;
     return this;
   }
+  
   
   /***
    * Inclusions can be used by specifying a link in the path.
@@ -82,6 +84,39 @@ public class JvJDotTransformerBuilder {
   public JvJDotTransformerBuilder withPostJsonMerging(String... postMergingJson) {
     this.postMergingJson = Optional.of(postMergingJson);
     return this;
+  }
+  
+  /***
+   * Extracts from the settings the inclusions, preJsonMerging and postMergingJson.
+   * Ignore any attachment settings.
+   * 
+   * 
+   * 
+   * @param settings
+   * @return
+   */
+  public JvJDotTransformer buildWithSettings(JvJDotSettings settings) {
+	scala.collection.immutable.Set<JPathPair> scPathMapping = jvStringMapToJPathPairSet(pathMapping);
+	    
+    Inclusions scIncMap;
+    if (inclusionsMap.isPresent()) {
+      scIncMap = MappingParameters.combineInclusions(new FixedInclusions(jvToScMap(inclusionsMap.get())), settings.inclusions);
+    } else {
+      scIncMap = settings.inclusions;
+    }
+    MergingJson scMergJson;
+    if (preMergingJson.isPresent() && postMergingJson.isPresent()) {
+      scMergJson = MappingParameters.combineMergingJson(new MergingJsonPrePost(jvArrayToScSeq(preMergingJson.get()), jvArrayToScSeq(postMergingJson.get())), settings.mergingJson);
+    } else if (preMergingJson.isPresent()) {
+      scMergJson = MappingParameters.combineMergingJson(new MergingJsonPre(jvArrayToScSeq(preMergingJson.get())), settings.mergingJson);
+    } else if (postMergingJson.isPresent()) {
+      scMergJson = MappingParameters.combineMergingJson(new MergingJsonPost(jvArrayToScSeq(postMergingJson.get())), settings.mergingJson);
+    } else {
+      scMergJson = settings.mergingJson;
+    }
+    
+    JDotTransformer scTransformer = JDotTransformer$.MODULE$.apply(scPathMapping, scMergJson, scIncMap);
+    return new JvJDotTransformer(scTransformer);
   }
   
   public JvJDotTransformer build() {

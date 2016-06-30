@@ -35,8 +35,24 @@ public class JvJDotSettingsBuilder {
 	private Optional<List<String>> preMergingJsonOpt = Optional.empty();
 	private Optional<List<String>> postMergingJsonOpt = Optional.empty();
 	private Optional<List<Attachment>> attachmentsOpt = Optional.empty();
-	
-	
+		
+	public Optional<Map<String, String>> getInclusions() {
+		return inclusionsOpt;
+	}
+
+	public Optional<List<String>> getPreMergingJson() {
+		return preMergingJsonOpt;
+	}
+
+	public Optional<List<String>> getPostMergingJson() {
+		return postMergingJsonOpt;
+	}
+
+	public List<Attachment> getAttachments() {
+		return attachmentsOpt.orElseGet(() -> new ArrayList<>());
+	}
+
+
 	public JvJDotSettings build() {	    
 	    Inclusions scIncMap;
 	    if (inclusionsOpt.isPresent()) {

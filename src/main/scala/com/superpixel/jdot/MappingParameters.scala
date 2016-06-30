@@ -26,3 +26,31 @@ case class JsonArrayTransformAttachment(jPathToArray: String, jsonContainingArra
 case class NestedTransformAttachment(jsonToTransformAttach: String, transformer: JDotTransformer, transformAttachments: List[Attachment], attacher: JDotAttacher) extends Attachment
 case class NestedTransformListAttachment(jsonListToTransformAttach: List[String], transformer: JDotTransformer, transformAttachments: List[Attachment], attacher: JDotAttacher) extends Attachment
 case class JsonArrayNestedTransformAttachment(jPathToArray: String, jsonContainingArray: String, transformer: JDotTransformer, transformAttachments: List[Attachment], attacher: JDotAttacher) extends Attachment
+
+object MappingParameters {
+  
+  def combineInclusions(left: Inclusions, right: Inclusions): Inclusions = (left, right) match {
+    case (l, NoInclusions) => l
+    case (NoInclusions, r) => r
+    case (FixedInclusions(l), FixedInclusions(r)) => FixedInclusions(r ++ l)
+  }
+  
+  def combineMergingJson(left: MergingJson, right: MergingJson): MergingJson = (left, right) match {
+    case (l, NoMerging) => l
+    case (NoMerging, r) => r
+    
+    case (MergingJsonPre(pre1), MergingJsonPre(pre2)) => MergingJsonPre(pre1 ++ pre2);
+    case (MergingJsonPost(post1), MergingJsonPost(post2)) => MergingJsonPost(post1 ++ post2);
+
+    case (MergingJsonPost(post), MergingJsonPre(pre)) => MergingJsonPrePost(pre, post)
+    case (MergingJsonPre(pre), MergingJsonPost(post)) => MergingJsonPrePost(pre, post)
+    
+    case (MergingJsonPrePost(pre1, post), MergingJsonPre(pre2)) => MergingJsonPrePost(pre1 ++ pre2, post)
+    case (MergingJsonPrePost(pre, post1), MergingJsonPost(post2)) => MergingJsonPrePost(pre, post1 ++ post2)
+      
+    case (MergingJsonPre(pre1), MergingJsonPrePost(pre2, post)) => MergingJsonPrePost(pre1 ++ pre2, post)
+    case (MergingJsonPost(post1), MergingJsonPrePost(pre, post2)) => MergingJsonPrePost(pre, post1 ++ post2)
+      
+    case (MergingJsonPrePost(pre1, post1), MergingJsonPrePost(pre2, post2)) => MergingJsonPrePost(pre1 ++ pre2, post1 ++ post2)
+  }
+}
