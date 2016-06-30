@@ -63,6 +63,8 @@ object JValueAccessor {
   
   def apply(json: JValue, linkLamb: String=>Option[JValue] = (s)=>None): JValueAccessor = new JValueAccessor(json, linkLamb)
   
+  def forStringJson(json: String): JValueAccessor = new JValueAccessor(parse(json), s=>None)
+  
   private val notFoundLamb = (jVal: JValue, jPath: JPathElement) => {
     (JNothing, Continue)
   }

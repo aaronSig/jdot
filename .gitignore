@@ -16,6 +16,10 @@ project/
 *.class
 *.log
 
+# IntelliJ
+.idea/
+jdot.iml
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
