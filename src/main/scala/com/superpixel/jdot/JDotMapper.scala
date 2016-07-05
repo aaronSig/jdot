@@ -4,7 +4,7 @@ import com.superpixel.jdot.json4s.JValueMapper
 
 trait JDotMapper[T] {
   
-  def map(jsonContent: String, attachments: List[Attachment] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): T
+  def map(jsonContent: String, atttachers: List[JDotAttacher] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): T
   
 }
 

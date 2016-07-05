@@ -10,23 +10,23 @@ import com.superpixel.jdot._
 
 class JValueMapper[T](transformer: JDotTransformer, extractor: JDotExtractor[T]) extends JDotMapper[T] {
   
-  override def map(jsonContent: String, attachments: List[Attachment] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): T = {
+  override def map(jsonContent: String, attachers: List[JDotAttacher] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): T = {
     val jValContent = parse(jsonContent)
-    mapJValue(jValContent, attachments, localMerges, additionalInclusions)
+    mapJValue(jValContent, attachers, localMerges, additionalInclusions)
   }
 
   
-  def mapJValue(json: JValue, attachments: List[Attachment] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): T = (transformer, extractor) match {
+  def mapJValue(json: JValue, attachers: List[JDotAttacher] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): T = (transformer, extractor) match {
     case (trans: JValueTransformer, extrct: JValueExtractor[T]) => {
-    	val transformed = trans.transformJValue(json, attachments, localMerges, additionalInclusions)
+    	val transformed = trans.transformJValue(json, attachers, localMerges, additionalInclusions)
     	extrct.extractFromJValue(transformed)      
     }
     case (trans: JValueTransformer, _ ) => {
-      val transformed = trans.transformJValue(json, attachments, localMerges, additionalInclusions)
+      val transformed = trans.transformJValue(json, attachers, localMerges, additionalInclusions)
       extractor.extract(compact(render(transformed)))
     }
     case _ => {
-      val transformed = transformer.transform(compact(render(json)), attachments, localMerges, additionalInclusions)
+      val transformed = transformer.transform(compact(render(json)), attachers, localMerges, additionalInclusions)
       extractor.extract(transformed)
     }
   }
