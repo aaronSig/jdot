@@ -27,6 +27,28 @@ case class NestedTransformAttachment(jsonToTransformAttach: String, transformer:
 case class NestedTransformListAttachment(jsonListToTransformAttach: List[String], transformer: JDotTransformer, transformAttachments: List[Attachment], attacher: JDotAttacher) extends Attachment
 case class JsonArrayNestedTransformAttachment(jPathToArray: String, jsonContainingArray: String, transformer: JDotTransformer, transformAttachments: List[Attachment], attacher: JDotAttacher) extends Attachment
 
+
+sealed trait AttachmentContext;
+
+/**
+  * Using context json as passed in, no overriding or drilling.
+  */
+case object SimpleAttachmentContext extends AttachmentContext;
+
+/**
+  * Takes the context json as passed into the attach/attachList call and drills into it using the jPath to fetch context json
+  * @param jPathToContext
+  */
+case class PathAttachmentContext(jPathToContext: String) extends AttachmentContext;
+
+case class OverrideAttachmentContext(contextJson: String) extends AttachmentContext;
+
+case class ListOverrideAttachmentContext(contextJsonList: List[String]) extends AttachmentContext;
+
+case class OverridePathAttachmentContext(contextJson: String, jPathToContext: String) extends AttachmentContext;
+
+
+
 object MappingParameters {
   
   def combineInclusions(left: Inclusions, right: Inclusions): Inclusions = (left, right) match {

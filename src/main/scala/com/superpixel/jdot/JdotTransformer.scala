@@ -5,9 +5,9 @@ import com.superpixel.jdot.pathing.JPathPair
 
 trait JDotTransformer {
 
-  def transform(json: String, attachments: List[Attachment] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): String
+  def transform(json: String, attachments: List[JDotAttacher] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): String
   
-  def transformList(jsonList: List[String], attachments: List[Attachment] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): String
+  def transformList(jsonList: List[String], attachments: List[JDotAttacher] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): String
   
 }
 

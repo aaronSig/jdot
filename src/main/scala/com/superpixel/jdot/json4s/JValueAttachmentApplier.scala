@@ -8,7 +8,7 @@ import com.superpixel.jdot._
 import com.superpixel.jdot.JDotTransformer
 import com.superpixel.jdot.JDotAttacher
 
-object JValueAttachment {
+object JValueAttachmentApplier {
   
   import com.superpixel.jdot.json4s.JValueTraverser.Stop
   private val jArrayNotFoundLamb = (jVal: JValue, jPathEl: JPathElement) => {
@@ -38,7 +38,6 @@ object JValueAttachment {
   def applyAttachmentsToJValue(json: JValue, attachments: List[Attachment], merges: MergingJson = NoMerging, inclusions: Inclusions = NoInclusions): JValue = {
     val mergingJValues = JValueMerger.transfromMergingJson(merges)
   
-    import JValueMerger.MergeArraysAsValues
     val leftMerge = JValueMerger.leftMerge(MergeArraysAsValues)_
     
     val postInJV = mergingJValues._1 match {

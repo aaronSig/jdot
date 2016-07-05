@@ -1,11 +1,11 @@
 package com.superpixel.jdot;
 
-import com.superpixel.jdot.json4s.JValueAttachment;
+import com.superpixel.jdot.json4s.JValueAttachmentApplier;
 
 public class JvJDotAttachment {
 
 	 public static String applyAttachments(String json, JvJDotSettings settings) {
-		  return JValueAttachment.applyAttachments(json, 
+		  return JValueAttachmentApplier.applyAttachments(json,
 												  settings.attachments,
 												  settings.mergingJson,
 												  settings.inclusions);

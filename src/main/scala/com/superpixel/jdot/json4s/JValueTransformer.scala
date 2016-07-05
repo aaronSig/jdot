@@ -13,45 +13,44 @@ class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusion
   val mergingJValues: (Seq[JValue], Seq[JValue]) = JValueMerger.transfromMergingJson(merges)
   val inclusionsMap: Map[String, JValue] = parseInclusions(inclusions)
   
-  override def transform(json: String, attachments: List[Attachment] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): String = 
-    compact(render(_transform(Left(json), attachments, localMerges, additionalInclusions)))
-  override def transformList(jsonList: List[String], attachments: List[Attachment] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): String = 
-    compact(render(_transformList(Left(jsonList), attachments, localMerges, additionalInclusions)))
+  override def transform(json: String, attachers: List[JDotAttacher] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): String =
+    compact(render(_transform(Left(json), attachers, localMerges, additionalInclusions)))
+  override def transformList(jsonList: List[String], attachers: List[JDotAttacher] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): String =
+    compact(render(_transformList(Left(jsonList), attachers, localMerges, additionalInclusions)))
   
-  def transformJValue(json: JValue, attachments: List[Attachment] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): JValue = 
-    _transform(Right(json), attachments, localMerges, additionalInclusions)
-  def transformJValueList(jsonList: List[JValue], attachments: List[Attachment] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): JValue = 
-    _transformList(Right(jsonList), attachments, localMerges, additionalInclusions)
+  def transformJValue(json: JValue, attachers: List[JDotAttacher] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): JValue =
+    _transform(Right(json), attachers, localMerges, additionalInclusions)
+  def transformJValueList(jsonList: List[JValue], attachers: List[JDotAttacher] = Nil, localMerges: MergingJson = NoMerging, additionalInclusions: Inclusions = NoInclusions): JValue =
+    _transformList(Right(jsonList), attachers, localMerges, additionalInclusions)
     
     
-  private def _transformList(jsonList: Either[List[String], List[JValue]], attachments: List[Attachment], localMerges: MergingJson, additionalInclusions: Inclusions): JValue = {
+  private def _transformList(jsonList: Either[List[String], List[JValue]], attachers: List[JDotAttacher], localMerges: MergingJson, additionalInclusions: Inclusions): JValue = {
     JArray(
       jsonList match {
-        case Left(strLs) => strLs.map {str: String => _transform(Left(str), attachments, localMerges, additionalInclusions)}
-        case Right(jsonLs) => jsonLs.map {json: JValue => _transform(Right(json), attachments, localMerges, additionalInclusions)}
+        case Left(strLs) => strLs.map {str: String => _transform(Left(str), attachers, localMerges, additionalInclusions)}
+        case Right(jsonLs) => jsonLs.map {json: JValue => _transform(Right(json), attachers, localMerges, additionalInclusions)}
       }
     )
   }
   
-  private def _transform(json: Either[String, JValue], attachments: List[Attachment], localMerges: MergingJson, additionalInclusions: Inclusions): JValue = {
-    val j = json match {
+  private def _transform(json: Either[String, JValue], attachers: List[JDotAttacher], localMerges: MergingJson, additionalInclusions: Inclusions): JValue = {
+    val initial = json match {
       case Left(str) => parse(str)
       case Right(json) => json
     }
     
     val localMergingJValues = JValueMerger.transfromMergingJson(localMerges)
 
-    import JValueMerger.MergeArraysOnIndex
     val leftMerge = JValueMerger.leftMerge(MergeArraysOnIndex)_
     val mergingFn = applyMerges(leftMerge)_
     
     
-    val postInJV = mergingFn(j, localMergingJValues._1, mergingJValues._1)
+    val postInJV = mergingFn(initial, localMergingJValues._1, mergingJValues._1)
       
     val builtJV  = builder.buildJValue((getValues(postInJV, additionalInclusions)))
 
     val preOutJV = try {
-      JValueAttachment.applyAttachmentsToJValue(builtJV, attachments)
+      this.applyAttachers(postInJV, builtJV, attachers)
     } catch {
       case jte: JsonTraversalException => {
         println(s"ERROR: ${jte.getMessage}")
@@ -63,6 +62,18 @@ class JValueTransformer(fieldMap: Set[JPathPair], merges: MergingJson, inclusion
     
     outJV
   }
+
+  private def applyAttachers(context:JValue, applyTo: JValue, attachers: List[JDotAttacher]): JValue = {
+    def recu(jValue: JValue, attacherLs: List[JDotAttacher]): JValue = attacherLs match {
+      case Nil => jValue
+      case (hd: JValueAttacher) :: tl => recu(hd.attachJValue(context, jValue), tl)
+      case hd :: tl => {
+        recu(parse(hd.attach(compact(render(context)), compact(render(jValue)))), tl)
+      }
+    }
+    recu(applyTo, attachers)
+  }
+
   
   private def getValues(json: JValue, addInclusions: Inclusions): Set[(JPath, JValue)] = {
     val addInclusionsMap: Map[String, JValue] = parseInclusions(addInclusions)
