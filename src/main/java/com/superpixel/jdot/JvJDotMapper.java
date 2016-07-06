@@ -1,7 +1,5 @@
 package com.superpixel.jdot;
 
-import com.superpixel.jdot.JDotMapper;
-
 
 public class JvJDotMapper<T> {
 
@@ -21,6 +19,6 @@ public class JvJDotMapper<T> {
 	
 	
 	public T map(String json, JvJDotSettings settings) {
-		return scMapper.map(json, settings.attachments, settings.mergingJson, settings.inclusions);
+		return scMapper.map(json, settings.attachers, settings.mergingJson, settings.inclusions);
 	}
 }

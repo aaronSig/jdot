@@ -40,14 +40,14 @@ public class JvJDotTransformer {
 
 	public String transform(String json, JvJDotSettings settings) {
 		return scTransformer.transform(json,
-				settings.attachments,
+				settings.attachers,
 				settings.mergingJson,
 				settings.inclusions);
 	}
 	
 	public String transformList(List<String> jsonList, JvJDotSettings settings) {
 		return scTransformer.transformList(jvToScList(jsonList),
-				settings.attachments,
+				settings.attachers,
 				settings.mergingJson,
 				settings.inclusions);
 	}

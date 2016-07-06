@@ -18,7 +18,7 @@ trait JDotAttacher {
 object JDotAttacher {
   def apply(attachmentPairs: Set[JPathPair],
             attachmentContext: AttachmentContext = SimpleAttachmentContext,
-            treatArraysAsList: Boolean = true,
             transformer: Option[JDotTransformer] = None,
-            nestedAttachers: List[JDotAttacher] = Nil): JDotAttacher = JValueAttacher(attachmentPairs)
+            nestedAttachers: List[JDotAttacher] = Nil,
+            treatArraysAsList: Boolean = true): JDotAttacher = JValueAttacher(attachmentPairs, attachmentContext, transformer, nestedAttachers, treatArraysAsList)
 }

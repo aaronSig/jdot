@@ -7,7 +7,7 @@ import org.json4s.native.JsonMethods._
 
 
 class JValueAttacher(attachmentPairs: Set[JPathPair], attachmentContext: AttachmentContext,
-                     treatArraysAsList: Boolean, transformer: Option[JDotTransformer], nestedAttachers: List[JDotAttacher]) extends JDotAttacher {
+                    transformer: Option[JDotTransformer], nestedAttachers: List[JDotAttacher], treatArraysAsList: Boolean) extends JDotAttacher {
 
   val attachBuilder = JValueBuilder()
 
@@ -81,9 +81,9 @@ object JValueAttacher {
   
   def apply(attachmentPairs: Set[JPathPair],
             attachmentContext: AttachmentContext = SimpleAttachmentContext,
-            treatArraysAsList: Boolean = true,
             transformer: Option[JDotTransformer] = None,
-            nestedAttachers: List[JDotAttacher] = Nil): JValueAttacher =
-    new JValueAttacher(attachmentPairs, attachmentContext, treatArraysAsList, transformer, nestedAttachers)
+            nestedAttachers: List[JDotAttacher] = Nil,
+            treatArraysAsList: Boolean = true): JValueAttacher =
+  new JValueAttacher(attachmentPairs, attachmentContext, transformer, nestedAttachers, treatArraysAsList)
   
 }

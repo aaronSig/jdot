@@ -88,7 +88,7 @@ public class JvJDotTransformerBuilder {
   
   /***
    * Extracts from the settings the inclusions, preJsonMerging and postMergingJson.
-   * Ignore any attachment settings.
+   * Ignores any attachment settings.
    * 
    * 
    * 

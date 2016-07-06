@@ -23,12 +23,12 @@ public class JvJDotAttacher {
 		return scAttacher;
 	}
 
-	public String attachList(List<String> jsonListToAttach, String jsonAttachTo) {
-		return scAttacher.attachList(jvToScList(jsonListToAttach), jsonAttachTo);
+	public String attachList(List<String> contextJsonList, String jsonAttachTo) {
+		return scAttacher.attachList(jvToScList(contextJsonList), jsonAttachTo);
 	}
 
-	public String attach(String jsonToAttach, String jsonAttachTo) {
-		return scAttacher.attach(jsonToAttach, jsonAttachTo);
+	public String attach(String contextJsonList, String jsonAttachTo) {
+		return scAttacher.attach(contextJsonList, jsonAttachTo);
 	}
 
 }

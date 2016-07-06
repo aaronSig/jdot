@@ -10,6 +10,11 @@ object ScalaConverters {
     case Some(t) => java.util.Optional.of(t);
   }
 
+  def jvOptionalToScOption[T](jvOptional: java.util.Optional[T]): scala.Option[T] = {
+    if (jvOptional.isPresent) Some(jvOptional.get())
+    else None
+  }
+
   def scOptionBooleanToJvOptionalBoolean(scOption: scala.Option[scala.Boolean]): java.util.Optional[java.lang.Boolean] =  scOption match {
     case None => java.util.Optional.empty();
     case Some(b) => java.util.Optional.of(scTojvBoolean(b));
