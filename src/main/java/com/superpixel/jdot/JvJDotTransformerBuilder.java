@@ -1,16 +1,9 @@
 package com.superpixel.jdot;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import com.superpixel.jdot.FixedInclusions;
-import com.superpixel.jdot.Inclusions;
-import com.superpixel.jdot.JDotTransformer;
-import com.superpixel.jdot.JDotTransformer$;
-import com.superpixel.jdot.MergingJson;
-import com.superpixel.jdot.MergingJsonPost;
-import com.superpixel.jdot.MergingJsonPre;
-import com.superpixel.jdot.MergingJsonPrePost;
+
 import com.superpixel.jdot.json4s.JValueTransformer;
 import com.superpixel.jdot.pathing.JPathPair;
 
@@ -20,9 +13,10 @@ public class JvJDotTransformerBuilder {
 
   private Optional<Map<String, String>> inclusionsMap = Optional.empty();
   
-  private Optional<String[]> preMergingJson = Optional.empty();
-  private Optional<String[]> postMergingJson = Optional.empty();
-  
+  private Optional<List<String>> preMergingJsonOpt = Optional.empty();
+  private Optional<List<String>> postMergingJsonOpt = Optional.empty();
+
+  private List<JvJDotAttacher> attachers = new ArrayList<>();
   
   /***
    * Format Destination -> Source.
@@ -66,11 +60,14 @@ public class JvJDotTransformerBuilder {
    * This json is merged with the passed in json BEFORE each transformation.
    * The passed in json is favoured, any missed fields are taken from the default
    * (i.e. this json should be of the same format as those passed IN for transformation)
-   * @param defaultInJson
+   * @param preMergingJson
    * @return
    */
   public JvJDotTransformerBuilder withPreJsonMerging(String... preMergingJson) {
-    this.preMergingJson = Optional.of(preMergingJson);
+    if (!preMergingJsonOpt.isPresent()) {
+      preMergingJsonOpt = Optional.of(new ArrayList<>());
+    }
+    Collections.addAll(preMergingJsonOpt.get(), preMergingJson);
     return this;
   }
   
@@ -78,11 +75,19 @@ public class JvJDotTransformerBuilder {
    * This json is merged with the resulting json AFTER each transformation.
    * The result json is favoured, any missed fields are taken from the default
    * (i.e. this json should be of the same format as the json that comes OUT of the transformation)
-   * @param defaultOutJson
+   * @param postMergingJson
    * @return
    */
   public JvJDotTransformerBuilder withPostJsonMerging(String... postMergingJson) {
-    this.postMergingJson = Optional.of(postMergingJson);
+    if (!postMergingJsonOpt.isPresent()) {
+      postMergingJsonOpt = Optional.of(new ArrayList<>());
+    }
+    Collections.addAll(postMergingJsonOpt.get(), postMergingJson);
+    return this;
+  }
+
+  public JvJDotTransformerBuilder withAttachers(JvJDotAttacher... attachers) {
+    Collections.addAll(this.attachers, attachers);
     return this;
   }
   
@@ -105,17 +110,30 @@ public class JvJDotTransformerBuilder {
       scIncMap = settings.inclusions;
     }
     MergingJson scMergJson;
-    if (preMergingJson.isPresent() && postMergingJson.isPresent()) {
-      scMergJson = MappingParameters.combineMergingJson(new MergingJsonPrePost(jvArrayToScSeq(preMergingJson.get()), jvArrayToScSeq(postMergingJson.get())), settings.mergingJson);
-    } else if (preMergingJson.isPresent()) {
-      scMergJson = MappingParameters.combineMergingJson(new MergingJsonPre(jvArrayToScSeq(preMergingJson.get())), settings.mergingJson);
-    } else if (postMergingJson.isPresent()) {
-      scMergJson = MappingParameters.combineMergingJson(new MergingJsonPost(jvArrayToScSeq(postMergingJson.get())), settings.mergingJson);
+    if (preMergingJsonOpt.isPresent() && postMergingJsonOpt.isPresent()) {
+      scMergJson = MappingParameters.combineMergingJson(new MergingJsonPrePost(jvListToScSeq(preMergingJsonOpt.get()), jvListToScSeq(postMergingJsonOpt.get())), settings.mergingJson);
+    } else if (preMergingJsonOpt.isPresent()) {
+      scMergJson = MappingParameters.combineMergingJson(new MergingJsonPre(jvListToScSeq(preMergingJsonOpt.get())), settings.mergingJson);
+    } else if (postMergingJsonOpt.isPresent()) {
+      scMergJson = MappingParameters.combineMergingJson(new MergingJsonPost(jvListToScSeq(postMergingJsonOpt.get())), settings.mergingJson);
     } else {
       scMergJson = settings.mergingJson;
     }
+
+    scala.collection.immutable.List scAttachers;
+    if (!attachers.isEmpty()) {
+      scala.collection.immutable.List scA = jvToScList(attachers.stream().map(na -> na.getScAttacher()).collect(Collectors.toList()));
+      if (!settings.attachers.isEmpty()) {
+        scAttachers = settings.attachers.$colon$colon$colon(scA);
+      } else {
+        scAttachers = scA;
+      }
+    } else {
+      scAttachers = settings.attachers;
+    }
+
     
-    JDotTransformer scTransformer = JDotTransformer$.MODULE$.apply(scPathMapping, scMergJson, scIncMap);
+    JDotTransformer scTransformer = JDotTransformer$.MODULE$.apply(scPathMapping, scAttachers, scMergJson, scIncMap);
     return new JvJDotTransformer(scTransformer);
   }
   
@@ -127,20 +145,27 @@ public class JvJDotTransformerBuilder {
     if (inclusionsMap.isPresent()) {
       scIncMap = new FixedInclusions(jvToScMap(inclusionsMap.get()));
     } else {
-      scIncMap = JValueTransformer.apply$default$3();
+      scIncMap = JDotTransformer$.MODULE$.apply$default$4();
     }
     MergingJson scMergJson;
-    if (preMergingJson.isPresent() && postMergingJson.isPresent()) {
-      scMergJson = new MergingJsonPrePost(jvArrayToScSeq(preMergingJson.get()), jvArrayToScSeq(postMergingJson.get()));
-    } else if (preMergingJson.isPresent()) {
-      scMergJson = new MergingJsonPre(jvArrayToScSeq(preMergingJson.get()));
-    } else if (postMergingJson.isPresent()) {
-      scMergJson = new MergingJsonPost(jvArrayToScSeq(postMergingJson.get()));
+    if (preMergingJsonOpt.isPresent() && postMergingJsonOpt.isPresent()) {
+      scMergJson = new MergingJsonPrePost(jvListToScSeq(preMergingJsonOpt.get()), jvListToScSeq(postMergingJsonOpt.get()));
+    } else if (preMergingJsonOpt.isPresent()) {
+      scMergJson = new MergingJsonPre(jvListToScSeq(preMergingJsonOpt.get()));
+    } else if (postMergingJsonOpt.isPresent()) {
+      scMergJson = new MergingJsonPost(jvListToScSeq(postMergingJsonOpt.get()));
     } else {
-      scMergJson = JValueTransformer.apply$default$2();
+      scMergJson = JDotTransformer$.MODULE$.apply$default$3();
+    }
+
+    scala.collection.immutable.List scAttachers;
+    if (!attachers.isEmpty()) {
+      scAttachers = jvToScList(attachers.stream().map(na -> na.getScAttacher()).collect(Collectors.toList()));
+    } else {
+      scAttachers = JDotTransformer$.MODULE$.apply$default$2();
     }
     
-    JDotTransformer scTransformer = JDotTransformer$.MODULE$.apply(scPathMapping, scMergJson, scIncMap);
+    JDotTransformer scTransformer = JDotTransformer$.MODULE$.apply(scPathMapping, scAttachers, scMergJson, scIncMap);
     return new JvJDotTransformer(scTransformer);
   }
 }

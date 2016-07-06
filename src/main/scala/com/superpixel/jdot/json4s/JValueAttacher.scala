@@ -6,39 +6,60 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 
 
-class JValueAttacher(attachmentPairs: Set[JPathPair], attachmentContext: AttachmentContext,
-                    transformer: Option[JDotTransformer], nestedAttachers: List[JDotAttacher], treatArraysAsList: Boolean) extends JDotAttacher {
+class JValueAttacher(attachmentPairs: Set[JPathPair],
+                     additionalContext: Option[ContextAlteration],
+                     transformer: Option[JDotTransformer],
+                     nestedAttachers: List[JDotAttacher]) extends JDotAttacher {
 
   val attachBuilder = JValueBuilder()
+  val originalContextKey = "_root"
 
 
-
-  private def factorContextJValue(passedContext: () => JValue): JValue = {
-    attachmentContext match {
-      case PathAttachmentContext(path) => drillIntoContext(path, passedContext.apply())
-      case OverrideAttachmentContext(cj) => parse(cj)
-      case OverridePathAttachmentContext(cj, path) => drillIntoContext(path, parse(cj))
-      case ListOverrideAttachmentContext(cjLs) => JArray(cjLs.map {jStr => parse(jStr) })
-      case _ => passedContext.apply()
+  private def factorContextJValue(rootContext: Either[JValue, List[JValue]]): Either[JValue, List[JValue]] = {
+    additionalContext match {
+      case None => return rootContext
+      case Some(sc) => sc match {
+        case PathFollowAlteration(path) => rootContext match {
+          case Left(rc) => JValueAccessor.apply(rc).getValue(path) match {
+              case JArray(ls) => Right(ls.map(alt => attachRootToAltered(alt, rc)))
+              case alt => Left(attachRootToAltered(alt, rc))
+            }
+          case Right(rcLs) => Right(rcLs.map { rc =>
+            attachRootToAltered(JValueAccessor.apply(rc).getValue(path), rc)
+            })
+          }
+        case AlterJsonContext(alt) => rootContext match {
+          case Left(rc) => Left(attachRootToAltered(alt, rc))
+          case Right(rcLs) => Right(rcLs.map { rc =>
+            attachRootToAltered(alt, rc)
+            })
+        }
+        case AlterJsonListContext(ls) => rootContext match {
+          case Left(rc) => Right(ls.map(alt => attachRootToAltered(alt, rc)))
+          case Right(rcLs) => Right(ls.map(alt => attachRootToAltered(alt, JArray(rcLs))))
+        }
+      }
     }
-
   }
 
-  private def drillIntoContext(jPath: JPath, jVal: JValue): JValue = {
-    JValueAccessor.apply(jVal).getValue(jPath)
+  private def attachRootToAltered(alt: JValue, root: JValue): JValue = {
+    JValueAttacher.rootAttacher.attachJValue(root, alt)
   }
 
-  private def transformAndNestedAttachers(context: JValue): JValue = (transformer, context, treatArraysAsList) match {
-    case (Some(trans: JValueTransformer), JArray(ls), true) => trans.transformJValueList(ls, nestedAttachers)
-    case (Some(trans: JValueTransformer), _, _) => trans.transformJValue(context, nestedAttachers)
-    case (Some(trans), JArray(ls), true) => parse(trans.transformList(ls.map(jv => compact(render(jv))), nestedAttachers))
-    case (Some(trans), _, _) => parse(trans.transform(compact(render(context)), nestedAttachers))
-
-    case (None, JArray(ls), true) => JArray(ls.map(jv => applyNestedAttachersVerbatim(jv)))
-    case (None, _, _) => applyNestedAttachersVerbatim(context)
+  private def transformAndNestedAttachers(context: JValue): JValue = transformer match {
+    case None => applyJustNestedAttachers(context)
+    case Some(jValTrans: JValueTransformer) => jValTrans.transformJValue(context, nestedAttachers)
+    case Some(trans) => parse(trans.transform(compact(render(context)), nestedAttachers))
   }
 
-  private def applyNestedAttachersVerbatim(jValue: JValue): JValue = {
+  private def transformAndNestedAttachers(contextList: List[JValue]): JValue = transformer match {
+    case None => JArray(contextList.map(applyJustNestedAttachers(_)))
+    case Some(jValTrans: JValueTransformer) => jValTrans.transformJValueList(contextList, nestedAttachers)
+    case Some(trans) => parse(trans.transformList(contextList.map(jv => compact(render(jv))), nestedAttachers))
+  }
+
+
+  private def applyJustNestedAttachers(jValue: JValue): JValue = {
     def recu(jv: JValue, attacherLs: List[JDotAttacher]): JValue = attacherLs match {
       case Nil => jValue
       case (hd: JValueAttacher) :: tl => recu(hd.attachJValue(jValue, jv), tl)
@@ -50,10 +71,11 @@ class JValueAttacher(attachmentPairs: Set[JPathPair], attachmentContext: Attachm
 
 
   
-  private def _attachJValue(contextJson: () => JValue, attachToJson: JValue): JValue = {
-    val postContext: JValue = factorContextJValue(contextJson)
-
-    val postTransform: JValue = transformAndNestedAttachers(postContext)
+  private def _attachJValue(contextJson: Either[JValue, List[JValue]], attachToJson: JValue): JValue = {
+    val postTransform: JValue = factorContextJValue(contextJson) match {
+      case Left(alteredContext) => transformAndNestedAttachers(alteredContext)
+      case Right(alteredContextList) => transformAndNestedAttachers(alteredContextList)
+    }
 
     val accessor = JValueAccessor(postTransform)
     val attachee = attachBuilder.buildJValue(attachmentPairs.map{ jpm: JPathPair => (jpm.to, accessor.getValue(jpm.from))});
@@ -65,25 +87,46 @@ class JValueAttacher(attachmentPairs: Set[JPathPair], attachmentContext: Attachm
     leftMerge(MergeArraysOnIndex)(attachee, attachToJson)
   }
   
-  override def attach(contextJson: String, attachToJson: String): String = compact(render(_attachJValue(() => parse(contextJson), parse(attachToJson))))
+  override def attach(contextJson: String, attachToJson: String): String =
+    compact(render(_attachJValue(Left(parse(contextJson)), parse(attachToJson))))
   override def attachList(contextJsonList: List[String], attachToJson: String): String =
-    compact(render(_attachJValue(() => {
-      JArray(contextJsonList.map(parse(_)))
-    },  parse(attachToJson))))
+    compact(render(_attachJValue(Right(contextJsonList.map(parse(_))),  parse(attachToJson))))
   
-  def attachJValue(contextJson: JValue, attachToJson: JValue): JValue = _attachJValue(() => contextJson, attachToJson)
-  def attachJValueList(contextJsonList: List[JValue], attachToJson: JValue): JValue = _attachJValue(() => JArray(contextJsonList), attachToJson)
+  def attachJValue(contextJson: JValue, attachToJson: JValue): JValue =
+    _attachJValue(Left(contextJson), attachToJson)
+  def attachJValueList(contextJsonList: List[JValue], attachToJson: JValue): JValue =
+    _attachJValue(Right(contextJsonList), attachToJson)
   
 }
 
 
 object JValueAttacher {
+
+  val originalContextKey = "_root"
+  private val rootAttacher = JValueAttacher(Set((originalContextKey, "")))
   
   def apply(attachmentPairs: Set[JPathPair],
-            attachmentContext: AttachmentContext = SimpleAttachmentContext,
+            contextPath: Option[JPath] = None,
             transformer: Option[JDotTransformer] = None,
-            nestedAttachers: List[JDotAttacher] = Nil,
-            treatArraysAsList: Boolean = true): JValueAttacher =
-  new JValueAttacher(attachmentPairs, attachmentContext, transformer, nestedAttachers, treatArraysAsList)
-  
+            nestedAttachers: List[JDotAttacher] = Nil): JValueAttacher =
+    new JValueAttacher(attachmentPairs, contextPath.map(jp => PathFollowAlteration(jp)), transformer, nestedAttachers)
+
+  def withAdditionalJson(attachmentPairs: Set[JPathPair],
+                         additionalContextJson: JValue,
+                         transformer: Option[JDotTransformer] = None,
+                         nestedAttachers: List[JDotAttacher] = Nil): JValueAttacher =
+    new JValueAttacher(attachmentPairs, Some(AlterJsonContext(additionalContextJson)), transformer, nestedAttachers)
+
+  def withAdditionalJsonList(attachmentPairs: Set[JPathPair],
+                             additionalContextJsonList: List[JValue],
+                             transformer: Option[JDotTransformer] = None,
+                             nestedAttachers: List[JDotAttacher] = Nil): JValueAttacher =
+    new JValueAttacher(attachmentPairs, Some(AlterJsonListContext(additionalContextJsonList)), transformer, nestedAttachers)
 }
+
+sealed trait ContextAlteration;
+
+case class PathFollowAlteration(contextPath: JPath) extends ContextAlteration;
+case class AlterJsonContext(contextJson: JValue) extends ContextAlteration;
+case class AlterJsonListContext(contextJson: List[JValue]) extends ContextAlteration;
+

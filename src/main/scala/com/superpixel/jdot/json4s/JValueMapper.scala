@@ -36,9 +36,9 @@ class JValueMapper[T](transformer: JDotTransformer, extractor: JDotExtractor[T])
 
 object JValueMapper {
 
-  def withTargetClassAndTransform[T](targetClass: Class[T], pathMapping: Set[JPathPair], merges: MergingJson = NoMerging, inclusions: Inclusions = NoInclusions): JValueMapper[T] = {
+  def withTargetClassAndTransform[T](targetClass: Class[T], pathMapping: Set[JPathPair], attachers: List[JDotAttacher] = Nil, merges: MergingJson = NoMerging, inclusions: Inclusions = NoInclusions): JValueMapper[T] = {
     implicit val m: Manifest[T] = Manifest.classType(targetClass)
-    val transformer = JValueTransformer(pathMapping, merges, inclusions)
+    val transformer = JValueTransformer(pathMapping, attachers, merges, inclusions)
     val extractor = JValueExtractor.forClass(targetClass)
     new JValueMapper[T](transformer, extractor)
   }
@@ -52,14 +52,14 @@ object JValueMapper {
     new JValueMapper[T](transformer, extractor)
   }
   
-  def withTransform[T](pathMapping: Set[JPathPair], merges: MergingJson = NoMerging, inclusions: Inclusions = NoInclusions)(implicit m: Manifest[T]): JValueMapper[T] = {
-    val transformer = JValueTransformer(pathMapping, merges, inclusions)
+  def withTransform[T](pathMapping: Set[JPathPair], attachers: List[JDotAttacher] = Nil, merges: MergingJson = NoMerging, inclusions: Inclusions = NoInclusions)(implicit m: Manifest[T]): JValueMapper[T] = {
+    val transformer = JValueTransformer(pathMapping, attachers, merges, inclusions)
     val extractor = JValueExtractor[T]()
     new JValueMapper[T](transformer, extractor)
   } 
   
-  def withExtractAndTransform[T](extractFn: JValue => T, pathMapping: Set[JPathPair], merges: MergingJson = NoMerging, inclusions: Inclusions = NoInclusions)(implicit m: Manifest[T]): JValueMapper[T] = {
-    val transformer = JValueTransformer(pathMapping, merges, inclusions)
+  def withExtractAndTransform[T](extractFn: JValue => T, pathMapping: Set[JPathPair], attachers: List[JDotAttacher] = Nil, merges: MergingJson = NoMerging, inclusions: Inclusions = NoInclusions)(implicit m: Manifest[T]): JValueMapper[T] = {
+    val transformer = JValueTransformer(pathMapping, attachers, merges, inclusions)
     val extractor = JValueExtractor(extractFn)
     new JValueMapper[T](transformer, extractor)
   }

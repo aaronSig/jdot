@@ -56,7 +56,7 @@ public class JvJDotMapperBuilder {
 	 * This json is merged with the passed in json BEFORE each transformation.
 	 * The passed in json is favoured, any missed fields are taken from the default
 	 * (i.e. this json should be of the same format as those passed IN for transformation)
-	 * @param defaultInJson
+	 * @param preMergingJson
 	 * @return
 	 */
 	public JvJDotMapperBuilder withPreJsonMerging(String... preMergingJson) {
@@ -68,7 +68,7 @@ public class JvJDotMapperBuilder {
 	 * This json is merged with the resulting json AFTER each transformation.
 	 * The result json is favoured, any missed fields are taken from the default
 	 * (i.e. this json should be of the same format as the json that comes OUT of the transformation)
-	 * @param defaultOutJson
+	 * @param postMergingJson
 	 * @return
 	 */
 	public JvJDotMapperBuilder withPostJsonMerging(String... postMergingJson) {
@@ -136,7 +136,7 @@ public class JvJDotMapperBuilder {
 	 *   }
 	 * }
 	 * 
-	 * @param typeHintList
+	 * @param typeHintFieldName
 	 * @return
 	 */
 	public JvJDotMapperBuilder withTypeHintFieldName(String typeHintFieldName) {

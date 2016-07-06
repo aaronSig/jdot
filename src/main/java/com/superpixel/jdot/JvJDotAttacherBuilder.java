@@ -5,8 +5,6 @@ import static com.superpixel.jdot.util.ScalaConverters.jvStringMapToJPathPairSet
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.superpixel.jdot.JDotAttacher;
-import com.superpixel.jdot.JDotAttacher$;
 import com.superpixel.jdot.pathing.JPathPair;
 import static com.superpixel.jdot.util.ScalaConverters.*;
 
@@ -18,9 +16,11 @@ public class JvJDotAttacherBuilder {
 	 */
 	private Map<String, String> attachmentMapping;
 
-	private Optional<Boolean> treatArraysAsLists = Optional.empty();
+	private Optional<String> contextJPath = Optional.empty();
 
-	private Optional<AttachmentContext> attachmentContext = Optional.empty();
+	private Optional<String> contextJson = Optional.empty();
+
+	private Optional<List<String>> contextJsonList = Optional.empty();
 
 	private Optional<JvJDotTransformer> transformer = Optional.empty();
 
@@ -39,32 +39,30 @@ public class JvJDotAttacherBuilder {
 		return this;
 	}
 
-	public JvJDotAttacherBuilder withTreatArraysAsList(Boolean bool) {
-		this.treatArraysAsLists = Optional.ofNullable(bool);
-		return this;
-	}
 
 	//TODO must annotate these, flow is still unintuitive
 
-	public JvJDotAttacherBuilder withOverrideJsonContext(String json) {
-		this.attachmentContext = Optional.of(new OverrideAttachmentContext(json));
-		return this;
-	}
-
 	public JvJDotAttacherBuilder withPathContext(String jPath) {
-		this.attachmentContext = Optional.of(new PathAttachmentContext(jPath));
+		this.contextJPath = Optional.of(jPath);
+		this.contextJson = Optional.empty();
+		this.contextJsonList = Optional.empty();
 		return this;
 	}
 
-	public JvJDotAttacherBuilder withOverrideJsonPathContext(String json, String jPath) {
-		this.attachmentContext = Optional.of(new OverridePathAttachmentContext(json, jPath));
+	public JvJDotAttacherBuilder withAdditionJsonContext(String json) {
+		this.contextJson = Optional.of(json);
+		this.contextJsonList = Optional.empty();
+		this.contextJPath = Optional.empty();
 		return this;
 	}
 
-	public JvJDotAttacherBuilder withOverrideJsonListContext(List<String> jsonList) {
-		this.attachmentContext = Optional.of(new ListOverrideAttachmentContext(jvToScList(jsonList)));
+	public JvJDotAttacherBuilder withAdditionJsonListContext(List<String> jsonList) {
+		this.contextJsonList = Optional.of(jsonList);
+		this.contextJson = Optional.empty();
+		this.contextJPath = Optional.empty();
 		return this;
 	}
+
 
 	public JvJDotAttacherBuilder withTransformer(JvJDotTransformer transformer) {
 		this.transformer = Optional.of(transformer);
@@ -80,9 +78,6 @@ public class JvJDotAttacherBuilder {
 
 		scala.collection.immutable.Set<JPathPair> scAttachmentMapping = jvStringMapToJPathPairSet(attachmentMapping);
 
-		if (!attachmentContext.isPresent()) {
-			attachmentContext = Optional.of(JDotAttacher$.MODULE$.apply$default$2());
-		}
 
 		scala.Option<JDotTransformer> scTransformer = jvOptionalToScOption(transformer.map(t -> t.getScTransformer()));
 		if (!scTransformer.isDefined()) {
@@ -96,16 +91,28 @@ public class JvJDotAttacherBuilder {
 			scAttachers = JDotAttacher$.MODULE$.apply$default$4();
 		}
 
-		if (!treatArraysAsLists.isPresent()) {
-			treatArraysAsLists = Optional.of(JDotAttacher$.MODULE$.apply$default$5());
+		JDotAttacher scAttacher;
+		if (!this.contextJson.isPresent() && !this.contextJsonList.isPresent()) {
+			scAttacher = JDotAttacher$.MODULE$
+					.apply(scAttachmentMapping,
+							jvOptionalToScOption(this.contextJPath),
+							scTransformer,
+							scAttachers);
+
+		} else if (this.contextJson.isPresent()) {
+			scAttacher = JDotAttacher$.MODULE$
+					.withAdditionalJson(scAttachmentMapping,
+										contextJson.get(),
+										scTransformer,
+										scAttachers);
+		} else {
+			scAttacher = JDotAttacher$.MODULE$
+					.withAdditionalJsonList(scAttachmentMapping,
+											jvToScList(contextJsonList.get()),
+											scTransformer,
+											scAttachers);
 		}
 
-		JDotAttacher scAttacher = JDotAttacher$.MODULE$
-				.apply(scAttachmentMapping,
-						attachmentContext.get(),
-						scTransformer,
-						scAttachers,
-						treatArraysAsLists.get());
 		return new JvJDotAttacher(scAttacher);
 	}
 

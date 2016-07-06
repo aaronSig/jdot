@@ -6,7 +6,7 @@ name := "jdot"
 version := "0.0.3-SNAPSHOT"
 isSnapshot := true
 
-scalaVersion := "2.11.4"
+scalaVersion := "2.11.7"
 
 scalacOptions += "-feature"
 

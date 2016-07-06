@@ -1,7 +1,8 @@
 package com.superpixel.jdot
 
-import com.superpixel.jdot.pathing.JPathPair
+import com.superpixel.jdot.pathing.{JPathPair, JPath}
 import com.superpixel.jdot.json4s.JValueAttacher
+import org.json4s.native.JsonMethods._
 
 /***
   *
@@ -17,8 +18,20 @@ trait JDotAttacher {
 
 object JDotAttacher {
   def apply(attachmentPairs: Set[JPathPair],
-            attachmentContext: AttachmentContext = SimpleAttachmentContext,
+            contextPath: Option[String] = None,
             transformer: Option[JDotTransformer] = None,
-            nestedAttachers: List[JDotAttacher] = Nil,
-            treatArraysAsList: Boolean = true): JDotAttacher = JValueAttacher(attachmentPairs, attachmentContext, transformer, nestedAttachers, treatArraysAsList)
+            nestedAttachers: List[JDotAttacher] = Nil): JDotAttacher =
+    JValueAttacher(attachmentPairs, contextPath.map(JPath.fromString(_)), transformer, nestedAttachers)
+
+  def withAdditionalJson(attachmentPairs: Set[JPathPair],
+                         additionalContextJson: String,
+                         transformer: Option[JDotTransformer] = None,
+                         nestedAttachers: List[JDotAttacher] = Nil): JValueAttacher =
+     JValueAttacher.withAdditionalJson(attachmentPairs, parse(additionalContextJson), transformer, nestedAttachers)
+
+  def withAdditionalJsonList(attachmentPairs: Set[JPathPair],
+                             additionalContextJsonList: List[String],
+                             transformer: Option[JDotTransformer] = None,
+                             nestedAttachers: List[JDotAttacher] = Nil): JValueAttacher =
+     JValueAttacher.withAdditionalJsonList(attachmentPairs, additionalContextJsonList.map(parse(_)), transformer, nestedAttachers)
 }

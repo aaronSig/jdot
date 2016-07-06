@@ -81,9 +81,9 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("game" -> "Liverpool vs. Swansea") ~ ("venue" -> "Anfield") ~ ("score" -> "1 - 0") ~ ("winningTeam" -> "liverpool")
     )
     
-    val transfromer = JValueTransformer(fieldMap)
+    val trans = JValueTransformer(fieldMap)
     
-    val returned = jValsPremList.map { jv => transfromer.transformJValue(jv) }
+    val returned: List[JValue] = jValsPremList.map { jv => trans.transformJValue(jv) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {
@@ -115,10 +115,10 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("firstHomeGoal" -> "62") ~ ("awayGoals" -> JNothing) ~ ("teams" -> List("Liverpool", "Swansea"))
     )
     
-    val transfromer = JValueTransformer(fieldMap)
+    val trans = JValueTransformer(fieldMap)
 
     
-    val returned = jValsPremList.map { jv => transfromer.transformJValue(jv) }
+    val returned: List[JValue] = jValsPremList.map { jv => trans.transformJValue(jv) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {
@@ -153,10 +153,10 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("firstHomeGoal" -> "62") ~ ("awayGoals" -> JArray(List())) ~ ("teams" -> List("Liverpool", "Swansea"))
     )
     
-    val transfromer = JValueTransformer(fieldMap, MergingJsonPrePost(Seq(defaultInJson), Seq(defaultOutJson)))
+    val trans = JValueTransformer(fieldMap, merges=MergingJsonPrePost(Seq(defaultInJson), Seq(defaultOutJson)))
 
     
-    val returned = jValsPremList.map { jv => transfromer.transformJValue(jv) }
+    val returned: List[JValue] = jValsPremList.map { jv => trans.transformJValue(jv) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {
@@ -189,9 +189,9 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("game" -> "Liverpool vs. Swansea") ~ ("venue" -> "Anfield") ~ ("score" -> "1 - 0") ~ ("winningTeam" -> "liverpool") ~ ("awayPositionAfter" -> 15)
     )
     
-    val transfromer = JValueTransformer(fieldMap, inclusions=inclusionsMap)
+    val trans = JValueTransformer(fieldMap, inclusions=inclusionsMap)
     
-    val returned = jValsPremList.map { jv => transfromer.transformJValue(jv) }
+    val returned: List[JValue] = jValsPremList.map { jv => trans.transformJValue(jv) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {
@@ -229,9 +229,9 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       "chelsea" ->        """{"leaguePosition": 100}"""
     ))
     
-    val transfromer = JValueTransformer(fieldMap, inclusions=inclusionsMap)
+    val trans = JValueTransformer(fieldMap, inclusions=inclusionsMap)
     
-    val returned = jValsPremList.map { jv => transfromer.transformJValue(jv, additionalInclusions=inclusionsMapLocal) }
+    val returned: List[JValue] = jValsPremList.map { jv => trans.transformJValue(jv, additionalInclusions=inclusionsMapLocal) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {
@@ -287,9 +287,9 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("game" -> "KAA Gent vs. Zenit St P") ~ ("venue" -> "unknown") ~ ("score" -> "2 - 1") ~ ("winningTeam" -> "kaa-gent")
     )
     
-    val transfromer = JValueTransformer(fieldMap, MergingJsonPrePost(Seq(jsonInDefault), Seq(jsonOutDefault)))
+    val trans = JValueTransformer(fieldMap, merges=MergingJsonPrePost(Seq(jsonInDefault), Seq(jsonOutDefault)))
     
-    val returned = jValsChampLeagueList.map { jv => transfromer.transformJValue(jv) }
+    val returned: List[JValue] = jValsChampLeagueList.map { jv => trans.transformJValue(jv) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {
@@ -365,10 +365,10 @@ class JValueTransformerTest extends FlatSpec with Matchers with MockFactory with
       ("game" -> "KAA Gent vs. Zenit St P") ~ ("venue" -> "unknown") ~ ("score" -> "2 - 1") ~ ("winningTeam" -> "kaa-gent")
     )
     
-    val transfromer = JValueTransformer(fieldMap, MergingJsonPrePost(Seq(jsonInDefault), Seq(jsonOutDefault)))
+    val trans = JValueTransformer(fieldMap, merges=MergingJsonPrePost(Seq(jsonInDefault), Seq(jsonOutDefault)))
     
-    val returned = jValsChampLeagueList.zipWithIndex.map { case (jv, i) => 
-      transfromer.transformJValue(jv, localMerges=MergingJsonPrePost(Seq(localJsonInDefault(i)), Seq(localJsonOutDefault(i)))) }
+    val returned: List[JValue] = jValsChampLeagueList.zipWithIndex.map { case (jv, i) =>
+      trans.transformJValue(jv, localMerges=MergingJsonPrePost(Seq(localJsonInDefault(i)), Seq(localJsonOutDefault(i)))) }
     
     returned.zipWithIndex.foreach { 
       case (retJv, index) => {

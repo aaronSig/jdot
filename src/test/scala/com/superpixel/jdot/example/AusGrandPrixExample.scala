@@ -700,7 +700,7 @@ class AusGrandPrixExample extends FunSpec with Matchers {
     )
     
     val attacher = JDotAttacher(Set(("results", "")),
-                                PathAttachmentContext("Results"),
+                                Some("Results"),
                                 Some(resultTrans));
     
     it("should be equals to ausF1Simple") {
@@ -708,7 +708,9 @@ class AusGrandPrixExample extends FunSpec with Matchers {
       println(transformed)
       assert(parse(ausF1Simple) == parse(transformed));
     }
-    
+
+    val resultTrans2 = JDotTransformer(Set(("", "Driver.code")));
+    val attacher2 = JDotAttacher(Set(("results", "")), Some("Results"), Some(resultTrans2))
     val jcTrans2 = JDotTransformer(
       Set(
         ("season",             "season"),
@@ -727,14 +729,13 @@ class AusGrandPrixExample extends FunSpec with Matchers {
         ("podiumDetail[2].driverName", "Results[2].Driver|{givenName} {familyName}"),
         ("podiumDetail[2].points", "Results[2].points^n"),
         ("podiumDetail[2].team", "Results[2].Constructor.name")
-      )    
+      ),
+      List(attacher2)
     )
 
-    val resultTrans2 = JDotTransformer(Set(("", "Driver.code")));
-    val attacher2 = JDotAttacher(Set(("results", "")), PathAttachmentContext("Results"), Some(resultTrans2))
 
     it("should make an even simpler version") {
-      val transformed = jcTrans2.transform(ausF1, List(attacher2));
+      val transformed = jcTrans2.transform(ausF1);
       println(transformed)
       assert(parse(ausF1ShortArray) == parse(transformed));
     }
