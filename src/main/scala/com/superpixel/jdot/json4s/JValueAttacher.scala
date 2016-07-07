@@ -59,16 +59,7 @@ class JValueAttacher(attachmentPairs: Set[JPathPair],
   }
 
 
-  private def applyJustNestedAttachers(jValue: JValue): JValue = {
-    def recu(jv: JValue, attacherLs: List[JDotAttacher]): JValue = attacherLs match {
-      case Nil => jValue
-      case (hd: JValueAttacher) :: tl => recu(hd.attachJValue(jValue, jv), tl)
-      case hd :: tl => recu(parse(hd.attach(compact(render(jv)), compact(render(jValue)))), tl)
-    }
-    recu(jValue, nestedAttachers)
-  }
-
-
+  private def applyJustNestedAttachers(jValue: JValue): JValue = JValueAttacher.applyAttachers(jValue, jValue, nestedAttachers);
 
   
   private def _attachJValue(contextJson: Either[JValue, List[JValue]], attachToJson: JValue): JValue = {
@@ -122,6 +113,18 @@ object JValueAttacher {
                              transformer: Option[JDotTransformer] = None,
                              nestedAttachers: List[JDotAttacher] = Nil): JValueAttacher =
     new JValueAttacher(attachmentPairs, Some(AlterJsonListContext(additionalContextJsonList)), transformer, nestedAttachers)
+
+
+  def applyAttachers(context:JValue, applyTo: JValue, atts: List[JDotAttacher]): JValue = {
+    def recu(jValue: JValue, attacherLs: List[JDotAttacher]): JValue = attacherLs match {
+      case Nil => jValue
+      case (hd: JValueAttacher) :: tl => recu(hd.attachJValue(context, jValue), tl)
+      case hd :: tl => {
+        recu(parse(hd.attach(compact(render(context)), compact(render(jValue)))), tl)
+      }
+    }
+    recu(applyTo, atts)
+  }
 }
 
 sealed trait ContextAlteration;

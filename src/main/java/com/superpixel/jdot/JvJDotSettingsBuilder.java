@@ -99,6 +99,11 @@ public class JvJDotSettingsBuilder {
 		Collections.addAll(this.attachers, attachers);
 		return this;
 	}
+
+    public JvJDotSettingsBuilder withAttachers(List<JvJDotAttacher> attachers) {
+        this.attachers.addAll(attachers);
+        return this;
+    }
 	
 //	public static SimpleAttachment getSimpleAttachment(String jsonToAttach, JvJDotAttacher attacher) {
 //		return new SimpleAttachment(jsonToAttach, attacher.getScAttacher());

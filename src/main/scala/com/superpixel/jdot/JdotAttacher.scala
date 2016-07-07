@@ -34,4 +34,8 @@ object JDotAttacher {
                              transformer: Option[JDotTransformer] = None,
                              nestedAttachers: List[JDotAttacher] = Nil): JValueAttacher =
      JValueAttacher.withAdditionalJsonList(attachmentPairs, additionalContextJsonList.map(parse(_)), transformer, nestedAttachers)
+
+  def applyAttachers(context: String, attachTo: String, attachers: List[JDotAttacher]): String = {
+    compact(render(JValueAttacher.applyAttachers(parse(context), parse(attachTo), attachers)))
+  }
 }

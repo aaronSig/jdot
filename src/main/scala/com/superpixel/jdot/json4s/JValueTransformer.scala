@@ -50,7 +50,7 @@ class JValueTransformer(fieldMap: Set[JPathPair], attachers: List[JDotAttacher],
     val builtJV  = builder.buildJValue((getValues(postInJV, additionalInclusions)))
 
     val preOutJV = try {
-      this.applyAttachers(postInJV, builtJV, addAttachers ++ attachers)
+      JValueAttacher.applyAttachers(postInJV, builtJV, addAttachers ++ attachers)
     } catch {
       case jte: JsonTraversalException => {
         println(s"ERROR: ${jte.getMessage}")
@@ -61,17 +61,6 @@ class JValueTransformer(fieldMap: Set[JPathPair], attachers: List[JDotAttacher],
     val outJV = mergingFn(preOutJV, localMergingJValues._2, mergingJValues._2)
     
     outJV
-  }
-
-  private def applyAttachers(context:JValue, applyTo: JValue, atts: List[JDotAttacher]): JValue = {
-    def recu(jValue: JValue, attacherLs: List[JDotAttacher]): JValue = attacherLs match {
-      case Nil => jValue
-      case (hd: JValueAttacher) :: tl => recu(hd.attachJValue(context, jValue), tl)
-      case hd :: tl => {
-        recu(parse(hd.attach(compact(render(context)), compact(render(jValue)))), tl)
-      }
-    }
-    recu(applyTo, atts)
   }
 
   
