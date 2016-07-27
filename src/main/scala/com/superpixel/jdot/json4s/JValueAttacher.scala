@@ -12,7 +12,6 @@ class JValueAttacher(attachmentPairs: Set[JPathPair],
                      nestedAttachers: List[JDotAttacher]) extends JDotAttacher {
 
   val attachBuilder = JValueBuilder()
-  val originalContextKey = "_root"
 
 
   private def factorContextJValue(rootContext: Either[JValue, List[JValue]]): Either[JValue, List[JValue]] = {
@@ -42,8 +41,9 @@ class JValueAttacher(attachmentPairs: Set[JPathPair],
     }
   }
 
-  private def attachRootToAltered(alt: JValue, root: JValue): JValue = {
-    JValueAttacher.rootAttacher.attachJValue(root, alt)
+  private def attachRootToAltered(alt: JValue, root: JValue): JValue = alt match {
+    case jo: JObject => JValueAttacher.rootAttacher.attachJValue(root, jo)
+    case _ => alt
   }
 
   private def transformAndNestedAttachers(context: JValue): JValue = transformer match {
