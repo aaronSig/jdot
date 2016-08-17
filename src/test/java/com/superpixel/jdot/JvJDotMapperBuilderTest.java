@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import com.google.common.base.Optional;
 import java.util.Scanner;
 
 import org.junit.BeforeClass;
@@ -112,11 +112,16 @@ public class JvJDotMapperBuilderTest {
 		pathMap.put("winningTeam", "eventResult.metadata.winnerCode");
 		
 		JvJDotMapperBuilder builder = new JvJDotMapperBuilder().withPathMapping(pathMap);
-		
-		JvJDotMapper<SimpleMatchJava> mapper = builder.build((String json) -> {
-			System.out.println("In lambda! : " + json);
-			return new SimpleMatchJava("Sunderland vs. Stoke", Optional.of("Stadium of Light"), "2 - 0", "sunderland");
-		});
+
+		MappingExtraction<SimpleMatchJava> extract = new MappingExtraction<SimpleMatchJava>() {
+			@Override
+			public SimpleMatchJava apply(String json) {
+				System.out.println("In lambda! : " + json);
+				return new SimpleMatchJava("Sunderland vs. Stoke", Optional.of("Stadium of Light"), "2 - 0", "sunderland");
+			}
+		};
+
+		JvJDotMapper<SimpleMatchJava> mapper = builder.build(extract);
 		
 		
 		assertEquals(new SimpleMatchJava("Sunderland vs. Stoke", Optional.of("Stadium of Light"), "2 - 0", "sunderland"), 
@@ -198,7 +203,7 @@ public class JvJDotMapperBuilderTest {
 		ghsn.add("Adam Smith (80) Junior Stanislas (87, 90+8)");
 		ghsn.add("Ramiro Funes Mori (25) Romelu Lukaku (36) Ross Barkley (90+5)");
 		GoalsHolder gh = new GoalsHolder(
-				new SimpleMatchJava("Bournemouth vs. Everton", Optional.empty(), "3 - 3", "draw"),
+				new SimpleMatchJava("Bournemouth vs. Everton", Optional.<String>absent(), "3 - 3", "draw"),
 				ghag,"80", ghsn);
 		
 		GoalsHolder ret = mapper.map(jsonList.get(3));

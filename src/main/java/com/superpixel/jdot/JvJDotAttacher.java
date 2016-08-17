@@ -2,8 +2,8 @@ package com.superpixel.jdot;
 
 import static com.superpixel.jdot.util.ScalaConverters.*;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.superpixel.jdot.JDotAttacher;
 
@@ -17,7 +17,11 @@ public class JvJDotAttacher {
 	}
 
 	static public String applyAttachers(String context, String attachTo, List<JvJDotAttacher> attachers) {
-		return JDotAttacher$.MODULE$.applyAttachers(context, attachTo, jvToScList(attachers.stream().map(a -> a.getScAttacher()).collect(Collectors.toList())));
+		List<JDotAttacher> scAttachers = new ArrayList<>();
+		for (JvJDotAttacher att : attachers) {
+			scAttachers.add(att.getScAttacher());
+		}
+		return JDotAttacher$.MODULE$.applyAttachers(context, attachTo, jvToScList(scAttachers));
 	}
 
 	public JvJDotAttacher(JDotAttacher scAttacher) {

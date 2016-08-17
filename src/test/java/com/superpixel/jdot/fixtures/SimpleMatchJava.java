@@ -1,6 +1,6 @@
 package com.superpixel.jdot.fixtures;
 
-import java.util.Optional;
+import com.google.common.base.Optional;
 
 
 public class SimpleMatchJava implements MatchJava {
@@ -12,7 +12,7 @@ public class SimpleMatchJava implements MatchJava {
 			String winningTeam) {
 		super();
 		this.game = game;
-		this.venue = venue.orElse(null);
+		this.venue = venue.orNull();
 		this.score = score;
 		this.winningTeam = winningTeam;
 	}

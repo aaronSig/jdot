@@ -3,7 +3,7 @@ package com.superpixel.jdot;
 import static com.superpixel.jdot.util.ScalaConverters.jvStringMapToJPathPairSet;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import com.google.common.base.Optional;
 
 import com.superpixel.jdot.pathing.JPathPair;
 import static com.superpixel.jdot.util.ScalaConverters.*;
@@ -16,13 +16,13 @@ public class JvJDotAttacherBuilder {
 	 */
 	private Map<String, String> attachmentMapping;
 
-	private Optional<String> contextJPath = Optional.empty();
+	private Optional<String> contextJPath = Optional.absent();
 
-	private Optional<String> contextJson = Optional.empty();
+	private Optional<String> contextJson = Optional.absent();
 
-	private Optional<List<String>> contextJsonList = Optional.empty();
+	private Optional<List<String>> contextJsonList = Optional.absent();
 
-	private Optional<JvJDotTransformer> transformer = Optional.empty();
+	private Optional<JvJDotTransformer> transformer = Optional.absent();
 
 	private List<JvJDotAttacher> nestedAttachers = new ArrayList<>();
 
@@ -44,22 +44,22 @@ public class JvJDotAttacherBuilder {
 
 	public JvJDotAttacherBuilder withPathContext(String jPath) {
 		this.contextJPath = Optional.of(jPath);
-		this.contextJson = Optional.empty();
-		this.contextJsonList = Optional.empty();
+		this.contextJson = Optional.absent();
+		this.contextJsonList = Optional.absent();
 		return this;
 	}
 
 	public JvJDotAttacherBuilder withAdditionJsonContext(String json) {
 		this.contextJson = Optional.of(json);
-		this.contextJsonList = Optional.empty();
-		this.contextJPath = Optional.empty();
+		this.contextJsonList = Optional.absent();
+		this.contextJPath = Optional.absent();
 		return this;
 	}
 
 	public JvJDotAttacherBuilder withAdditionJsonListContext(List<String> jsonList) {
 		this.contextJsonList = Optional.of(jsonList);
-		this.contextJson = Optional.empty();
-		this.contextJPath = Optional.empty();
+		this.contextJson = Optional.absent();
+		this.contextJPath = Optional.absent();
 		return this;
 	}
 
@@ -78,15 +78,23 @@ public class JvJDotAttacherBuilder {
 
 		scala.collection.immutable.Set<JPathPair> scAttachmentMapping = jvStringMapToJPathPairSet(attachmentMapping);
 
-
-		scala.Option<JDotTransformer> scTransformer = jvOptionalToScOption(transformer.map(t -> t.getScTransformer()));
+		scala.Option<JDotTransformer> scTransformer;
+		if (transformer.isPresent()) {
+			scTransformer = jvOptionalToScOption(Optional.of(transformer.get().getScTransformer()));
+		} else {
+			scTransformer = scala.Option.empty();
+		}
 		if (!scTransformer.isDefined()) {
 			scTransformer = JDotAttacher$.MODULE$.apply$default$3();
 		}
 
 		scala.collection.immutable.List<JDotAttacher> scAttachers;
 		if (!nestedAttachers.isEmpty()) {
-			scAttachers = jvToScList(nestedAttachers.stream().map(na -> na.getScAttacher()).collect(Collectors.toList()));
+			List<JDotAttacher> scAttachersJv = new ArrayList<>();
+			for (JvJDotAttacher na : nestedAttachers) {
+				scAttachersJv.add(na.getScAttacher());
+			}
+			scAttachers = jvToScList(scAttachersJv);
 		} else {
 			scAttachers = JDotAttacher$.MODULE$.apply$default$4();
 		}

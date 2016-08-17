@@ -6,21 +6,21 @@ import scala.collection.JavaConverters._
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.{read, write}
 
-class JavaOptionalSerializer extends Serializer[java.util.Optional[_]] {
-    private val OptionalClass = classOf[java.util.Optional[_]]
+class JavaOptionalSerializer extends Serializer[com.google.common.base.Optional[_]] {
+    private val OptionalClass = classOf[com.google.common.base.Optional[_]]
 
-   def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), java.util.Optional[_]] = {
+   def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), com.google.common.base.Optional[_]] = {
      case (TypeInfo(OptionalClass, _), json) => {
        json.extract[Option[_]] match {
-         case Some(obj) => java.util.Optional.of(obj)
-         case None => java.util.Optional.empty()
+         case Some(obj) => com.google.common.base.Optional.of(obj)
+         case None => com.google.common.base.Optional.absent()
        }
        
      }
    }
 
    def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
-     case x: java.util.Optional[_] =>
+     case x: com.google.common.base.Optional[_] =>
        if (x.isPresent) {
          Extraction.decompose(x.get())
        } else {

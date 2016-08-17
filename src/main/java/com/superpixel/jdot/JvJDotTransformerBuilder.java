@@ -1,8 +1,7 @@
 package com.superpixel.jdot;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
+import com.google.common.base.Optional;
 
 import com.superpixel.jdot.json4s.JValueTransformer;
 import com.superpixel.jdot.pathing.JPathPair;
@@ -11,10 +10,10 @@ import static com.superpixel.jdot.util.ScalaConverters.*;
 
 public class JvJDotTransformerBuilder {
 
-  private Optional<Map<String, String>> inclusionsMap = Optional.empty();
+  private Optional<Map<String, String>> inclusionsMap = Optional.absent();
   
-  private Optional<List<String>> preMergingJsonOpt = Optional.empty();
-  private Optional<List<String>> postMergingJsonOpt = Optional.empty();
+  private Optional<List<String>> preMergingJsonOpt = Optional.absent();
+  private Optional<List<String>> postMergingJsonOpt = Optional.absent();
 
   private List<JvJDotAttacher> attachers = new ArrayList<>();
   
@@ -65,7 +64,7 @@ public class JvJDotTransformerBuilder {
    */
   public JvJDotTransformerBuilder withPreJsonMerging(String... preMergingJson) {
     if (!preMergingJsonOpt.isPresent()) {
-      preMergingJsonOpt = Optional.of(new ArrayList<>());
+      preMergingJsonOpt = Optional.of((List<String>)new ArrayList<String>());
     }
     Collections.addAll(preMergingJsonOpt.get(), preMergingJson);
     return this;
@@ -80,7 +79,7 @@ public class JvJDotTransformerBuilder {
    */
   public JvJDotTransformerBuilder withPostJsonMerging(String... postMergingJson) {
     if (!postMergingJsonOpt.isPresent()) {
-      postMergingJsonOpt = Optional.of(new ArrayList<>());
+      postMergingJsonOpt = Optional.of((List<String>)new ArrayList<String>());
     }
     Collections.addAll(postMergingJsonOpt.get(), postMergingJson);
     return this;
@@ -122,7 +121,10 @@ public class JvJDotTransformerBuilder {
 
     scala.collection.immutable.List scAttachers;
     if (!attachers.isEmpty()) {
-      scala.collection.immutable.List scA = jvToScList(attachers.stream().map(na -> na.getScAttacher()).collect(Collectors.toList()));
+      List<JDotAttacher> scAttachersJv = new ArrayList<>();
+      for (JvJDotAttacher att : attachers) scAttachersJv.add(att.getScAttacher());
+
+      scala.collection.immutable.List scA = jvToScList(scAttachersJv);
       if (!settings.attachers.isEmpty()) {
         scAttachers = settings.attachers.$colon$colon$colon(scA);
       } else {
@@ -160,7 +162,10 @@ public class JvJDotTransformerBuilder {
 
     scala.collection.immutable.List scAttachers;
     if (!attachers.isEmpty()) {
-      scAttachers = jvToScList(attachers.stream().map(na -> na.getScAttacher()).collect(Collectors.toList()));
+      List<JDotAttacher> scAttachersJv = new ArrayList<>();
+      for (JvJDotAttacher att : attachers) scAttachersJv.add(att.getScAttacher());
+
+      scAttachers = jvToScList(scAttachersJv);
     } else {
       scAttachers = JDotTransformer$.MODULE$.apply$default$2();
     }

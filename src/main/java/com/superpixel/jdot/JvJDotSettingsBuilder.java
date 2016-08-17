@@ -7,15 +7,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.google.common.base.Optional;
 
 
 public class JvJDotSettingsBuilder {
 
-	private Optional<Map<String, String>> inclusionsOpt = Optional.empty();
-	private Optional<List<String>> preMergingJsonOpt = Optional.empty();
-	private Optional<List<String>> postMergingJsonOpt = Optional.empty();
+	private Optional<Map<String, String>> inclusionsOpt = Optional.absent();
+	private Optional<List<String>> preMergingJsonOpt = Optional.absent();
+	private Optional<List<String>> postMergingJsonOpt = Optional.absent();
 	private List<JvJDotAttacher> attachers = new ArrayList<>();
 		
 	public Optional<Map<String, String>> getInclusions() {
@@ -56,7 +55,11 @@ public class JvJDotSettingsBuilder {
 
 		scala.collection.immutable.List scAttachers;
 		if (!attachers.isEmpty()) {
-			scAttachers = jvToScList(attachers.stream().map(na -> na.getScAttacher()).collect(Collectors.toList()));
+			List<JDotAttacher> scAttachersJv = new ArrayList<>();
+			for (JvJDotAttacher att : attachers) {
+				scAttachersJv.add(att.getScAttacher());
+			}
+			scAttachers = jvToScList(scAttachersJv);
 		} else {
 			scAttachers = scala.collection.immutable.Nil$.MODULE$;
 		}
@@ -67,14 +70,14 @@ public class JvJDotSettingsBuilder {
 	
 	public JvJDotSettingsBuilder withInclusion(String key, String jsonValue) {
 		if (!inclusionsOpt.isPresent()) {
-			inclusionsOpt = Optional.of(new HashMap<>());
+			inclusionsOpt = Optional.of((Map<String, String>)new HashMap<String, String>());
 		}
 		inclusionsOpt.get().put(key, jsonValue);
 		return this;
 	}
 	public JvJDotSettingsBuilder withInclusions(Map<String, String> inclusions) {
 		if (!inclusionsOpt.isPresent()) {
-			inclusionsOpt = Optional.of(new HashMap<>());
+			inclusionsOpt = Optional.of((Map<String, String>) new HashMap<String, String>());
 		}
 		inclusionsOpt.get().putAll(inclusions);
 		return this;
@@ -82,14 +85,14 @@ public class JvJDotSettingsBuilder {
 	
 	public JvJDotSettingsBuilder withPreMergingJson(String... preMergingJson) {
 		if (!preMergingJsonOpt.isPresent()) {
-			preMergingJsonOpt = Optional.of(new ArrayList<>());
+			preMergingJsonOpt = Optional.of((List<String>)new ArrayList<String>());
 		}
 		Collections.addAll(preMergingJsonOpt.get(), preMergingJson);
 		return this;
 	}
 	public JvJDotSettingsBuilder withPostMergingJson(String... postMergingJson) {
 		if (!postMergingJsonOpt.isPresent()) {
-			postMergingJsonOpt = Optional.of(new ArrayList<>());
+			postMergingJsonOpt = Optional.of((List<String>)new ArrayList<String>());
 		}
 		Collections.addAll(postMergingJsonOpt.get(), postMergingJson);
 		return this;

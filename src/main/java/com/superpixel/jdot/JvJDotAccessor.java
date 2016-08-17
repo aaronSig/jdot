@@ -3,8 +3,7 @@ package com.superpixel.jdot;
 import static com.superpixel.jdot.util.ScalaConverters.jvToScMap;
 
 import java.util.Map;
-import java.util.Optional;
-
+import com.google.common.base.Optional;
 import com.superpixel.jdot.pathing.JPath;
 import com.superpixel.jdot.pathing.JPath$;
 

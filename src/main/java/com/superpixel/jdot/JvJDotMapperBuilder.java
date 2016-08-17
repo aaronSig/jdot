@@ -1,14 +1,7 @@
 package com.superpixel.jdot;
 
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-
-import com.superpixel.jdot.JDotExtractor;
-import com.superpixel.jdot.JDotExtractor$;
-import com.superpixel.jdot.JDotMapper;
-import com.superpixel.jdot.JDotMapper$;
-import com.superpixel.jdot.JDotTransformer;
+import com.google.common.base.Optional;
 
 import static com.superpixel.jdot.util.ScalaConverters.*;
 
@@ -18,8 +11,8 @@ public class JvJDotMapperBuilder {
 
 	private JvJDotTransformerBuilder transformerBuilder = new JvJDotTransformerBuilder();
 	
-	private Optional<String> typeHintFieldName = Optional.empty();
-	private Optional<java.util.List<Class<?>>> typeHintList = Optional.empty();
+	private Optional<String> typeHintFieldName = Optional.absent();
+	private Optional<java.util.List<Class<?>>> typeHintList = Optional.absent();
 	
 	/***
 	 * Declares the paths for the json transformation.
@@ -105,7 +98,7 @@ public class JvJDotMapperBuilder {
 	 * @return
 	 */
 	public JvJDotMapperBuilder withTypeHintList(java.util.List<Class<?>> typeHintList) {
-		this.typeHintList = Optional.ofNullable(typeHintList);
+		this.typeHintList = Optional.fromNullable(typeHintList);
 		return this;
 	}
 	
@@ -140,11 +133,11 @@ public class JvJDotMapperBuilder {
 	 * @return
 	 */
 	public JvJDotMapperBuilder withTypeHintFieldName(String typeHintFieldName) {
-		this.typeHintFieldName = Optional.ofNullable(typeHintFieldName);
+		this.typeHintFieldName = Optional.fromNullable(typeHintFieldName);
 		return this;
 	}
 	
-	public <T> JvJDotMapper<T> build(Function<String, T> extractFunction) {
+	public <T> JvJDotMapper<T> build(final MappingExtraction<T> extractFunction) {
 		scala.Function1<String, T> f = new scala.runtime.AbstractFunction1<String, T>() {
 		    public T apply(String json) {
 		        return extractFunction.apply(json);

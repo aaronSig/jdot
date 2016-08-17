@@ -1,23 +1,23 @@
 package com.superpixel.jdot.util
-import scala.collection.JavaConverters._;
+import scala.collection.JavaConverters._
 import com.superpixel.jdot.pathing.JPathPair
 
 
 object ScalaConverters {
   
-  def scOptionToJvOptional[T](scOption: scala.Option[T]): java.util.Optional[T] =  scOption match {
-    case None => java.util.Optional.empty();
-    case Some(t) => java.util.Optional.of(t);
+  def scOptionToJvOptional[T](scOption: scala.Option[T]): com.google.common.base.Optional[T] =  scOption match {
+    case None => com.google.common.base.Optional.absent();
+    case Some(t) => com.google.common.base.Optional.of(t);
   }
 
-  def jvOptionalToScOption[T](jvOptional: java.util.Optional[T]): scala.Option[T] = {
+  def jvOptionalToScOption[T](jvOptional: com.google.common.base.Optional[T]): scala.Option[T] = {
     if (jvOptional.isPresent) Some(jvOptional.get())
     else None
   }
 
-  def scOptionBooleanToJvOptionalBoolean(scOption: scala.Option[scala.Boolean]): java.util.Optional[java.lang.Boolean] =  scOption match {
-    case None => java.util.Optional.empty();
-    case Some(b) => java.util.Optional.of(scTojvBoolean(b));
+  def scOptionBooleanToJvOptionalBoolean(scOption: scala.Option[scala.Boolean]): com.google.common.base.Optional[java.lang.Boolean] =  scOption match {
+    case None => com.google.common.base.Optional.absent();
+    case Some(b) => com.google.common.base.Optional.of(scTojvBoolean(b));
   }
 
   def scTojvBoolean(b: scala.Boolean): java.lang.Boolean = {
