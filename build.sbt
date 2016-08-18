@@ -15,7 +15,7 @@ EclipseKeys.withSource := true
 javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
 
 libraryDependencies ++= Seq(
-  "com.google.guava" % "guava" % "12.0",
+  "com.google.guava" % "guava" % "19.0",
   "org.scala-lang" % "scala-reflect" % "2.11.7",
   "org.scala-lang.modules" % "scala-xml_2.11" % "1.0.5",
   "org.json4s" %% "json4s-native" % "3.3.0",
