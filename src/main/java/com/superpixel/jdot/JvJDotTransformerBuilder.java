@@ -89,6 +89,11 @@ public class JvJDotTransformerBuilder {
     Collections.addAll(this.attachers, attachers);
     return this;
   }
+
+  public JvJDotTransformerBuilder addAttacher(JvJDotAttacher attacher) {
+    attachers.add(attacher);
+    return this;
+  }
   
   /***
    * Extracts from the settings the inclusions, preJsonMerging and postMergingJson.
