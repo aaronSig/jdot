@@ -121,6 +121,35 @@ class JValueAccessorTest extends FlatSpec with Matchers with MockFactory with Be
       accessor.getValue(jPath)
     }
   }
+
+  it should "extract self from SelfReference" in {
+    val accessor = JValueAccessor(jsonVal)
+
+    assertResult(jsonVal) {
+      val jPath = JPath(JMetaPath(SelfReferenceKey))
+      accessor.getValue(jPath)
+    }
+
+    assertResult(JString("old")) {
+      val jPath = JPath(JObjectPath(LiteralKey("symbolList")), JArrayPath(LiteralIndex(3)), JMetaPath(SelfReferenceKey))
+      accessor.getValue(jPath)
+    }
+  }
+
+  it should "extract nothing from NothingReference" in {
+    val accessor = JValueAccessor(jsonVal)
+
+    assertResult(JNothing) {
+      val jPath = JPath(JMetaPath(NothingReferenceKey))
+      accessor.getValue(jPath)
+    }
+
+    assertResult(JNothing) {
+      val jPath = JPath(JObjectPath(LiteralKey("symbolList")), JArrayPath(LiteralIndex(3)), JMetaPath(NothingReferenceKey))
+      accessor.getValue(jPath)
+    }
+  }
+
   
   it should "extract a jpathvalue" in {
     val accessor = JValueAccessor(jsonVal)

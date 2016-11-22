@@ -796,7 +796,12 @@ object JPath {
         JObjectPath(LiteralKey(key))
       case _ =>  
         exprSeq filter {!_.isInstanceOf[Delimiter]} match {
-          case JsonKey(key) +: Nil => JObjectPath(LiteralKey(key))
+          case JsonKey(key) +: Nil => key match {
+            case SelfReferenceKey.str => JMetaPath(SelfReferenceKey)
+            case NothingReferenceKey.str => JMetaPath(NothingReferenceKey)
+//            case RootReferenceKey.str => JMetaPath(RootReferenceKey)
+            case _ => JObjectPath(LiteralKey(key))
+          }
           case _ => throw new JPathException(s"Cannot find Json Key expression element in access expression: $exprSeq", pathString)
         }
     }

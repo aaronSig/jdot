@@ -81,6 +81,11 @@ object JValueTraverser {
             case None => routeValueOption(None, pathSeq.head, tl)
           }
         }
+
+        case JMetaPath(metaKey) +: tl => metaKey match {
+          case SelfReferenceKey => routeValueOption(Some(value), pathSeq.head, tl)
+          case NothingReferenceKey => routeValueOption(None, pathSeq.head, tl)
+        }
         
         case JPathLink +: tl => 
           routeValueOption(

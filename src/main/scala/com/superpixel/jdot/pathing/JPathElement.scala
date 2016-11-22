@@ -1,7 +1,5 @@
 package com.superpixel.jdot.pathing
 
-import java.util.regex.Pattern
-import scala.util.matching.Regex
 
 sealed trait JPathElement;
 
@@ -13,12 +11,26 @@ sealed trait ObjectKey;
 case class LiteralKey(key: String) extends ObjectKey;
 case class KeyFromPath(keyPath: JPath) extends ObjectKey;
 
-
 case class JArrayPath(arrIdx: ArrayIndex) extends JPathElement
 
 sealed trait ArrayIndex;
 case class LiteralIndex(idx: Int) extends ArrayIndex;
 case class IndexFromPath(idxPath: JPath) extends ArrayIndex;
+
+case class JMetaPath(metaKey: MetaKey) extends JPathElement;
+
+sealed trait MetaKey {
+  def str: String
+}
+case object SelfReferenceKey extends MetaKey {
+  val str = "_this"
+}
+case object NothingReferenceKey extends MetaKey {
+  val str = "_nothing"
+}
+//case object RootReferenceKey extends MetaKey {
+//  val str = "_root"
+//}
 
 
 case class JPathValue(value: String, transmutation: Option[JTransmute]) extends JPathElement

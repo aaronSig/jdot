@@ -93,8 +93,7 @@ class JValueAttacher(attachmentPairs: Set[JPathPair],
 
 object JValueAttacher {
 
-  val originalContextKey = "_root"
-  private val rootAttacher = JValueAttacher(Set((originalContextKey, "")))
+  private val rootAttacher = JValueAttacher(Set((JDotAttacher.originalContextKey, "")))
   
   def apply(attachmentPairs: Set[JPathPair],
             contextPath: Option[JPath] = None,

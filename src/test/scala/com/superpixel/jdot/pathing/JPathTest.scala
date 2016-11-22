@@ -78,6 +78,48 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
         JPath.fromString("[1].zwei[trois]")
       }
   }
+
+  it should "be able to understand SelfReference meta key at start" in {
+    assertResult(
+      JPath(JMetaPath(SelfReferenceKey))) {
+      JPath.fromString(SelfReferenceKey.str)
+    }
+  }
+
+  it should "be able to understand SelfReference meta key within a path" in {
+    assertResult(
+      JPath(JObjectPath(LiteralKey("one")), JMetaPath(SelfReferenceKey))) {
+      JPath.fromString("one." + SelfReferenceKey.str)
+    }
+  }
+
+  it should "be should not parse SelfReference is written within literal brackets, and instead read it as a object access key" in {
+    assertResult(
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey(SelfReferenceKey.str)))) {
+      JPath.fromString("one.(" + SelfReferenceKey.str + ")")
+    }
+  }
+
+  it should "be able to understand NothingReference meta key at start" in {
+    assertResult(
+      JPath(JMetaPath(NothingReferenceKey))) {
+      JPath.fromString(NothingReferenceKey.str)
+    }
+  }
+
+  it should "be able to understand NothingReference meta key within a path" in {
+    assertResult(
+      JPath(JObjectPath(LiteralKey("one")), JMetaPath(NothingReferenceKey))) {
+      JPath.fromString("one." + NothingReferenceKey.str)
+    }
+  }
+
+  it should "be should not parse NothingReference is written within literal brackets, and instead read it as a object access key" in {
+    assertResult(
+      JPath(JObjectPath(LiteralKey("one")), JObjectPath(LiteralKey(NothingReferenceKey.str)))) {
+      JPath.fromString("one.(" + NothingReferenceKey.str + ")")
+    }
+  }
   
   it should "be able to interpret literal expression" in {
     assertResult(JPath(JPathValue("one", None))) {

@@ -17,6 +17,8 @@ trait JDotAttacher {
 }
 
 object JDotAttacher {
+  val originalContextKey = "_root"
+
   def apply(attachmentPairs: Set[JPathPair],
             contextPath: Option[String] = None,
             transformer: Option[JDotTransformer] = None,
