@@ -498,6 +498,15 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     }
   }
 
+  it should "error out in a timely manner" in {
+    val thrown = intercept[JPathException] {
+      JPath.fromString("(ter")
+    }
+    assert(thrown.getMessage.contains(")"))
+    assert(thrown.getMessage.contains("Expected closing bracket"))
+    assert(thrown.getMessage.contains("end of path"))
+  }
+
   "JPath validate" should "validate dot syntax" in {
     assertResult(true) {
       JPath.validate("one.zwei.trois")._1

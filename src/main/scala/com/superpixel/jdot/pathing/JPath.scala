@@ -535,7 +535,7 @@ object JPath {
                   case _ => (a: Int, b: Int) => None
                 }
                 (cO, breakout) match {
-                  case (None, _: Context) => 
+                  case (None, _) =>
                       popMode(None, check, bracketStack, (mode, modeStarter, breakout, startDepth, elementLamb(start, check) ++: modeAcc) +: modeStackTl) match {
                         case(newCheck, newBS, newMS) => inner2(newCheck, newCheck, newBS, newMS);
                       }
