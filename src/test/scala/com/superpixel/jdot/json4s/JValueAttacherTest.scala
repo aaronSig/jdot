@@ -105,4 +105,33 @@ class JValueAttacherTest extends FlatSpec with Matchers with MockFactory {
     
     assert(expected == attacher.attachJValueList(ls, attachTo))
   }
+
+  it should "ignore attachment when context is nothing" in {
+    val ls: List[JValue] = List(
+      ("game" -> "Sunderland vs. Stoke") ~ ("venue" -> "Stadium of Light") ~ ("score" -> "2 - 0") ~ ("winningTeam" -> "sunderland"),
+      ("game" -> "Man City vs. Southampton") ~ ("venue" -> "Etihad Stadium") ~ ("score" -> "3 - 1") ~ ("winningTeam" -> "man-city"),
+      ("game" -> "Crystal Palace vs. Newcastle") ~ ("venue" -> "Selhurst Park") ~ ("score" -> "5 - 1") ~ ("winningTeam" -> "crystal-palace"),
+      ("game" -> "Bournemouth vs. Everton") ~ ("venue" -> "Vitality Stadium") ~ ("score" -> "3 - 3") ~ ("winningTeam" -> "draw"),
+      ("game" -> "Aston Villa vs. Watford") ~ ("venue" -> "Villa Park") ~ ("score" -> "2 - 3") ~ ("winningTeam" -> "watford"),
+      ("game" -> "Leicester vs. Man Utd") ~ ("venue" -> "King Power Stadium") ~ ("score" -> "1 - 1") ~ ("winningTeam" -> "draw"),
+      ("game" -> "Tottenham vs. Chelsea") ~ ("venue" -> "White Hart Lane") ~ ("score" -> "0 - 0") ~ ("winningTeam" -> "draw"),
+      ("game" -> "West Ham vs. West Brom") ~ ("venue" -> "Boleyn Ground") ~ ("score" -> "1 - 1") ~ ("winningTeam" -> "draw"),
+      ("game" -> "Norwich vs. Arsenal") ~ ("venue" -> "Carrow Road") ~ ("score" -> "1 - 1") ~ ("winningTeam" -> "draw"),
+      ("game" -> "Liverpool vs. Swansea") ~ ("venue" -> "Anfield") ~ ("score" -> "1 - 0") ~ ("winningTeam" -> "liverpool")
+    )
+
+    val expected: JObject =
+      ("hello" -> "world") ~
+        ("when" -> "now") ~
+        ("match1" -> JNothing) ~
+        ("match2" -> JNothing)
+
+    val attachTo: JObject = ("hello" -> "world") ~ ("when" -> "now")
+
+    val attacherPairs = Set(JPathPair(JPath(JObjectPath(LiteralKey("match1"))), JPath(JArrayPath(LiteralIndex(0)))), JPathPair(JPath(JObjectPath(LiteralKey("match2"))), JPath(JArrayPath(LiteralIndex(1)))))
+
+    val attacher = new JValueAttacher(attacherPairs, Some(AlterJsonContext(JNothing)), None, Nil);
+
+    assert(expected == attacher.attachJValueList(ls, attachTo))
+  }
 }

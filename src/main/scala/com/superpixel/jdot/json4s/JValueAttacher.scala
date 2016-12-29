@@ -64,6 +64,7 @@ class JValueAttacher(attachmentPairs: Set[JPathPair],
   
   private def _attachJValue(contextJson: Either[JValue, List[JValue]], attachToJson: JValue): JValue = {
     val postTransform: JValue = factorContextJValue(contextJson) match {
+      case Left(JNothing) => JNothing
       case Left(alteredContext) => transformAndNestedAttachers(alteredContext)
       case Right(alteredContextList) => transformAndNestedAttachers(alteredContextList)
     }
