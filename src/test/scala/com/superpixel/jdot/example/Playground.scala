@@ -23,6 +23,32 @@ class Playground extends FunSpec with Matchers {
     println(ratio)
   }
 
+  describe("http scheme adder") {
+
+    val accessorGood = JDotAccessor(
+      """{
+          "home_page" : "http://www.connemaraheritage.com"
+        }
+      """.stripMargin)
+
+    val accessorBad = JDotAccessor(
+      """{
+          "home_page" : "www.connemaraheritage.com"
+        }
+      """.stripMargin)
+
+    val accessorSecure = JDotAccessor(
+      """{
+          "home_page" : "https://www.connemaraheritage.com"
+        }
+      """.stripMargin)
+
+    println(accessorGood.getString("~home_page^s<(.4)=(http)?home_page:|(http://{home_page})"));
+    println(accessorBad.getString("~home_page^s<(.4)=(http)?home_page:|(http://{home_page})"));
+    println(accessorSecure.getString("~home_page^s<(.4)=(http)?home_page:|(http://{home_page})"));
+
+  }
+
   describe("string list ops") {
 
     val json = """{"key":"pockets", "value":["one", "two", "three"]}"""

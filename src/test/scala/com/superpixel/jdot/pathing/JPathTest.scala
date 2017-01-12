@@ -498,6 +498,35 @@ class JPathTest extends FlatSpec with Matchers with MockFactory with BeforeAndAf
     }
   }
 
+  it should "be able to interpret tricky 12" in {
+
+    assertResult(
+      JPath(JConditional(
+        JPath(JObjectPath(LiteralKey("base_sku"))),
+        None,
+        JPath(JObjectPath(LiteralKey("base_sku")), JObjectPath(LiteralKey("price")), JTransmute("cur", Some(NestedArgument(JPath(JStringFormat(Seq(FormatLiteral("_"), ReplaceHolder), Seq(JPath(JObjectPath(LiteralKey("base_sku")), JObjectPath(LiteralKey("currency")))))))))),
+        JPath(JStringFormat(Seq(ReplaceHolder, FormatLiteral(" - "), ReplaceHolder), Seq(JPath(JObjectPath(LiteralKey("product")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("min_price")), JTransmute("cur", Some(LiteralArgument("_EUR")))), JPath(JObjectPath(LiteralKey("product")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("max_price")), JTransmute("cur", Some(LiteralArgument("_EUR")))))))
+      ))
+    ){
+      JPath.fromString("~base_sku?base_sku.price^cur<{|_{base_sku.currency}}:|{product.metadata.min_price^cur<(_EUR)} - {product.metadata.max_price^cur<(_EUR)}")
+    }
+  }
+
+  it should "be able to interpret tricky 13" in {
+    assertResult(
+      JPath(JConditional(
+        JPath(JObjectPath(LiteralKey("collection"))),
+        None,
+        JPath(JStringFormat(
+          Seq(FormatLiteral("category_level_"), ReplaceHolder, FormatLiteral(""":\""""), ReplaceHolder, FormatLiteral("""\"""")),
+          Seq(JPath(JObjectPath(LiteralKey("collection")), JObjectPath(LiteralKey("metadata")), JObjectPath(LiteralKey("m_level"))), JPath(JObjectPath(LiteralKey("collection")), JObjectPath(LiteralKey("name")))))),
+        JPath(JMetaPath(NothingReferenceKey))
+      ))
+    ) {
+      JPath.fromString("~collection?|(category_level_{collection.metadata.m_level}:\\\\\"{collection.name}\\\\\"):_nothing")
+    }
+  }
+
   it should "error out in a timely manner" in {
     val thrown = intercept[JPathException] {
       JPath.fromString("(ter")
