@@ -53,12 +53,22 @@ object ScalaConverters {
   }
   
   def jvStringMapToJPathPairSet(jvMap: java.util.Map[String, String]): scala.collection.immutable.Set[JPathPair] = {
+    def inner(set: scala.collection.immutable.Set[JPathPair], jvIt: java.util.Iterator[java.util.Map.Entry[String, String]]): scala.collection.immutable.Set[JPathPair] = {
+      if (jvIt.hasNext) {
+        val e = jvIt.next()
+        val jPath = JPathPair.fromStrings(e.getKey, e.getValue)
+        inner(set + jPath, jvIt)
+      } else set
+    }
+
     if (jvMap == null) {
       scala.collection.immutable.Set[JPathPair]();
     } else {
-      val entrySet: collection.immutable.Set[(String, String)] = jvMap.asScala.toSet
-      entrySet.map { case (to:String , from:String) => JPathPair.fromStrings(to, from) }
+//      val entrySet: collection.immutable.Set[(String, String)] = jvMap.asScala.toSet
+//      entrySet.map { case (to:String , from:String) => JPathPair.fromStrings(to, from) }
+      inner(scala.collection.immutable.Set[JPathPair](), jvMap.entrySet().iterator())
     }
+
   }
 
 }
